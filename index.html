@@ -93,7 +93,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 <!-- STATUS BAR -->
 <div class="status">
   <div class="sdot" id="sdot" style="background:#888;"></div>
-  <span id="stxt">No data loaded — upload your Stripe charges CSV to get started</span>
+  <span id="stxt">Upload your Stripe charges CSV to view revenue data</span>
 </div>
 
 <!-- NAV -->
@@ -120,11 +120,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 
 <script>
 // ── AUTH ──
-let GITHUB_TOKEN = sessionStorage.getItem('md_tok') || '';
-const REPO = 'rmancuso22/matchday-data';
-const FILE = 'stripe_charges.csv';
-const API  = 'https://api.github.com/repos/'+REPO+'/contents/'+FILE;
-const RAW  = 'https://raw.githubusercontent.com/'+REPO+'/main/'+FILE;
 
 function auth() {
   if (document.getElementById('pwin').value === 'Matchday1!') {
@@ -152,79 +147,23 @@ function handleFile(event) {
   if (!file) return;
   setStatus('Reading '+file.name+'...', '#888');
   const reader = new FileReader();
-  reader.onload = async function(e) {
+  reader.onload = function(e) {
     try {
       processCSV(e.target.result);
-      setStatus(allCharges.length.toLocaleString()+' charges loaded · saving...', '#d4830a');
-      // Ask for token if needed
-      if (!GITHUB_TOKEN) {
-        const tok = prompt('Enter your GitHub Personal Access Token to save for all users:');
-        if (tok) { GITHUB_TOKEN = tok.trim(); sessionStorage.setItem('md_tok', GITHUB_TOKEN); }
-      }
-      if (GITHUB_TOKEN) {
-        await saveToGitHub(e.target.result);
-        document.getElementById('lupd').textContent = 'Updated ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-        setStatus(allCharges.length.toLocaleString()+' charges · saved ✓', '#2ecc71');
-      } else {
-        setStatus(allCharges.length.toLocaleString()+' charges loaded (not saved — no token)', '#2ecc71');
-      }
+      document.getElementById('lupd').textContent = 'Loaded '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      setStatus(allCharges.length.toLocaleString()+' charges loaded from '+file.name, '#2ecc71');
     } catch(err) {
-      setStatus('Error: '+err.message, '#c0392b');
+      setStatus('Error reading file: '+err.message, '#c0392b');
       console.error(err);
     }
   };
   reader.readAsText(file);
-  event.target.value = ''; // reset so same file can be re-uploaded
+  event.target.value = '';
 }
 
-// ── GITHUB ──
-let fileSha = null;
-
-async function loadFromGitHub() {
-  setStatus('Loading saved data...', '#888');
-  try {
-    const res = await fetch(RAW+'?t='+Date.now());
-    if (!res.ok) throw new Error('No saved data');
-    const text = await res.text();
-    processCSV(text);
-    // Get commit date
-    const cr = await fetch('https://api.github.com/repos/'+REPO+'/commits?path='+FILE+'&per_page=1');
-    if (cr.ok) {
-      const commits = await cr.json();
-      if (commits[0]) {
-        const d = new Date(commits[0].commit.author.date);
-        document.getElementById('lupd').textContent = 'Updated '+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
-      }
-    }
-    setStatus(allCharges.length.toLocaleString()+' charges loaded', '#2ecc71');
-  } catch(err) {
-    setStatus('No saved data yet — upload a Stripe CSV to get started', '#888');
-    document.getElementById('sdot').style.background = '#888';
-    console.log(err.message);
-  }
-}
-
-async function saveToGitHub(text) {
-  // Get current SHA
-  try {
-    const r = await fetch(API, {headers:{'Authorization':'token '+GITHUB_TOKEN,'Accept':'application/vnd.github.v3+json'}});
-    if (r.ok) { const j = await r.json(); fileSha = j.sha; }
-  } catch(e) {}
-
-  const encoded = btoa(unescape(encodeURIComponent(text)));
-  const body = {
-    message: 'Update Stripe data '+new Date().toISOString().slice(0,10),
-    content: encoded,
-    ...(fileSha ? {sha: fileSha} : {})
-  };
-  const res = await fetch(API, {
-    method:'PUT',
-    headers:{'Authorization':'token '+GITHUB_TOKEN,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'},
-    body: JSON.stringify(body)
-  });
-  if (!res.ok) { const e = await res.json(); throw new Error(e.message||'GitHub save failed'); }
-  const j = await res.json();
-  fileSha = j.content.sha;
+// ── No GitHub persistence — data lives in session only ──
+function loadFromGitHub() {
+  setStatus('Upload a Stripe CSV to get started', '#888');
 }
 
 function setStatus(msg, color) {
