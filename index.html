@@ -457,20 +457,18 @@ function getMonth(rows) {
 function processAll() {
   if (!state.retool) return;
 
-  const month = getMonth(state.retool);
-  document.getElementById('headerPeriod').textContent = month;
-
-
-  // Detect month prefix from Retool data (the source of truth for which month we're viewing)
+  // Detect month prefix from Retool Match Start dates
   const allDates = state.retool
     .map(r => r['Match Start'] || '')
-    .filter(d => d.match(/^\d{4}-\d{2}/))
+    .filter(d => /^\d{4}-\d{2}/.test(d))
     .map(d => d.slice(0,7));
-  // Find the most common month in Retool data
   const monthCounts = {};
   allDates.forEach(d => { monthCounts[d] = (monthCounts[d]||0) + 1; });
-  const monthPrefix = Object.entries(monthCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || '2026-03';
-  console.log('Detected month:', monthPrefix, 'from', Object.keys(monthCounts));
+  const monthPrefix = Object.entries(monthCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || '';
+  console.log('Month prefix detected:', monthPrefix, 'counts:', monthCounts);
+  if (!monthPrefix) { console.error('Could not detect month from Retool data'); return; }
+  const month = new Date(monthPrefix+'-15').toLocaleString('default',{month:'long',year:'numeric'});
+  document.getElementById('headerPeriod').textContent = month;
 
   // ── RETOOL ANALYSIS ──
   const fieldMap = {};
