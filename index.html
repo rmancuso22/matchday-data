@@ -13,50 +13,33 @@
   --bg:#f4f7f5;--card:#ffffff;
   --border:rgba(26,122,74,0.12);--border-s:rgba(26,122,74,0.25);
   --red:#c0392b;--amber:#d4830a;
-  --ok-bg:#e8f5ee;--ok-txt:#1a5c35;
-  --warn-bg:#fdf6e3;--warn-txt:#8a5500;
-  --danger-bg:#fdf0ee;--danger-txt:#922b1e;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
-
-.header{background:var(--text);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100;}
-.logo{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--green-mid);letter-spacing:.15em;text-transform:uppercase;}
-.header-right{display:flex;align-items:center;gap:1rem;}
-.last-updated{font-size:11px;color:rgba(255,255,255,0.4);font-family:'DM Mono',monospace;}
-.refresh-btn{font-size:11px;padding:4px 12px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);cursor:pointer;}
-
-.status-bar{background:var(--green);padding:8px 2rem;font-size:11px;font-family:'DM Mono',monospace;color:rgba(255,255,255,0.7);display:flex;align-items:center;gap:8px;}
-.status-dot{width:6px;height:6px;border-radius:50%;background:#2ecc71;animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
-
-.nav{background:var(--card);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;gap:0;}
-.nav-tab{padding:.875rem 1.25rem;font-size:13px;font-weight:500;color:var(--text-t);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;}
-.nav-tab:hover{color:var(--text-s);}
-.nav-tab.active{color:var(--green);border-bottom-color:var(--green);}
-
+.header{background:#0f1f17;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:50;}
+.logo{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:#2ecc71;letter-spacing:.15em;text-transform:uppercase;}
+.hbtn{font-size:12px;padding:6px 14px;border-radius:6px;border:1px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.1);color:white;cursor:pointer;margin-left:8px;}
+.hbtn:hover{background:rgba(255,255,255,0.2);}
+.status{background:#1a7a4a;padding:8px 2rem;font-size:12px;color:rgba(255,255,255,0.85);display:flex;align-items:center;gap:8px;}
+.sdot{width:7px;height:7px;border-radius:50%;background:#2ecc71;flex-shrink:0;}
+.nav{background:white;border-bottom:1px solid var(--border);padding:0 2rem;display:flex;}
+.ntab{padding:.875rem 1.25rem;font-size:13px;font-weight:500;color:var(--text-t);cursor:pointer;border-bottom:2px solid transparent;}
+.ntab.active{color:var(--green);border-bottom-color:var(--green);}
 .main{padding:1.5rem 2rem 3rem;max-width:1400px;margin:0 auto;}
-.section{display:none;}.section.active{display:block;}
-
-.month-pills{display:flex;gap:6px;margin-bottom:1.5rem;flex-wrap:wrap;}
-.month-pill{font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--border-s);background:transparent;color:var(--text-s);cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s;}
-.month-pill:hover{background:var(--green-light);}
-.month-pill.active{background:var(--green);color:white;border-color:var(--green);}
-.month-pill.all{font-weight:600;}
-
+.sec{display:none;}.sec.active{display:block;}
+.mpills{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap;}
+.mpill{font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--border-s);background:transparent;color:var(--text-s);cursor:pointer;font-family:'DM Mono',monospace;}
+.mpill:hover,.mpill.active{background:var(--green);color:white;border-color:var(--green);}
 .metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:1.25rem;}
-.metric{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
-.metric.accent{border-left:3px solid var(--green);}
-.metric-label{font-size:10px;color:var(--text-t);margin-bottom:6px;text-transform:uppercase;letter-spacing:.07em;}
-.metric-value{font-size:22px;font-weight:600;color:var(--text);font-family:'DM Mono',monospace;}
-.metric-sub{font-size:11px;color:var(--text-t);margin-top:3px;}
-
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
-.card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:.3rem;}
-.card-sub{font-size:11px;color:var(--text-t);margin-bottom:1rem;}
-.two-col{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:1rem;margin-bottom:1rem;}
-.three-col{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin-bottom:1rem;}
-
+.metric{background:white;border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.metric.acc{border-left:3px solid var(--green);}
+.mlabel{font-size:10px;color:var(--text-t);margin-bottom:6px;text-transform:uppercase;letter-spacing:.07em;}
+.mvalue{font-size:22px;font-weight:600;color:var(--text);font-family:'DM Mono',monospace;}
+.msub{font-size:11px;color:var(--text-t);margin-top:3px;}
+.card{background:white;border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
+.ctitle{font-size:13px;font-weight:600;color:var(--text);margin-bottom:.3rem;}
+.csub{font-size:11px;color:var(--text-t);margin-bottom:1rem;}
+.two{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:1rem;margin-bottom:1rem;}
 .tbl{width:100%;font-size:12px;border-collapse:collapse;table-layout:fixed;}
 .tbl th{font-size:10px;font-weight:600;color:var(--text-t);text-transform:uppercase;letter-spacing:.07em;padding:0 0 8px;text-align:left;border-bottom:1px solid var(--border);}
 .tbl th:not(:first-child){text-align:right;}
@@ -64,575 +47,390 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);fon
 .tbl td:first-child{color:var(--text);font-weight:500;}
 .tbl td:not(:first-child){text-align:right;}
 .tbl tr:last-child td{border-bottom:none;}
-
-.bar-wrap{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:4px;}
-.bar-fill{height:100%;border-radius:2px;background:var(--green);}
-
-.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px;font-size:11px;color:var(--text-s);}
-.legend span{display:flex;align-items:center;gap:5px;}
-.leg-sq{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
-
-.loading{text-align:center;padding:4rem;color:var(--text-t);}
-.loading h3{font-size:16px;font-weight:500;margin-bottom:.5rem;color:var(--text-s);}
-
-@media(max-width:900px){.metrics{grid-template-columns:repeat(2,1fr);}.two-col,.three-col{grid-template-columns:1fr;}.main{padding:1rem;}}
+.bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:4px;}
+.bfill{height:100%;border-radius:2px;background:var(--green);}
+.leg{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px;font-size:11px;color:var(--text-s);}
+.leg span{display:flex;align-items:center;gap:5px;}
+.lsq{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
+.empty{text-align:center;padding:4rem 2rem;}
+.empty h3{font-size:18px;font-weight:500;color:var(--text-s);margin-bottom:.75rem;}
+.empty p{font-size:13px;color:var(--text-t);margin-bottom:1.5rem;}
+.ubtn{padding:12px 28px;background:var(--green);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.ubtn:hover{background:#156038;}
+@media(max-width:900px){.metrics{grid-template-columns:repeat(2,1fr);}.two{grid-template-columns:1fr;}.main{padding:1rem;}}
 </style>
 </head>
 <body>
 
-<div id="pwGate" style="position:fixed;inset:0;background:#0f1f17;display:flex;align-items:center;justify-content:center;z-index:9999;">
-  <div style="text-align:center;">
+<!-- PASSWORD GATE -->
+<div id="gate" style="position:fixed;inset:0;background:#0f1f17;display:flex;align-items:center;justify-content:center;z-index:999;">
+  <div style="text-align:center;padding:2rem;">
     <div style="font-family:'DM Mono',monospace;font-size:13px;color:#2ecc71;letter-spacing:.15em;text-transform:uppercase;margin-bottom:2rem;">⚽ MatchDay — Revenue</div>
     <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(26,122,74,0.3);border-radius:12px;padding:2rem 2.5rem;min-width:300px;">
-      <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:1.25rem;">Enter password to continue</div>
-      <input id="pwInput" type="password" placeholder="Password" autofocus
+      <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:1.25rem;">Enter password</div>
+      <input id="pwin" type="password" placeholder="Password" autofocus
         style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid rgba(26,122,74,0.4);background:rgba(255,255,255,0.06);color:white;font-size:14px;outline:none;margin-bottom:.75rem;"
-        onkeydown="if(event.key==='Enter')checkPw()">
-      <div id="pwErr" style="font-size:11px;color:#c0392b;margin-bottom:.75rem;min-height:16px;"></div>
-      <button onclick="checkPw()" style="width:100%;padding:10px;background:#1a7a4a;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Unlock</button>
+        onkeydown="if(event.key==='Enter')auth()">
+      <div id="pwerr" style="font-size:11px;color:#c0392b;min-height:16px;margin-bottom:.75rem;"></div>
+      <button onclick="auth()" style="width:100%;padding:10px;background:#1a7a4a;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Unlock</button>
     </div>
   </div>
 </div>
-<script>
-function checkPw(){
-  if(document.getElementById('pwInput').value==='Matchday1!'){
-    document.getElementById('pwGate').style.display='none';
-    sessionStorage.setItem('md_auth','1');
-    initDashboard();
-  } else {
-    document.getElementById('pwErr').textContent='Incorrect password.';
-    document.getElementById('pwInput').value='';
-  }
-}
-if(sessionStorage.getItem('md_auth')==='1'){
-  document.addEventListener('DOMContentLoaded',()=>{
-    document.getElementById('pwGate').style.display='none';
-    initDashboard();
-  });
-}
-</script>
 
+<!-- HEADER -->
 <div class="header">
   <div class="logo">⚽ MatchDay — Revenue</div>
-  <div class="header-right">
-    <div class="last-updated" id="lastUpdated">No data loaded</div>
-    <input type="file" accept=".csv" id="stripeUpload" style="display:none;" onchange="handleUpload(event)">
-    <button class="refresh-btn" onclick="document.getElementById('stripeUpload').click()">Upload CSV</button>
-    <button class="refresh-btn" onclick="loadFromGitHub()">↺ Refresh</button>
+  <div style="display:flex;align-items:center;">
+    <span id="lupd" style="font-size:11px;color:rgba(255,255,255,0.4);font-family:'DM Mono',monospace;margin-right:12px;">No data loaded</span>
+    <button class="hbtn" onclick="triggerUpload()">Upload CSV</button>
+    <button class="hbtn" onclick="loadFromGitHub()">↺ Refresh</button>
   </div>
 </div>
 
-<div class="status-bar">
-  <div class="status-dot" id="statusDot" style="background:#888;animation:none;"></div>
-  <span id="statusText">Upload your Stripe charges CSV to get started — download from Coefficient anytime</span>
+<!-- HIDDEN FILE INPUT - outside everything -->
+<input type="file" id="csvfile" accept=".csv" style="position:absolute;left:-9999px;top:-9999px;" onchange="handleFile(event)">
+
+<!-- STATUS BAR -->
+<div class="status">
+  <div class="sdot" id="sdot" style="background:#888;"></div>
+  <span id="stxt">No data loaded — upload your Stripe charges CSV to get started</span>
 </div>
 
+<!-- NAV -->
 <div class="nav">
-  <div class="nav-tab active" onclick="showTab('overview',event)">Overview</div>
-  <div class="nav-tab" onclick="showTab('monthly',event)">Monthly</div>
-  <div class="nav-tab" onclick="showTab('cities',event)">Cities</div>
-  <div class="nav-tab" onclick="showTab('membership',event)">Membership</div>
+  <div class="ntab active" onclick="showTab('ov',this)">Overview</div>
+  <div class="ntab" onclick="showTab('mo',this)">Monthly</div>
+  <div class="ntab" onclick="showTab('ci',this)">Cities</div>
+  <div class="ntab" onclick="showTab('me',this)">Membership</div>
 </div>
 
+<!-- MAIN -->
 <div class="main">
-  <div class="section active" id="tab-overview"><div class="loading">
-  <h3>No data loaded</h3>
-  <p style="margin-bottom:1.5rem">Download your Stripe charges CSV from Coefficient and upload it here</p>
-  <button onclick="document.getElementById('stripeUpload').click()" style="padding:10px 24px;background:#1a7a4a;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Upload Stripe CSV</button>
-</div></div>
-  <div class="section" id="tab-monthly"><div class="loading"><h3>Upload your Stripe charges CSV to get started</h3></div></div>
-  <div class="section" id="tab-cities"><div class="loading"><h3>Upload your Stripe charges CSV to get started</h3></div></div>
-  <div class="section" id="tab-membership"><div class="loading"><h3>Upload your Stripe charges CSV to get started</h3></div></div>
+  <div class="sec active" id="tab-ov">
+    <div class="empty">
+      <h3>No data loaded</h3>
+      <p>Download your Stripe charges CSV from Coefficient and upload it here</p>
+      <button class="ubtn" onclick="triggerUpload()">Upload Stripe CSV</button>
+    </div>
+  </div>
+  <div class="sec" id="tab-mo"><div class="empty"><h3>Upload a CSV to get started</h3><button class="ubtn" onclick="triggerUpload()">Upload Stripe CSV</button></div></div>
+  <div class="sec" id="tab-ci"><div class="empty"><h3>Upload a CSV to get started</h3><button class="ubtn" onclick="triggerUpload()">Upload Stripe CSV</button></div></div>
+  <div class="sec" id="tab-me"><div class="empty"><h3>Upload a CSV to get started</h3><button class="ubtn" onclick="triggerUpload()">Upload Stripe CSV</button></div></div>
 </div>
 
 <script>
+// ── AUTH ──
+let GITHUB_TOKEN = sessionStorage.getItem('md_tok') || '';
+const REPO = 'rmancuso22/matchday-data';
+const FILE = 'stripe_charges.csv';
+const API  = 'https://api.github.com/repos/'+REPO+'/contents/'+FILE;
+const RAW  = 'https://raw.githubusercontent.com/'+REPO+'/main/'+FILE;
 
-let GITHUB_TOKEN = sessionStorage.getItem('md_github_token') || '';
-const GITHUB_REPO = 'rmancuso22/matchday-data';
-const GITHUB_FILE = 'stripe_charges.csv';
-const GITHUB_API = 'https://api.github.com/repos/' + GITHUB_REPO + '/contents/' + GITHUB_FILE;
-
-const FIELD_CITY = {
-  'San Juan Diego':'Austin','Premier match at SJD':'Austin','NEMP - Field 12':'Austin',
-  'NEMP - Field 13':'Austin','NEMP - Field 14':'Austin','The Hattrick (Leander)':'Austin',
-  '🎥The Hattrick (Leander)':'Austin','Round Rock - Field 1':'Austin','Stony Point High School':'Austin',
-  'Onion Creek':'Austin',
-  'ATH Pearland':'Houston','ATH Katy':'Houston','PAC GLOBAL':'Houston',
-  'Katy International Sports Complex':'Houston','Katy International Sports Complex - Field 8':'Houston',
-  'Soccer Central Field 4':'San Antonio','Soccer Central Field 4A':'San Antonio','Soccer Central Field 3':'San Antonio',
-  'STAR Soccer Complex Field 11':'San Antonio',
-  'Lou Fusz - Outdoor Field 10':'St. Louis','🎥 Lou Fusz - Outdoor Field 10':'St. Louis',
-  'Lou Fusz - Indoor Field':'St. Louis','🎥 Lou Fusz - Indoor Field':'St. Louis',
-  'Centennial Commons':'St. Louis','🎥 Centennial Commons':'St. Louis',
-  'Bicentennial Park':'Dallas / Fort Worth','Carroll Senior High School':'Dallas / Fort Worth',
-  'Hammond Park':'Atlanta','🎥 Hammond Park':'Atlanta','PRUMC':'Atlanta','🎥 PRUMC':'Atlanta',
-  'Scissortail Park':'Oklahoma City',
-};
-
-const CODE_CITY = {ATX:'Austin',HOU:'Houston',SATX:'San Antonio',STL:'St. Louis',DFW:'Dallas / Fort Worth',ATL:'Atlanta',OKC:'Oklahoma City'};
-const CITY_ORDER = ['Austin','Houston','San Antonio','St. Louis','Dallas / Fort Worth','Atlanta','Oklahoma City'];
-const MONTHS = {'2026-01':'Jan','2026-02':'Feb','2026-03':'Mar','2026-04':'Apr','2026-05':'May','2026-06':'Jun','2026-07':'Jul','2026-08':'Aug','2026-09':'Sep','2026-10':'Oct','2026-11':'Nov','2026-12':'Dec'};
-
-const charts = {};
-let allCharges = [];
-// Default to current month
-const now = new Date();
-const currentMonth = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-let selectedMonth = currentMonth;
-
-function cityFromCharge(r) {
-  const code = r['City Identifier']?.trim();
-  if (code && CODE_CITY[code]) return CODE_CITY[code];
-  const name = r['Match Name']?.trim() || '';
-  for (const [field, city] of Object.entries(FIELD_CITY)) {
-    if (name.includes(field) || field.includes(name)) return city;
-  }
-  return '';
-}
-
-function destroyChart(id){ if(charts[id]){charts[id].destroy();delete charts[id];} }
-const gc = 'rgba(0,0,0,0.05)', tc = '#8aa398';
-
-let lastFileSha = null;
-
-async function loadFromGitHub() {
-  try {
-    document.getElementById('statusText').textContent = 'Loading saved data...';
-    // Public repo — read raw file without token
-    const rawUrl = 'https://raw.githubusercontent.com/' + GITHUB_REPO + '/main/' + GITHUB_FILE;
-    const res = await fetch(rawUrl);
-    if (!res.ok) throw new Error('No saved data yet');
-    const text = await res.text();
-    processCSV(text, GITHUB_FILE, '');
-    // Get last commit date (public API, no token needed)
-    const commitRes = await fetch('https://api.github.com/repos/' + GITHUB_REPO + '/commits?path=' + GITHUB_FILE + '&per_page=1');
-    if (commitRes.ok) {
-      const commits = await commitRes.json();
-      if (commits[0]) {
-        const date = new Date(commits[0].commit.author.date);
-        document.getElementById('lastUpdated').textContent = 'Last updated ' + date.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
-      }
-    }
-  } catch(err) {
-    document.getElementById('statusDot').style.cssText='width:6px;height:6px;border-radius:50%;background:#888;animation:none;';
-    document.getElementById('statusText').textContent = 'No data yet — upload a Stripe CSV to get started';
-    document.getElementById('lastUpdated').textContent = 'No data loaded';
-    console.log('No GitHub data:', err.message);
+function auth() {
+  if (document.getElementById('pwin').value === 'Matchday1!') {
+    document.getElementById('gate').style.display = 'none';
+    sessionStorage.setItem('md_auth','1');
+    loadFromGitHub();
+  } else {
+    document.getElementById('pwerr').textContent = 'Incorrect password.';
+    document.getElementById('pwin').value = '';
   }
 }
-
-async function pushToGitHub(text, filename) {
-  document.getElementById('statusText').textContent = 'Saving to GitHub...';
-  // Get current SHA if we don't have it
-  if (!lastFileSha) {
-    try {
-      const shaRes = await fetch(GITHUB_API, { headers: { 'Authorization': 'token ' + GITHUB_TOKEN, 'Accept': 'application/vnd.github.v3+json' } });
-      if (shaRes.ok) { const j = await shaRes.json(); lastFileSha = j.sha; }
-    } catch(e) {}
-  }
-  const encoded = btoa(unescape(encodeURIComponent(text)));
-  const now = new Date().toISOString();
-  const body = {
-    message: 'Update Stripe data ' + now.slice(0,10),
-    content: encoded,
-    ...(lastFileSha ? {sha: lastFileSha} : {})
-  };
-  const res = await fetch(GITHUB_API, {
-    method: 'PUT',
-    headers: {
-      'Authorization': 'token ' + GITHUB_TOKEN,
-      'Content-Type': 'application/json',
-      'Accept': 'application/vnd.github.v3+json'
-    },
-    body: JSON.stringify(body)
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.message || 'GitHub API error');
-  }
-  const json = await res.json();
-  lastFileSha = json.content.sha;
-  document.getElementById('lastUpdated').textContent = 'Last updated ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
+document.getElementById('pwin').addEventListener('keydown', e => { if(e.key==='Enter') auth(); });
+if (sessionStorage.getItem('md_auth')==='1') {
+  document.getElementById('gate').style.display = 'none';
+  loadFromGitHub();
 }
 
-function processCSV(text, filename, updatedAt) {
-  const lines = text.split('\n').filter(l=>l.trim());
-  let start = 0;
-  for(let i=0;i<Math.min(5,lines.length);i++){ if(lines[i].startsWith('Amount')){start=i;break;} }
-  const csv = lines.slice(start).join('\n');
-  allCharges = parseCSV(csv).filter(r=>r['Status']==='succeeded');
-  document.getElementById('statusDot').style.cssText='width:6px;height:6px;border-radius:50%;background:#2ecc71;animation:pulse 2s infinite;';
-  document.getElementById('statusText').textContent = allCharges.length.toLocaleString() + ' charges loaded';
-  renderAll();
+// ── UPLOAD ──
+function triggerUpload() {
+  document.getElementById('csvfile').click();
 }
 
-function handleUpload(event) {
+function handleFile(event) {
   const file = event.target.files[0];
   if (!file) return;
-  // Prompt for GitHub token if not stored in session
-  if (!GITHUB_TOKEN) {
-    const token = prompt('Enter your GitHub Personal Access Token to save data for all users:');
-    if (!token) { event.target.value=''; return; }
-    GITHUB_TOKEN = token.trim();
-    sessionStorage.setItem('md_github_token', GITHUB_TOKEN);
-  }
-  document.getElementById('statusDot').style.cssText='width:6px;height:6px;border-radius:50%;background:#888;animation:none;';
-  document.getElementById('statusText').textContent = 'Reading ' + file.name + '...';
+  setStatus('Reading '+file.name+'...', '#888');
   const reader = new FileReader();
   reader.onload = async function(e) {
     try {
-      const text = e.target.result;
-      processCSV(text, file.name, '');
-      // Push to GitHub so others see it
-      await pushToGitHub(text, file.name);
-      document.getElementById('statusText').textContent = allCharges.length.toLocaleString() + ' charges · saved to GitHub';
+      processCSV(e.target.result);
+      setStatus(allCharges.length.toLocaleString()+' charges loaded · saving...', '#d4830a');
+      // Ask for token if needed
+      if (!GITHUB_TOKEN) {
+        const tok = prompt('Enter your GitHub Personal Access Token to save for all users:');
+        if (tok) { GITHUB_TOKEN = tok.trim(); sessionStorage.setItem('md_tok', GITHUB_TOKEN); }
+      }
+      if (GITHUB_TOKEN) {
+        await saveToGitHub(e.target.result);
+        document.getElementById('lupd').textContent = 'Updated ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+        setStatus(allCharges.length.toLocaleString()+' charges · saved ✓', '#2ecc71');
+      } else {
+        setStatus(allCharges.length.toLocaleString()+' charges loaded (not saved — no token)', '#2ecc71');
+      }
     } catch(err) {
-      document.getElementById('statusDot').style.cssText='width:6px;height:6px;border-radius:50%;background:#c0392b;animation:none;';
-      document.getElementById('statusText').textContent = 'Error: ' + err.message;
+      setStatus('Error: '+err.message, '#c0392b');
       console.error(err);
     }
   };
   reader.readAsText(file);
+  event.target.value = ''; // reset so same file can be re-uploaded
 }
 
-function loadStripeData() { document.getElementById('stripeUpload').click(); }
+// ── GITHUB ──
+let fileSha = null;
+
+async function loadFromGitHub() {
+  setStatus('Loading saved data...', '#888');
+  try {
+    const res = await fetch(RAW+'?t='+Date.now());
+    if (!res.ok) throw new Error('No saved data');
+    const text = await res.text();
+    processCSV(text);
+    // Get commit date
+    const cr = await fetch('https://api.github.com/repos/'+REPO+'/commits?path='+FILE+'&per_page=1');
+    if (cr.ok) {
+      const commits = await cr.json();
+      if (commits[0]) {
+        const d = new Date(commits[0].commit.author.date);
+        document.getElementById('lupd').textContent = 'Updated '+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      }
+    }
+    setStatus(allCharges.length.toLocaleString()+' charges loaded', '#2ecc71');
+  } catch(err) {
+    setStatus('No saved data yet — upload a Stripe CSV to get started', '#888');
+    document.getElementById('sdot').style.background = '#888';
+    console.log(err.message);
+  }
+}
+
+async function saveToGitHub(text) {
+  // Get current SHA
+  try {
+    const r = await fetch(API, {headers:{'Authorization':'token '+GITHUB_TOKEN,'Accept':'application/vnd.github.v3+json'}});
+    if (r.ok) { const j = await r.json(); fileSha = j.sha; }
+  } catch(e) {}
+
+  const encoded = btoa(unescape(encodeURIComponent(text)));
+  const body = {
+    message: 'Update Stripe data '+new Date().toISOString().slice(0,10),
+    content: encoded,
+    ...(fileSha ? {sha: fileSha} : {})
+  };
+  const res = await fetch(API, {
+    method:'PUT',
+    headers:{'Authorization':'token '+GITHUB_TOKEN,'Content-Type':'application/json','Accept':'application/vnd.github.v3+json'},
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) { const e = await res.json(); throw new Error(e.message||'GitHub save failed'); }
+  const j = await res.json();
+  fileSha = j.content.sha;
+}
+
+function setStatus(msg, color) {
+  document.getElementById('stxt').textContent = msg;
+  document.getElementById('sdot').style.background = color;
+}
+
+// ── DATA ──
+let allCharges = [];
+let selMonth = '';
+
+const FIELD_CITY = {
+  'San Juan Diego':'Austin','Premier match at SJD':'Austin','NEMP - Field 12':'Austin',
+  'NEMP - Field 13':'Austin','NEMP - Field 14':'Austin','The Hattrick (Leander)':'Austin',
+  '🎥The Hattrick (Leander)':'Austin','Round Rock - Field 1':'Austin','Stony Point High School':'Austin','Onion Creek':'Austin',
+  'ATH Pearland':'Houston','ATH Katy':'Houston','PAC GLOBAL':'Houston',
+  'Katy International Sports Complex':'Houston','Katy International Sports Complex - Field 8':'Houston',
+  'Soccer Central Field 4':'San Antonio','Soccer Central Field 4A':'San Antonio','Soccer Central Field 3':'San Antonio','STAR Soccer Complex Field 11':'San Antonio',
+  'Lou Fusz - Outdoor Field 10':'St. Louis','🎥 Lou Fusz - Outdoor Field 10':'St. Louis','Lou Fusz - Indoor Field':'St. Louis','🎥 Lou Fusz - Indoor Field':'St. Louis','Centennial Commons':'St. Louis','🎥 Centennial Commons':'St. Louis',
+  'Bicentennial Park':'Dallas / Fort Worth','Carroll Senior High School':'Dallas / Fort Worth',
+  'Hammond Park':'Atlanta','🎥 Hammond Park':'Atlanta','PRUMC':'Atlanta','🎥 PRUMC':'Atlanta',
+  'Scissortail Park':'Oklahoma City',
+};
+const CODE_CITY = {ATX:'Austin',HOU:'Houston',SATX:'San Antonio',STL:'St. Louis',DFW:'Dallas / Fort Worth',ATL:'Atlanta',OKC:'Oklahoma City'};
+const CITY_ORDER = ['Austin','Houston','San Antonio','St. Louis','Dallas / Fort Worth','Atlanta','Oklahoma City'];
+const MONTHS = {'2026-01':'Jan','2026-02':'Feb','2026-03':'Mar','2026-04':'Apr','2026-05':'May','2026-06':'Jun','2026-07':'Jul','2026-08':'Aug','2026-09':'Sep','2026-10':'Oct','2026-11':'Nov','2026-12':'Dec'};
+const COLORS = ['#1a7a4a','#0e9e6e','#2980b9','#d4830a','#8e44ad','#c0392b','#16a085'];
+const gc='rgba(0,0,0,0.05)', tc='#8aa398';
+const charts={};
+
+function cityFromCharge(r) {
+  const code = r['City Identifier']?.trim();
+  if (code && CODE_CITY[code]) return CODE_CITY[code];
+  const name = r['Match Name']?.trim()||'';
+  for (const [f,c] of Object.entries(FIELD_CITY)) { if (name.includes(f)||f.includes(name)) return c; }
+  return '';
+}
+
+function processCSV(text) {
+  const lines = text.split('\n').filter(l=>l.trim());
+  let start=0;
+  for(let i=0;i<Math.min(5,lines.length);i++){ if(/^Amount/i.test(lines[i].trim())){start=i;break;} }
+  allCharges = parseCSV(lines.slice(start).join('\n')).filter(r=>r['Status']==='succeeded');
+  // Default to current month
+  const now = new Date();
+  selMonth = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  renderAll();
+}
 
 function parseCSV(text) {
   const lines = text.split('\n');
   const headers = lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,''));
-  return lines.slice(1).filter(l=>l.trim()).map(line => {
-    const vals = [];
-    let cur = '', inQ = false;
-    for(const ch of line){
-      if(ch==='"') inQ=!inQ;
-      else if(ch===',' && !inQ){vals.push(cur.trim());cur='';}
-      else cur+=ch;
-    }
+  return lines.slice(1).filter(l=>l.trim()).map(line=>{
+    const vals=[]; let cur='',inQ=false;
+    for(const ch of line){ if(ch==='"')inQ=!inQ; else if(ch===','&&!inQ){vals.push(cur.trim());cur='';} else cur+=ch; }
     vals.push(cur.trim());
-    const obj = {};
-    headers.forEach((h,i)=>obj[h]=vals[i]||'');
+    const obj={}; headers.forEach((h,i)=>obj[h]=(vals[i]||'').replace(/^"|"$/g,''));
     return obj;
   });
 }
 
-function getCharges(month) {
-  if(month==='all') return allCharges;
-  return allCharges.filter(r=>r['Created']?.startsWith(month));
-}
+function getCharges(m) { return m==='all'?allCharges:allCharges.filter(r=>r['Created']?.startsWith(m)); }
+function getMonths() { return [...new Set(allCharges.map(r=>r['Created']?.slice(0,7)).filter(Boolean))].sort(); }
+function dc(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
 
-function getMonths() {
-  const months = [...new Set(allCharges.map(r=>r['Created']?.slice(0,7)).filter(Boolean))].sort();
-  return months;
-}
-
-function renderAll() {
-  renderOverview();
-  renderMonthly();
-  renderCities();
-  renderMembership();
-}
-
-function renderMonthPills(containerId, current, callback) {
+function pills(containerId, cur) {
   const months = getMonths();
   const el = document.getElementById(containerId);
   if(!el) return;
-  el.innerHTML = `<button class="month-pill all ${current==='all'?'active':''}" onclick="(${callback.toString()})('all')">YTD</button>` +
-    months.map(m=>`<button class="month-pill ${current===m?'active':''}" onclick="(${callback.toString()})('${m}')">${MONTHS[m]||m}</button>`).join('');
+  el.innerHTML = months.map(m=>`<button class="mpill${cur===m?' active':''}" onclick="selMonth='${m}';renderAll()">${MONTHS[m]||m}</button>`).join('')
+    + `<button class="mpill${cur==='all'?' active':''}" onclick="selMonth='all';renderAll()">YTD</button>`;
+}
+
+function renderAll() {
+  renderOv(); renderMo(); renderCi(); renderMe();
 }
 
 // ── OVERVIEW ──
-function renderOverview() {
-  const charges = getCharges(selectedMonth);
-  const matchRev = charges.filter(r=>r['Type']==='match').reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
-  const subRev = charges.filter(r=>r['Type']==='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
-  const otherRev = charges.filter(r=>r['Type']!=='match'&&r['Type']!=='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
-  const totalGMV = matchRev+subRev+otherRev;
-  const matchCount = charges.filter(r=>r['Type']==='match').length;
-  const subCount = charges.filter(r=>r['Type']==='').length;
-  const months = getMonths();
-  const label = selectedMonth==='all'?`YTD ${months[0]||''}–${months[months.length-1]||''}`:((MONTHS[selectedMonth]||selectedMonth)+' 2026');
+function renderOv() {
+  const ch=getCharges(selMonth);
+  const mR=ch.filter(r=>r['Type']==='match').reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
+  const sR=ch.filter(r=>r['Type']==='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
+  const oR=ch.filter(r=>r['Type']!=='match'&&r['Type']!=='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
+  const tot=mR+sR+oR;
+  const mC=ch.filter(r=>r['Type']==='match').length;
+  const sC=ch.filter(r=>r['Type']==='').length;
+  const months=getMonths();
+  const label=selMonth==='all'?'YTD':((MONTHS[selMonth]||selMonth)+' 2026');
 
-  document.getElementById('tab-overview').innerHTML = `
-    <div class="month-pills" id="overviewPills"></div>
+  document.getElementById('tab-ov').innerHTML=`
+    <div class="mpills" id="pov"></div>
     <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-t);margin-bottom:1rem;">${label}</div>
     <div class="metrics">
-      <div class="metric accent"><div class="metric-label">Gross Revenue</div><div class="metric-value">$${Math.round(totalGMV).toLocaleString()}</div><div class="metric-sub">match + membership + other</div></div>
-      <div class="metric"><div class="metric-label">Match revenue</div><div class="metric-value">$${Math.round(matchRev).toLocaleString()}</div><div class="metric-sub">${matchCount.toLocaleString()} charges</div></div>
-      <div class="metric"><div class="metric-label">Membership MRR</div><div class="metric-value">$${Math.round(subRev).toLocaleString()}</div><div class="metric-sub">${subCount} charges</div></div>
-      <div class="metric"><div class="metric-label">Other revenue</div><div class="metric-value">$${Math.round(otherRev).toLocaleString()}</div><div class="metric-sub">strikes, events, captain</div></div>
-      <div class="metric"><div class="metric-label">Avg / match charge</div><div class="metric-value">$${matchCount?Math.round(matchRev/matchCount):0}</div><div class="metric-sub">per transaction</div></div>
+      <div class="metric acc"><div class="mlabel">Gross Revenue</div><div class="mvalue">$${Math.round(tot).toLocaleString()}</div><div class="msub">match + membership + other</div></div>
+      <div class="metric"><div class="mlabel">Match revenue</div><div class="mvalue">$${Math.round(mR).toLocaleString()}</div><div class="msub">${mC.toLocaleString()} charges</div></div>
+      <div class="metric"><div class="mlabel">Membership MRR</div><div class="mvalue">$${Math.round(sR).toLocaleString()}</div><div class="msub">${sC} charges</div></div>
+      <div class="metric"><div class="mlabel">Other revenue</div><div class="mvalue">$${Math.round(oR).toLocaleString()}</div><div class="msub">strikes, events, captain</div></div>
+      <div class="metric"><div class="mlabel">Avg match charge</div><div class="mvalue">$${mC?Math.round(mR/mC):0}</div><div class="msub">per transaction</div></div>
     </div>
-    <div class="two-col">
+    <div class="two">
       <div class="card">
-        <div class="card-title">Gross revenue by month</div>
-        <div class="card-sub">Match revenue + membership MRR stacked</div>
-        <div class="legend">
-          <span><span class="leg-sq" style="background:#1a7a4a"></span>Match</span>
-          <span><span class="leg-sq" style="background:#0e9e6e"></span>Membership</span>
-          <span><span class="leg-sq" style="background:#d4830a"></span>Other</span>
-        </div>
-        <div style="position:relative;height:240px"><canvas id="ovMonthChart" role="img" aria-label="Monthly Gross revenue stacked bar chart"></canvas></div>
+        <div class="ctitle">Gross revenue by month</div>
+        <div class="csub">Match + membership + other stacked</div>
+        <div class="leg"><span><span class="lsq" style="background:#1a7a4a"></span>Match</span><span><span class="lsq" style="background:#0e9e6e"></span>Membership</span><span><span class="lsq" style="background:#d4830a"></span>Other</span></div>
+        <div style="position:relative;height:240px"><canvas id="cov1" role="img" aria-label="Monthly gross revenue"></canvas></div>
       </div>
       <div class="card">
-        <div class="card-title">Revenue mix</div>
-        <div class="card-sub">Match vs membership vs other</div>
-        <div class="legend">
-          <span><span class="leg-sq" style="background:#1a7a4a"></span>Match ${Math.round(matchRev/totalGMV*100)}%</span>
-          <span><span class="leg-sq" style="background:#0e9e6e"></span>Membership ${Math.round(subRev/totalGMV*100)}%</span>
-          <span><span class="leg-sq" style="background:#d4830a"></span>Other ${Math.round(otherRev/totalGMV*100)}%</span>
-        </div>
-        <div style="position:relative;height:200px"><canvas id="ovMixChart" role="img" aria-label="Revenue mix donut chart"></canvas></div>
+        <div class="ctitle">Revenue mix</div>
+        <div class="csub">Share of gross revenue</div>
+        <div class="leg"><span><span class="lsq" style="background:#1a7a4a"></span>Match ${Math.round(mR/tot*100)||0}%</span><span><span class="lsq" style="background:#0e9e6e"></span>Membership ${Math.round(sR/tot*100)||0}%</span><span><span class="lsq" style="background:#d4830a"></span>Other ${Math.round(oR/tot*100)||0}%</span></div>
+        <div style="position:relative;height:200px"><canvas id="cov2" role="img" aria-label="Revenue mix donut"></canvas></div>
       </div>
     </div>`;
 
-  renderMonthPills('overviewPills', selectedMonth, (m)=>{ selectedMonth=m; renderAll(); });
-
-  const months2 = getMonths();
-  const byMonth = (type) => months2.map(m => {
-    const c = allCharges.filter(r=>r['Created']?.startsWith(m)&&r['Status']==='succeeded');
-    if(type==='match') return Math.round(c.filter(r=>r['Type']==='match').reduce((s,r)=>s+parseFloat(r['Amount']||0),0));
-    if(type==='sub') return Math.round(c.filter(r=>r['Type']==='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0));
-    return Math.round(c.filter(r=>r['Type']!=='match'&&r['Type']!=='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0));
-  });
-
-  destroyChart('ovMonthChart');
-  charts['ovMonthChart'] = new Chart(document.getElementById('ovMonthChart'),{
-    type:'bar',
-    data:{labels:months2.map(m=>MONTHS[m]||m),datasets:[
-      {label:'Match',data:byMonth('match'),backgroundColor:'#1a7a4a',borderRadius:0,borderSkipped:false},
-      {label:'Membership',data:byMonth('sub'),backgroundColor:'#0e9e6e',borderRadius:0,borderSkipped:false},
-      {label:'Other',data:byMonth('other'),backgroundColor:'#d4830a',borderRadius:4,borderSkipped:'bottom'},
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' $'+ctx.parsed.y.toLocaleString()}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:tc,font:{size:11}}},y:{stacked:true,grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'}}}}
-  });
-  destroyChart('ovMixChart');
-  charts['ovMixChart'] = new Chart(document.getElementById('ovMixChart'),{
-    type:'doughnut',
-    data:{labels:['Match','Membership','Other'],datasets:[{data:[Math.round(matchRev),Math.round(subRev),Math.round(otherRev)],backgroundColor:['#1a7a4a','#0e9e6e','#d4830a'],borderWidth:0,hoverOffset:4}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` $${ctx.parsed.toLocaleString()}`}}}}
-  });
+  pills('pov', selMonth);
+  const mo=getMonths();
+  const byM=(t)=>mo.map(m=>{ const c=allCharges.filter(r=>r['Created']?.startsWith(m)&&r['Status']==='succeeded'); if(t==='m')return Math.round(c.filter(r=>r['Type']==='match').reduce((s,r)=>s+parseFloat(r['Amount']||0),0)); if(t==='s')return Math.round(c.filter(r=>r['Type']==='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0)); return Math.round(c.filter(r=>r['Type']!=='match'&&r['Type']!=='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0)); });
+  dc('cov1'); charts['cov1']=new Chart(document.getElementById('cov1'),{type:'bar',data:{labels:mo.map(m=>MONTHS[m]||m),datasets:[{label:'Match',data:byM('m'),backgroundColor:'#1a7a4a',borderRadius:0,borderSkipped:false},{label:'Sub',data:byM('s'),backgroundColor:'#0e9e6e',borderRadius:0,borderSkipped:false},{label:'Other',data:byM('o'),backgroundColor:'#d4830a',borderRadius:4,borderSkipped:'bottom'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' $'+ctx.parsed.y.toLocaleString()}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:tc,font:{size:11}}},y:{stacked:true,grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'}}}}});
+  dc('cov2'); charts['cov2']=new Chart(document.getElementById('cov2'),{type:'doughnut',data:{labels:['Match','Membership','Other'],datasets:[{data:[Math.round(mR),Math.round(sR),Math.round(oR)],backgroundColor:['#1a7a4a','#0e9e6e','#d4830a'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` $${ctx.parsed.toLocaleString()}`}}}}});
 }
 
 // ── MONTHLY ──
-function renderMonthly() {
-  const months = getMonths();
-  const rows = months.map(m => {
-    const c = allCharges.filter(r=>r['Created']?.startsWith(m));
-    const match = c.filter(r=>r['Type']==='match').reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
-    const sub = c.filter(r=>r['Type']==='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
-    const other = c.filter(r=>r['Type']!=='match'&&r['Type']!=='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
-    const total = match+sub+other;
-    const intros = c.filter(r=>r['Type']===''&&parseFloat(r['Amount']||0)<=1.5).length;
-    return {m, match, sub, other, total, intros, count:c.length};
-  });
-  const maxTotal = Math.max(...rows.map(r=>r.total));
-  const grandTotal = rows.reduce((s,r)=>s+r.total,0);
-
-  document.getElementById('tab-monthly').innerHTML = `
+function renderMo() {
+  const mo=getMonths();
+  const rows=mo.map(m=>{ const c=allCharges.filter(r=>r['Created']?.startsWith(m)&&r['Status']==='succeeded'); const mr=c.filter(r=>r['Type']==='match').reduce((s,r)=>s+parseFloat(r['Amount']||0),0); const sr=c.filter(r=>r['Type']==='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0); const or=c.filter(r=>r['Type']!=='match'&&r['Type']!=='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0); return{m,mr,sr,or,tot:mr+sr+or,intros:c.filter(r=>r['Type']===''&&parseFloat(r['Amount']||0)<=1.5).length}; });
+  const grand=rows.reduce((s,r)=>s+r.tot,0);
+  const maxT=Math.max(...rows.map(r=>r.tot),1);
+  document.getElementById('tab-mo').innerHTML=`
     <div class="card">
-      <div class="card-title">Month by month breakdown</div>
-      <div class="card-sub">All revenue types · April is partial (month in progress)</div>
-      <table class="tbl">
-        <thead><tr>
-          <th style="width:12%">Month</th>
-          <th style="width:14%">Match rev</th>
-          <th style="width:14%">Memb. MRR</th>
-          <th style="width:10%">Other</th>
-          <th style="width:12%">Gross Revenue</th>
-          <th style="width:10%">Intros</th>
-          <th style="width:28%">YTD share</th>
-        </tr></thead>
-        <tbody>${rows.map(r=>`<tr>
-          <td style="font-family:'DM Mono',monospace">${MONTHS[r.m]||r.m} 2026</td>
-          <td>$${Math.round(r.match).toLocaleString()}</td>
-          <td>$${Math.round(r.sub).toLocaleString()}</td>
-          <td>$${Math.round(r.other).toLocaleString()}</td>
-          <td><strong>$${Math.round(r.total).toLocaleString()}</strong></td>
-          <td>${r.intros}</td>
-          <td><div style="font-size:10px;color:var(--text-t);margin-bottom:2px">${Math.round(r.total/grandTotal*100)}%</div><div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(r.total/maxTotal*100)}%"></div></div></td>
-        </tr>`).join('')}
-        <tr style="font-weight:600;border-top:2px solid var(--border)">
-          <td>YTD Total</td>
-          <td>$${Math.round(rows.reduce((s,r)=>s+r.match,0)).toLocaleString()}</td>
-          <td>$${Math.round(rows.reduce((s,r)=>s+r.sub,0)).toLocaleString()}</td>
-          <td>$${Math.round(rows.reduce((s,r)=>s+r.other,0)).toLocaleString()}</td>
-          <td><strong>$${Math.round(grandTotal).toLocaleString()}</strong></td>
-          <td>${rows.reduce((s,r)=>s+r.intros,0)}</td>
-          <td></td>
-        </tr></tbody>
-      </table>
+      <div class="ctitle">Month by month</div>
+      <div class="csub">All revenue types · April is partial</div>
+      <table class="tbl"><thead><tr><th style="width:12%">Month</th><th style="width:15%">Match</th><th style="width:15%">Membership</th><th style="width:10%">Other</th><th style="width:13%">Total</th><th style="width:10%">Intros</th><th style="width:25%">YTD share</th></tr></thead>
+      <tbody>${rows.map(r=>`<tr><td style="font-family:'DM Mono',monospace">${MONTHS[r.m]||r.m}</td><td>$${Math.round(r.mr).toLocaleString()}</td><td>$${Math.round(r.sr).toLocaleString()}</td><td>$${Math.round(r.or).toLocaleString()}</td><td><strong>$${Math.round(r.tot).toLocaleString()}</strong></td><td>${r.intros}</td><td><div style="font-size:10px;color:var(--text-t);margin-bottom:2px">${Math.round(r.tot/grand*100)}%</div><div class="bar"><div class="bfill" style="width:${Math.round(r.tot/maxT*100)}%"></div></div></td></tr>`).join('')}
+      <tr style="font-weight:600"><td>YTD</td><td>$${Math.round(rows.reduce((s,r)=>s+r.mr,0)).toLocaleString()}</td><td>$${Math.round(rows.reduce((s,r)=>s+r.sr,0)).toLocaleString()}</td><td>$${Math.round(rows.reduce((s,r)=>s+r.or,0)).toLocaleString()}</td><td><strong>$${Math.round(grand).toLocaleString()}</strong></td><td>${rows.reduce((s,r)=>s+r.intros,0)}</td><td></td></tr>
+      </tbody></table>
     </div>
-    <div class="card">
-      <div class="card-title">Match vs membership trend</div>
-      <div class="legend">
-        <span><span class="leg-sq" style="background:#1a7a4a"></span>Match revenue</span>
-        <span><span class="leg-sq" style="background:#0e9e6e;border:1px dashed #0e9e6e"></span>Membership MRR</span>
-      </div>
-      <div style="position:relative;height:260px"><canvas id="monthTrendChart" role="img" aria-label="Line chart of match revenue and membership MRR by month"></canvas></div>
-    </div>`;
-
-  destroyChart('monthTrendChart');
-  charts['monthTrendChart'] = new Chart(document.getElementById('monthTrendChart'),{
-    type:'line',
-    data:{labels:rows.map(r=>MONTHS[r.m]||r.m),datasets:[
-      {label:'Match',data:rows.map(r=>Math.round(r.match)),borderColor:'#1a7a4a',backgroundColor:'rgba(26,122,74,0.08)',tension:.35,pointRadius:4,pointBackgroundColor:'#1a7a4a',fill:true,borderWidth:2},
-      {label:'Membership',data:rows.map(r=>Math.round(r.sub)),borderColor:'#0e9e6e',backgroundColor:'rgba(14,158,110,0.06)',tension:.35,pointRadius:4,pointBackgroundColor:'#0e9e6e',fill:true,borderWidth:2,borderDash:[5,3]},
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' $'+ctx.parsed.y.toLocaleString()}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:11}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'},beginAtZero:true}}}
-  });
+    <div class="card"><div class="ctitle">Match vs membership trend</div><div class="leg"><span><span class="lsq" style="background:#1a7a4a"></span>Match revenue</span><span><span class="lsq" style="background:#0e9e6e;"></span>Membership MRR</span></div><div style="position:relative;height:260px"><canvas id="cmo1" role="img" aria-label="Monthly revenue trend"></canvas></div></div>`;
+  dc('cmo1'); charts['cmo1']=new Chart(document.getElementById('cmo1'),{type:'line',data:{labels:rows.map(r=>MONTHS[r.m]||r.m),datasets:[{label:'Match',data:rows.map(r=>Math.round(r.mr)),borderColor:'#1a7a4a',backgroundColor:'rgba(26,122,74,0.08)',tension:.35,pointRadius:4,pointBackgroundColor:'#1a7a4a',fill:true,borderWidth:2},{label:'Membership',data:rows.map(r=>Math.round(r.sr)),borderColor:'#0e9e6e',backgroundColor:'rgba(14,158,110,0.06)',tension:.35,pointRadius:4,pointBackgroundColor:'#0e9e6e',fill:true,borderWidth:2,borderDash:[5,3]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' $'+ctx.parsed.y.toLocaleString()}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:11}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'},beginAtZero:true}}}});
 }
 
 // ── CITIES ──
-function renderCities() {
-  const charges = getCharges(selectedMonth);
-  const matchCharges = charges.filter(r=>r['Type']==='match');
-  const cityRev = {};
-  const cityCount = {};
-  CITY_ORDER.forEach(c=>{cityRev[c]=0;cityCount[c]=0;});
-  let untagged = 0;
-  matchCharges.forEach(r=>{
-    const city = cityFromCharge(r);
-    const amt = parseFloat(r['Amount']||0);
-    if(city && cityRev[city]!==undefined){cityRev[city]+=amt;cityCount[city]++;}
-    else untagged+=amt;
-  });
-  const totalMatch = Object.values(cityRev).reduce((s,v)=>s+v,0);
-  const maxRev = Math.max(...Object.values(cityRev));
-  const months = getMonths();
-  const label = selectedMonth==='all'?`YTD (${months[0]}–${months[months.length-1]})`:((MONTHS[selectedMonth]||selectedMonth)+' 2026');
-
-  document.getElementById('tab-cities').innerHTML = `
-    <div class="month-pills" id="citiesPills"></div>
+function renderCi() {
+  const ch=getCharges(selMonth).filter(r=>r['Type']==='match');
+  const rev={},cnt={};
+  CITY_ORDER.forEach(c=>{rev[c]=0;cnt[c]=0;});
+  let unt=0;
+  ch.forEach(r=>{ const c=cityFromCharge(r); const a=parseFloat(r['Amount']||0); if(c&&rev[c]!==undefined){rev[c]+=a;cnt[c]++;}else unt+=a; });
+  const tot=Object.values(rev).reduce((s,v)=>s+v,0);
+  const maxR=Math.max(...Object.values(rev),1);
+  const mo=getMonths();
+  const label=selMonth==='all'?'YTD':((MONTHS[selMonth]||selMonth)+' 2026');
+  document.getElementById('tab-ci').innerHTML=`
+    <div class="mpills" id="pci"></div>
     <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-t);margin-bottom:1rem;">${label} · match revenue only</div>
-    <div class="two-col">
-      <div class="card">
-        <div class="card-title">Match revenue by city</div>
-        <div style="position:relative;height:280px"><canvas id="cityRevChart" role="img" aria-label="Horizontal bar chart of match revenue by city"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-title">City breakdown</div>
-        <div class="card-sub">Match revenue · charges · share of total</div>
-        <table class="tbl">
-          <thead><tr><th style="width:35%">City</th><th style="width:20%">Revenue</th><th style="width:15%">Charges</th><th style="width:30%">Share</th></tr></thead>
-          <tbody>${CITY_ORDER.map(c=>{
-            const pct = Math.round(cityRev[c]/maxRev*100);
-            const share = Math.round(cityRev[c]/totalMatch*100);
-            return `<tr><td>${c}</td><td>$${Math.round(cityRev[c]).toLocaleString()}</td><td>${cityCount[c]}</td><td><div style="font-size:10px;color:var(--text-t);margin-bottom:2px">${share}%</div><div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div></td></tr>`;
-          }).join('')}
-          ${untagged>0?`<tr><td style="color:var(--text-t)">Untagged</td><td style="color:var(--text-t)">$${Math.round(untagged).toLocaleString()}</td><td style="color:var(--text-t)">—</td><td></td></tr>`:''}
-          </tbody>
-        </table>
+    <div class="two">
+      <div class="card"><div class="ctitle">Match revenue by city</div><div style="position:relative;height:280px"><canvas id="cci1" role="img" aria-label="City revenue bar chart"></canvas></div></div>
+      <div class="card"><div class="ctitle">City breakdown</div><div class="csub">Match revenue · charges · share</div>
+        <table class="tbl"><thead><tr><th style="width:35%">City</th><th style="width:22%">Revenue</th><th style="width:15%">Charges</th><th style="width:28%">Share</th></tr></thead>
+        <tbody>${CITY_ORDER.map(c=>`<tr><td>${c}</td><td>$${Math.round(rev[c]).toLocaleString()}</td><td>${cnt[c]}</td><td><div style="font-size:10px;color:var(--text-t);margin-bottom:2px">${Math.round(rev[c]/tot*100)||0}%</div><div class="bar"><div class="bfill" style="width:${Math.round(rev[c]/maxR*100)}%"></div></div></td></tr>`).join('')}
+        ${unt>0?`<tr><td style="color:var(--text-t)">Untagged</td><td style="color:var(--text-t)">$${Math.round(unt).toLocaleString()}</td><td style="color:var(--text-t)">—</td><td></td></tr>`:''}
+        </tbody></table>
       </div>
     </div>
-    <div class="card">
-      <div class="card-title">City revenue by month</div>
-      <div style="position:relative;height:280px"><canvas id="citiesMonthChart" role="img" aria-label="Line chart of match revenue by city over months"></canvas></div>
-    </div>`;
-
-  renderMonthPills('citiesPills', selectedMonth, (m)=>{ selectedMonth=m; renderAll(); });
-
-  destroyChart('cityRevChart');
-  charts['cityRevChart'] = new Chart(document.getElementById('cityRevChart'),{
-    type:'bar',
-    data:{labels:CITY_ORDER,datasets:[{data:CITY_ORDER.map(c=>Math.round(cityRev[c])),backgroundColor:'#1a7a4a',borderRadius:4,borderSkipped:false}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' $'+ctx.parsed.x.toLocaleString()}}},scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'}},y:{grid:{display:false},ticks:{color:tc,font:{size:10}}}}}
-  });
-
-  const cityColors = ['#1a7a4a','#0e9e6e','#2980b9','#d4830a','#8e44ad','#c0392b','#16a085'];
-  const months2 = getMonths();
-  destroyChart('citiesMonthChart');
-  charts['citiesMonthChart'] = new Chart(document.getElementById('citiesMonthChart'),{
-    type:'line',
-    data:{labels:months2.map(m=>MONTHS[m]||m),datasets:CITY_ORDER.map((city,i)=>({
-      label:city,
-      data:months2.map(m=>{
-        const c=allCharges.filter(r=>r['Created']?.startsWith(m)&&r['Type']==='match'&&r['Status']==='succeeded');
-        return Math.round(c.filter(r=>cityFromCharge(r)===city).reduce((s,r)=>s+parseFloat(r['Amount']||0),0));
-      }),
-      borderColor:cityColors[i],tension:.35,pointRadius:3,borderWidth:2,fill:false
-    }))},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:11}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'},beginAtZero:true}}}
-  });
+    <div class="card"><div class="ctitle">City revenue by month</div><div style="position:relative;height:280px"><canvas id="cci2" role="img" aria-label="City revenue over time"></canvas></div></div>`;
+  pills('pci',selMonth);
+  dc('cci1'); charts['cci1']=new Chart(document.getElementById('cci1'),{type:'bar',data:{labels:CITY_ORDER,datasets:[{data:CITY_ORDER.map(c=>Math.round(rev[c])),backgroundColor:'#1a7a4a',borderRadius:4,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' $'+ctx.parsed.x.toLocaleString()}}},scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'}},y:{grid:{display:false},ticks:{color:tc,font:{size:10}}}}}});
+  dc('cci2'); charts['cci2']=new Chart(document.getElementById('cci2'),{type:'line',data:{labels:mo.map(m=>MONTHS[m]||m),datasets:CITY_ORDER.map((city,i)=>({label:city,data:mo.map(m=>{ const c=allCharges.filter(r=>r['Created']?.startsWith(m)&&r['Type']==='match'&&r['Status']==='succeeded'); return Math.round(c.filter(r=>cityFromCharge(r)===city).reduce((s,r)=>s+parseFloat(r['Amount']||0),0)); }),borderColor:COLORS[i],tension:.35,pointRadius:3,borderWidth:2,fill:false}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:11}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'},beginAtZero:true}}}});
 }
 
 // ── MEMBERSHIP ──
-function renderMembership() {
-  const charges = getCharges(selectedMonth);
-  const subs = charges.filter(r=>r['Type']==='');
-  const totalMRR = subs.reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
-  const intros = subs.filter(r=>parseFloat(r['Amount']||0)<=1.5);
-  const full = subs.filter(r=>parseFloat(r['Amount']||0)>1.5);
-  const introRev = intros.reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
-  const fullRev = full.reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
-  const months = getMonths();
-  const label = selectedMonth==='all'?`YTD`:((MONTHS[selectedMonth]||selectedMonth)+' 2026');
-
-  const mrrByMonth = months.map(m=>{
-    const c = allCharges.filter(r=>r['Created']?.startsWith(m)&&r['Type']===''&&r['Status']==='succeeded');
-    const total = c.reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
-    const i = c.filter(r=>parseFloat(r['Amount']||0)<=1.5).length;
-    const f = c.filter(r=>parseFloat(r['Amount']||0)>1.5).length;
-    return {m, total, intros:i, full:f};
-  });
-
-  document.getElementById('tab-membership').innerHTML = `
-    <div class="month-pills" id="memberPills"></div>
+function renderMe() {
+  const ch=getCharges(selMonth).filter(r=>r['Type']==='');
+  const tot=ch.reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
+  const intros=ch.filter(r=>parseFloat(r['Amount']||0)<=1.5);
+  const full=ch.filter(r=>parseFloat(r['Amount']||0)>1.5);
+  const mo=getMonths();
+  const mrows=mo.map(m=>{ const c=allCharges.filter(r=>r['Created']?.startsWith(m)&&r['Type']===''&&r['Status']==='succeeded'); return{m,tot:c.reduce((s,r)=>s+parseFloat(r['Amount']||0),0),intros:c.filter(r=>parseFloat(r['Amount']||0)<=1.5).length,full:c.filter(r=>parseFloat(r['Amount']||0)>1.5).length}; });
+  const label=selMonth==='all'?'YTD':((MONTHS[selMonth]||selMonth)+' 2026');
+  document.getElementById('tab-me').innerHTML=`
+    <div class="mpills" id="pme"></div>
     <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-t);margin-bottom:1rem;">${label}</div>
     <div class="metrics">
-      <div class="metric accent"><div class="metric-label">Total MRR</div><div class="metric-value">$${Math.round(totalMRR).toLocaleString()}</div><div class="metric-sub">${subs.length} charges</div></div>
-      <div class="metric"><div class="metric-label">Full / prorated</div><div class="metric-value">${full.length}</div><div class="metric-sub">$${Math.round(fullRev).toLocaleString()} revenue</div></div>
-      <div class="metric"><div class="metric-label">$1 intros</div><div class="metric-value">${intros.length}</div><div class="metric-sub">$${Math.round(introRev).toLocaleString()} revenue</div></div>
-      <div class="metric"><div class="metric-label">Avg charge</div><div class="metric-value">$${subs.length?Math.round(totalMRR/subs.length):0}</div><div class="metric-sub">per membership charge</div></div>
-      <div class="metric"><div class="metric-label">Intro rate</div><div class="metric-value">${subs.length?Math.round(intros.length/subs.length*100):0}%</div><div class="metric-sub">of all membership charges</div></div>
+      <div class="metric acc"><div class="mlabel">Total MRR</div><div class="mvalue">$${Math.round(tot).toLocaleString()}</div><div class="msub">${ch.length} charges</div></div>
+      <div class="metric"><div class="mlabel">Full / prorated</div><div class="mvalue">${full.length}</div><div class="msub">$${Math.round(full.reduce((s,r)=>s+parseFloat(r['Amount']||0),0)).toLocaleString()}</div></div>
+      <div class="metric"><div class="mlabel">$1 intros</div><div class="mvalue">${intros.length}</div><div class="msub">$${Math.round(intros.reduce((s,r)=>s+parseFloat(r['Amount']||0),0)).toLocaleString()}</div></div>
+      <div class="metric"><div class="mlabel">Avg charge</div><div class="mvalue">$${ch.length?Math.round(tot/ch.length):0}</div><div class="msub">per membership charge</div></div>
+      <div class="metric"><div class="mlabel">Intro rate</div><div class="mvalue">${ch.length?Math.round(intros.length/ch.length*100):0}%</div><div class="msub">of all membership charges</div></div>
     </div>
-    <div class="two-col">
-      <div class="card">
-        <div class="card-title">Membership MRR by month</div>
-        <div class="legend">
-          <span><span class="leg-sq" style="background:#1a7a4a"></span>Full / prorated</span>
-          <span><span class="leg-sq" style="background:#d4830a"></span>$1 intros</span>
-        </div>
-        <div style="position:relative;height:220px"><canvas id="mrrMonthChart" role="img" aria-label="Stacked bar chart of MRR by month"></canvas></div>
-      </div>
-      <div class="card">
-        <div class="card-title">Monthly membership summary</div>
-        <table class="tbl">
-          <thead><tr><th style="width:20%">Month</th><th style="width:20%">MRR</th><th style="width:20%">Full</th><th style="width:20%">Intros</th><th style="width:20%">Intro %</th></tr></thead>
-          <tbody>${mrrByMonth.map(r=>`<tr>
-            <td style="font-family:'DM Mono',monospace">${MONTHS[r.m]||r.m}</td>
-            <td>$${Math.round(r.total).toLocaleString()}</td>
-            <td>${r.full}</td>
-            <td>${r.intros}</td>
-            <td>${r.full+r.intros?Math.round(r.intros/(r.full+r.intros)*100):0}%</td>
-          </tr>`).join('')}</tbody>
+    <div class="two">
+      <div class="card"><div class="ctitle">MRR by month</div><div class="leg"><span><span class="lsq" style="background:#1a7a4a"></span>Full/prorated</span><span><span class="lsq" style="background:#d4830a"></span>$1 intros</span></div><div style="position:relative;height:220px"><canvas id="cme1" role="img" aria-label="Monthly MRR chart"></canvas></div></div>
+      <div class="card"><div class="ctitle">Monthly summary</div>
+        <table class="tbl"><thead><tr><th style="width:20%">Month</th><th style="width:22%">MRR</th><th style="width:18%">Full</th><th style="width:18%">Intros</th><th style="width:22%">Intro %</th></tr></thead>
+        <tbody>${mrows.map(r=>`<tr><td style="font-family:'DM Mono',monospace">${MONTHS[r.m]||r.m}</td><td>$${Math.round(r.tot).toLocaleString()}</td><td>${r.full}</td><td>${r.intros}</td><td>${r.full+r.intros?Math.round(r.intros/(r.full+r.intros)*100):0}%</td></tr>`).join('')}</tbody>
         </table>
       </div>
     </div>`;
-
-  renderMonthPills('memberPills', selectedMonth, (m)=>{ selectedMonth=m; renderAll(); });
-
-  destroyChart('mrrMonthChart');
-  charts['mrrMonthChart'] = new Chart(document.getElementById('mrrMonthChart'),{
-    type:'bar',
-    data:{labels:mrrByMonth.map(r=>MONTHS[r.m]||r.m),datasets:[
-      {label:'Full/prorated',data:mrrByMonth.map(r=>{
-        const c=allCharges.filter(x=>x['Created']?.startsWith(r.m)&&x['Type']===''&&x['Status']==='succeeded'&&parseFloat(x['Amount']||0)>1.5);
-        return Math.round(c.reduce((s,x)=>s+parseFloat(x['Amount']||0),0));
-      }),backgroundColor:'#1a7a4a',borderRadius:0,borderSkipped:false},
-      {label:'Intros',data:mrrByMonth.map(r=>Math.round(r.intros*1.08)),backgroundColor:'#d4830a',borderRadius:4,borderSkipped:'bottom'},
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' $'+ctx.parsed.y.toLocaleString()}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:tc,font:{size:11}}},y:{stacked:true,grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'}}}}
-  });
+  pills('pme',selMonth);
+  dc('cme1'); charts['cme1']=new Chart(document.getElementById('cme1'),{type:'bar',data:{labels:mrows.map(r=>MONTHS[r.m]||r.m),datasets:[{label:'Full',data:mrows.map(r=>{ const c=allCharges.filter(x=>x['Created']?.startsWith(r.m)&&x['Type']===''&&x['Status']==='succeeded'&&parseFloat(x['Amount']||0)>1.5); return Math.round(c.reduce((s,x)=>s+parseFloat(x['Amount']||0),0)); }),backgroundColor:'#1a7a4a',borderRadius:0,borderSkipped:false},{label:'Intros',data:mrows.map(r=>Math.round(r.intros*1.09)),backgroundColor:'#d4830a',borderRadius:4,borderSkipped:'bottom'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' $'+ctx.parsed.y.toLocaleString()}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:tc,font:{size:11}}},y:{stacked:true,grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'}}}}});
 }
 
-function showTab(name, e) {
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('tab-'+name).classList.add('active');
-  if(e) e.target.classList.add('active');
+function showTab(id, el) {
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
 }
-
-function initDashboard() { loadFromGitHub(); }
 </script>
 </body>
 </html>
