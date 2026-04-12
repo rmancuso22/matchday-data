@@ -291,27 +291,22 @@ if (sessionStorage.getItem('md_auth') === '1') {
 </div>
 
 <div class="upload-bar">
-  <div class="upload-label">Load data:</div>
+  <div class="upload-label">Monthly upload:</div>
   <div class="upload-group">
     <label>Retool (user analysis)</label>
     <input type="file" accept=".csv" id="retoolFile">
     <span class="upload-status" id="retoolStatus">Not loaded</span>
   </div>
   <div class="upload-group">
-    <label>Stripe charges</label>
-    <input type="file" accept=".csv" id="stripeFile">
-    <span class="upload-status" id="stripeStatus">Not loaded</span>
-  </div>
-  <div class="upload-group">
-    <label>Stripe customers</label>
-    <input type="file" accept=".csv" id="customersFile">
-    <span class="upload-status" id="customersStatus">Not loaded</span>
-  </div>
-  <div class="upload-group">
     <label>Members</label>
     <input type="file" accept=".csv" id="membersFile">
     <span class="upload-status" id="membersStatus">Not loaded</span>
   </div>
+  <div style="width:1px;background:rgba(255,255,255,0.15);margin:0 4px;align-self:stretch;"></div>
+  <div class="upload-label">Auto-loaded:</div>
+  <span class="upload-status" id="stripeStatus">Loading Stripe...</span>
+  <span class="upload-status" id="customersStatus">Loading customers...</span>
+  <button onclick="reloadStripe()" style="font-size:11px;padding:3px 10px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);cursor:pointer;">&#8635; Refresh Stripe</button>
 </div>
 
 <div class="nav">
@@ -936,7 +931,40 @@ function renderMembership({month, cities, activeByCity, mrrByCity, canceledByCit
   });
 }
 
-// ── FILE LOADERS ───────────────────────────────────────────────────────────
+// ── GOOGLE SHEETS AUTO-LOAD ────────────────────────────────────────────────
+const STRIPE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSoSwR1K04-_SV5cFXb9NNgCnOZ8MmZ2vAn0NlMRZNFe9VDMrLDrPnDtPDdd4uyPactBljHxTvJCYN_/pub?gid=406474328&single=true&output=csv';
+const CUSTOMERS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSoSwR1K04-_SV5cFXb9NNgCnOZ8MmZ2vAn0NlMRZNFe9VDMrLDrPnDtPDdd4uyPactBljHxTvJCYN_/pub?gid=1285495823&single=true&output=csv';
+
+function setStatus(id, text, loaded) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'upload-status' + (loaded ? ' loaded' : '');
+}
+
+async function fetchCSV(url, parser, stateKey, statusId, label) {
+  try {
+    setStatus(statusId, 'Loading ' + label + '...', false);
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    state[stateKey] = parser(text);
+    setStatus(statusId, '✓ ' + label + ' (live)', true);
+    processAll();
+  } catch(err) {
+    setStatus(statusId, '✗ Failed to load ' + label, false);
+    console.error(err);
+  }
+}
+
+function reloadStripe() {
+  fetchCSV(STRIPE_URL, parseStripe, 'stripe', 'stripeStatus', 'Stripe charges');
+  fetchCSV(CUSTOMERS_URL, parseCustomers, 'customers', 'customersStatus', 'Customers');
+}
+
+// Auto-load on page open
+reloadStripe();
+
+// ── FILE LOADERS (manual — Retool + Members) ───────────────────────────────
 function loadFile(inputId, statusId, parser, stateKey) {
   document.getElementById(inputId).addEventListener('change', function(e) {
     const file = e.target.files[0];
@@ -959,8 +987,6 @@ function loadFile(inputId, statusId, parser, stateKey) {
 }
 
 loadFile('retoolFile','retoolStatus',parseRetool,'retool');
-loadFile('stripeFile','stripeStatus',parseStripe,'stripe');
-loadFile('customersFile','customersStatus',parseCustomers,'customers');
 loadFile('membersFile','membersStatus',parseMembers,'members');
 
 // ── TAB NAVIGATION ─────────────────────────────────────────────────────────
@@ -973,3 +999,4 @@ function showTab(name) {
 </script>
 </body>
 </html>
+
