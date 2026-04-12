@@ -122,7 +122,7 @@ if(sessionStorage.getItem('md_auth')==='1'){
 
 <div class="status-bar">
   <div class="status-dot" id="statusDot" style="background:#888;animation:none;"></div>
-  <span id="statusText">Connecting to Stripe data...</span>
+  <span id="statusText">Upload your Stripe charges CSV to get started — download from Coefficient anytime</span>
 </div>
 
 <div class="nav">
@@ -133,14 +133,18 @@ if(sessionStorage.getItem('md_auth')==='1'){
 </div>
 
 <div class="main">
-  <div class="section active" id="tab-overview"><div class="loading"><h3>Loading Stripe data...</h3><p>Fetching live data from Google Sheets</p></div></div>
-  <div class="section" id="tab-monthly"><div class="loading"><h3>Loading...</h3></div></div>
-  <div class="section" id="tab-cities"><div class="loading"><h3>Loading...</h3></div></div>
-  <div class="section" id="tab-membership"><div class="loading"><h3>Loading...</h3></div></div>
+  <div class="section active" id="tab-overview"><div class="loading"><h3>Upload your Stripe charges CSV</h3><p>Download from Coefficient → upload using the button in the top right</p></div></div>
+  <div class="section" id="tab-monthly"><div class="loading"><h3>Upload your Stripe charges CSV to get started</h3></div></div>
+  <div class="section" id="tab-cities"><div class="loading"><h3>Upload your Stripe charges CSV to get started</h3></div></div>
+  <div class="section" id="tab-membership"><div class="loading"><h3>Upload your Stripe charges CSV to get started</h3></div></div>
 </div>
 
 <script>
-const STRIPE_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSoSwR1K04-_SV5cFXb9NNgCnOZ8MmZ2vAn0NlMRZNFe9VDMrLDrPnDtPDdd4uyPactBljHxTvJCYN_/pub?gid=406474328&single=true&output=csv';
+
+const GITHUB_TOKEN = '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';
+const GITHUB_REPO = 'rmancuso22/matchday-data';
+const GITHUB_FILE = 'stripe_charges.csv';
+const GITHUB_API = 'https://api.github.com/repos/' + GITHUB_REPO + '/contents/' + GITHUB_FILE;
 
 const FIELD_CITY = {
   'San Juan Diego':'Austin','Premier match at SJD':'Austin','NEMP - Field 12':'Austin',
@@ -183,38 +187,99 @@ function cityFromCharge(r) {
 function destroyChart(id){ if(charts[id]){charts[id].destroy();delete charts[id];} }
 const gc = 'rgba(0,0,0,0.05)', tc = '#8aa398';
 
-async function loadStripeData() {
-  document.getElementById('statusDot').style.cssText='width:6px;height:6px;border-radius:50%;background:#888;animation:none;';
-  document.getElementById('statusText').textContent = 'Fetching Stripe data...';
+let lastFileSha = null;
+
+async function loadFromGitHub() {
   try {
-    const proxies = [
-      'https://corsproxy.io/?' + STRIPE_URL,
-      'https://api.allorigins.win/raw?url=' + encodeURIComponent(STRIPE_URL),
-      'https://thingproxy.freeboard.io/fetch/' + STRIPE_URL,
-    ];
-    let text = null;
-    for (const proxyUrl of proxies) {
-      try {
-        const r = await fetch(proxyUrl);
-        if (r.ok) { const t = await r.text(); if (t && t.length > 200) { text = t; break; } }
-      } catch(e) { console.warn('Proxy failed:', proxyUrl, e.message); }
+    document.getElementById('statusText').textContent = 'Loading saved data...';
+    const res = await fetch(GITHUB_API, {
+      headers: { 'Authorization': 'token ' + GITHUB_TOKEN, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (!res.ok) throw new Error('No saved data yet');
+    const json = await res.json();
+    lastFileSha = json.sha;
+    const text = atob(json.content.replace(/\n/g, ''));
+    processCSV(text, json.name, json.committer?.date || '');
+    // Show last updated from commit
+    const commitRes = await fetch('https://api.github.com/repos/' + GITHUB_REPO + '/commits?path=' + GITHUB_FILE + '&per_page=1', {
+      headers: { 'Authorization': 'token ' + GITHUB_TOKEN }
+    });
+    if (commitRes.ok) {
+      const commits = await commitRes.json();
+      if (commits[0]) {
+        const date = new Date(commits[0].commit.author.date);
+        document.getElementById('lastUpdated').textContent = 'Last updated ' + date.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      }
     }
-    if (!text) throw new Error('All proxies failed - check console');
-    const lines = text.split('\n').filter(l=>l.trim());
-    let start = 0;
-    for(let i=0;i<Math.min(5,lines.length);i++){ if(lines[i].startsWith('Amount')){start=i;break;} }
-    const csv = lines.slice(start).join('\n');
-    allCharges = parseCSV(csv).filter(r=>r['Status']==='succeeded');
-    document.getElementById('statusDot').style.cssText='width:6px;height:6px;border-radius:50%;background:#2ecc71;animation:pulse 2s infinite;';
-    document.getElementById('statusText').textContent = `Live data · ${allCharges.length.toLocaleString()} charges loaded`;
-    document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
-    renderAll();
   } catch(err) {
-    document.getElementById('statusDot').style.cssText='width:6px;height:6px;border-radius:50%;background:#c0392b;animation:none;';
-    document.getElementById('statusText').textContent = 'Failed to load — check connection';
-    console.error(err);
+    document.getElementById('statusDot').style.cssText='width:6px;height:6px;border-radius:50%;background:#888;animation:none;';
+    document.getElementById('statusText').textContent = 'No data yet — upload a Stripe CSV to get started';
+    document.getElementById('lastUpdated').textContent = 'No data loaded';
+    console.log('No GitHub data:', err.message);
   }
 }
+
+async function pushToGitHub(text, filename) {
+  document.getElementById('statusText').textContent = 'Saving to GitHub...';
+  const encoded = btoa(unescape(encodeURIComponent(text)));
+  const now = new Date().toISOString();
+  const body = {
+    message: 'Update Stripe data ' + now.slice(0,10),
+    content: encoded,
+    ...(lastFileSha ? {sha: lastFileSha} : {})
+  };
+  const res = await fetch(GITHUB_API, {
+    method: 'PUT',
+    headers: {
+      'Authorization': 'token ' + GITHUB_TOKEN,
+      'Content-Type': 'application/json',
+      'Accept': 'application/vnd.github.v3+json'
+    },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || 'GitHub API error');
+  }
+  const json = await res.json();
+  lastFileSha = json.content.sha;
+  document.getElementById('lastUpdated').textContent = 'Last updated ' + new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+function processCSV(text, filename, updatedAt) {
+  const lines = text.split('\n').filter(l=>l.trim());
+  let start = 0;
+  for(let i=0;i<Math.min(5,lines.length);i++){ if(lines[i].startsWith('Amount')){start=i;break;} }
+  const csv = lines.slice(start).join('\n');
+  allCharges = parseCSV(csv).filter(r=>r['Status']==='succeeded');
+  document.getElementById('statusDot').style.cssText='width:6px;height:6px;border-radius:50%;background:#2ecc71;animation:pulse 2s infinite;';
+  document.getElementById('statusText').textContent = allCharges.length.toLocaleString() + ' charges loaded';
+  renderAll();
+}
+
+function handleUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  document.getElementById('statusDot').style.cssText='width:6px;height:6px;border-radius:50%;background:#888;animation:none;';
+  document.getElementById('statusText').textContent = 'Reading ' + file.name + '...';
+  const reader = new FileReader();
+  reader.onload = async function(e) {
+    try {
+      const text = e.target.result;
+      processCSV(text, file.name, '');
+      // Push to GitHub so others see it
+      await pushToGitHub(text, file.name);
+      document.getElementById('statusText').textContent = allCharges.length.toLocaleString() + ' charges · saved to GitHub';
+    } catch(err) {
+      document.getElementById('statusDot').style.cssText='width:6px;height:6px;border-radius:50%;background:#c0392b;animation:none;';
+      document.getElementById('statusText').textContent = 'Error: ' + err.message;
+      console.error(err);
+    }
+  };
+  reader.readAsText(file);
+}
+
+function loadStripeData() { document.getElementById('stripeUpload').click(); }
 
 function parseCSV(text) {
   const lines = text.split('\n');
@@ -551,7 +616,7 @@ function showTab(name, e) {
   if(e) e.target.classList.add('active');
 }
 
-function initDashboard() { loadStripeData(); }
+function initDashboard() { loadFromGitHub(); }
 </script>
 </body>
 </html>
