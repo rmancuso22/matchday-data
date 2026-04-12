@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MatchDay — Membership</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#f4f7f5;color:#0f1f17;font-size:14px;}
+.header{background:#0f1f17;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:54px;position:sticky;top:0;z-index:50;}
+.logo{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:#2ecc71;letter-spacing:.15em;text-transform:uppercase;}
+.hright{display:flex;align-items:center;gap:8px;}
+.lupd{font-size:11px;color:rgba(255,255,255,0.35);font-family:'DM Mono',monospace;}
+.hbtn{font-size:11px;padding:5px 14px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.85);cursor:pointer;}
+.hbtn:hover{background:rgba(255,255,255,0.15);}
+.sbar{background:#1a7a4a;padding:7px 2rem;font-size:11px;color:rgba(255,255,255,0.8);display:flex;align-items:center;gap:8px;}
+.sdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:#888;}
+.nav{background:#fff;border-bottom:1px solid rgba(26,122,74,0.12);padding:0 2rem;display:flex;}
+.nt{padding:.8rem 1.1rem;font-size:12px;font-weight:500;color:#8aa398;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
+.nt.active{color:#1a7a4a;border-bottom-color:#1a7a4a;}
+.main{padding:1.25rem 2rem 3rem;max-width:1400px;margin:0 auto;}
+.sec{display:none;}.sec.active{display:block;}
+.metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:1.25rem;}
+.m{background:#fff;border:1px solid rgba(26,122,74,0.12);border-radius:10px;padding:13px 15px;}
+.m.acc{border-left:3px solid #1a7a4a;border-radius:0 10px 10px 0;}
+.ml{font-size:10px;color:#8aa398;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+.mv{font-size:21px;font-weight:600;color:#0f1f17;font-family:'DM Mono',monospace;}
+.ms{font-size:11px;color:#8aa398;margin-top:3px;}
+.card{background:#fff;border:1px solid rgba(26,122,74,0.12);border-radius:12px;padding:1.1rem;margin-bottom:1rem;}
+.ct{font-size:12px;font-weight:600;color:#0f1f17;margin-bottom:.25rem;}
+.cs{font-size:11px;color:#8aa398;margin-bottom:.75rem;}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1rem;margin-bottom:1rem;}
+.tbl{width:100%;font-size:11px;border-collapse:collapse;table-layout:fixed;}
+.tbl th{font-size:10px;font-weight:600;color:#8aa398;text-transform:uppercase;letter-spacing:.06em;padding:0 0 7px;text-align:left;border-bottom:1px solid rgba(26,122,74,0.1);}
+.tbl th:not(:first-child){text-align:right;}
+.tbl td{padding:6px 0;border-bottom:1px solid rgba(26,122,74,0.07);color:#4a6358;}
+.tbl td:first-child{color:#0f1f17;font-weight:500;}
+.tbl td:not(:first-child){text-align:right;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr.tot td{font-weight:600;color:#0f1f17;border-top:2px solid rgba(26,122,74,0.15);border-bottom:none;}
+.bar{height:4px;background:rgba(26,122,74,0.1);border-radius:2px;overflow:hidden;margin-top:3px;}
+.bf{height:100%;border-radius:2px;background:#1a7a4a;}
+.pok{display:inline-block;font-size:9px;padding:2px 6px;border-radius:3px;background:#e8f5ee;color:#1a5c35;font-weight:600;}
+.pbad{display:inline-block;font-size:9px;padding:2px 6px;border-radius:3px;background:#fdf0ee;color:#922b1e;font-weight:600;}
+.empty{text-align:center;padding:5rem 2rem;}
+.empty h3{font-size:17px;font-weight:500;color:#4a6358;margin-bottom:.75rem;}
+.empty p{font-size:13px;color:#8aa398;margin-bottom:1.5rem;line-height:1.6;}
+.ubtn{padding:11px 26px;background:#1a7a4a;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+@media print{
+  .header,.nav,.sbar,.hbtn,.ubtn{display:none !important;}
+  body{background:white !important;}
+  .main{padding:0 !important;max-width:100% !important;}
+  .sec{display:block !important;}
+  .card{break-inside:avoid;border:1px solid #ddd !important;}
+  .two{grid-template-columns:1fr 1fr !important;}
+  @page{margin:1.5cm;}
+}
+@media(max-width:900px){.metrics{grid-template-columns:repeat(2,1fr);}.two{grid-template-columns:1fr;}.main{padding:1rem;}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">⚽ MatchDay — Membership</div>
+  <div class="hright">
+    <span class="lupd" id="lupd">No data loaded</span>
+    <input type="file" id="membersFile" accept=".csv" style="display:none;" onchange="handleMembers(event)">
+    <input type="file" id="uaFiles" accept=".csv" multiple style="display:none;" onchange="handleUA(event)">
+    <button class="hbtn" onclick="document.getElementById('membersFile').click()">Upload members CSV</button>
+    <button class="hbtn" onclick="document.getElementById('uaFiles').click()">Upload user analysis</button>
+    <button class="hbtn" onclick="window.print()">⬇ Export PDF</button>
+  </div>
+</div>
+
+<div class="sbar">
+  <div class="sdot" id="sdot"></div>
+  <span id="stxt">Upload members CSV and user analysis CSV(s) to get started</span>
+</div>
+
+<div class="nav">
+  <div class="nt active" onclick="showTab('ov',this)">Overview</div>
+  <div class="nt" onclick="showTab('ci',this)">By city</div>
+  <div class="nt" onclick="showTab('ma',this)">Match activity</div>
+  <div class="nt" onclick="showTab('ch',this)">Churn & cancellations</div>
+</div>
+
+<div class="main">
+  <div class="sec active" id="tab-ov">
+    <div class="empty"><h3>No data loaded</h3><p>Upload the members CSV and user analysis CSV(s)<br>using the buttons in the top right</p>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button class="ubtn" onclick="document.getElementById('membersFile').click()">Upload members</button>
+      <button class="ubtn" style="background:#0e9e6e;" onclick="document.getElementById('uaFiles').click()">Upload user analysis</button>
+    </div></div>
+  </div>
+  <div class="sec" id="tab-ci"><div class="empty"><h3>Upload data to get started</h3></div></div>
+  <div class="sec" id="tab-ma"><div class="empty"><h3>Upload both files to see match activity</h3></div></div>
+  <div class="sec" id="tab-ch"><div class="empty"><h3>Upload data to get started</h3></div></div>
+</div>
+
+<script>
+const CITY_ORDER=['Austin','Houston','San Antonio','St. Louis','Dallas / Fort Worth','Atlanta','Oklahoma City'];
+const CITY_SHORT={'Austin':'Austin','Houston':'Houston','San Antonio':'San Antonio','St. Louis':'St. Louis','Dallas / Fort Worth':'DFW','Atlanta':'Atlanta','Oklahoma City':'OKC'};
+const CITY_COLORS=['#1a7a4a','#0e9e6e','#2980b9','#d4830a','#8e44ad','#c0392b','#16a085'];
+const MONTH_NAMES={'2026-01':'Jan 2026','2026-02':'Feb 2026','2026-03':'Mar 2026','2026-04':'Apr 2026','2026-05':'May 2026','2026-06':'Jun 2026','2026-07':'Jul 2026','2026-08':'Aug 2026','2026-09':'Sep 2026','2026-10':'Oct 2026','2026-11':'Nov 2026','2026-12':'Dec 2026'};
+const gc='rgba(0,0,0,0.05)', tc='#8aa398';
+let members=[], uaRows=[], charts={};
+
+function getCityFromId(id){
+  for(const [p,c] of [['ATX','Austin'],['SATX','San Antonio'],['HOU','Houston'],['STL','St. Louis'],['DFW','Dallas / Fort Worth'],['ATL','Atlanta'],['OKC','Oklahoma City']]){
+    if((id||'').startsWith(p)) return c;
+  }
+  return 'Unknown';
+}
+
+function groupReason(r){
+  r=(r||'').trim().toLowerCase();
+  if(!r||['n','na','n/a','.','removed by retool',''].includes(r)) return null;
+  if(['moving','leaving','out of town','travel','vacation'].some(x=>r.includes(x))) return 'Moving / travel';
+  if(['budget','expensive','cost','money','cash','worth','price'].some(x=>r.includes(x))) return 'Budget / cost';
+  if(['time','busy','not using','use it enough'].some(x=>r.includes(x))) return 'Not enough time';
+  if(['injur','hurt','acl','surgery','sprain'].some(x=>r.includes(x))) return 'Injury';
+  if(['product','alternative','shady','unhappy'].some(x=>r.includes(x))) return 'Unhappy w/ product';
+  return 'Other';
+}
+
+function dc(id){ if(charts[id]){charts[id].destroy();delete charts[id];} }
+function fmt(n){ return Math.round(n).toLocaleString(); }
+
+function getCurrentMonth(){
+  const months=[...new Set(members.map(r=>(r['Member Activation Date']||'').slice(0,7)).filter(m=>m.match(/^\d{4}-\d{2}/)))].sort();
+  return months[months.length-1]||'';
+}
+
+function getAllMonths(){
+  const all=[...members.map(r=>(r['Member Activation Date']||'').slice(0,7)),...members.map(r=>(r['Canceled At']||'').slice(0,7))];
+  return [...new Set(all.filter(m=>m.match(/^\d{4}-\d{2}/)))].sort();
+}
+
+function getUAMonth(month){ return uaRows.filter(r=>(r['Match Start']||'').startsWith(month)); }
+
+function getMatchesPerMember(uaMonth){
+  const memberEmails=new Set(members.map(r=>r['Member Email'].trim().toLowerCase()));
+  const counts={};
+  uaMonth.filter(r=>r['Type Of Payment']==='MEMBER').forEach(r=>{
+    const email=(r['Email']||'').trim().toLowerCase();
+    if(memberEmails.has(email)) counts[email]=(counts[email]||0)+1;
+  });
+  return Object.values(counts);
+}
+
+function handleMembers(event){
+  const file=event.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const result=Papa.parse(e.target.result,{header:true,skipEmptyLines:true});
+    members=result.data.filter(r=>parseInt(r['Price']||'0')>0);
+    updateStatus(); renderAll();
+  };
+  reader.readAsText(file); event.target.value='';
+}
+
+function handleUA(event){
+  const files=Array.from(event.target.files); if(!files.length) return;
+  uaRows=[]; let loaded=0;
+  files.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=function(e){
+      const result=Papa.parse(e.target.result,{header:true,skipEmptyLines:true});
+      uaRows=uaRows.concat(result.data); loaded++;
+      if(loaded===files.length){ updateStatus(); renderAll(); }
+    };
+    reader.readAsText(file);
+  });
+  event.target.value='';
+}
+
+function updateStatus(){
+  const parts=[];
+  if(members.length) parts.push(members.length.toLocaleString()+' members');
+  if(uaRows.length) parts.push(uaRows.length.toLocaleString()+' bookings');
+  if(parts.length){
+    document.getElementById('sdot').style.background='#2ecc71';
+    document.getElementById('stxt').textContent=parts.join(' · ')+' loaded · current month snapshot';
+    document.getElementById('lupd').textContent='Loaded '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  }
+}
+
+function renderAll(){ if(!members.length) return; renderOv(); renderCi(); renderMa(); renderCh(); }
+
+function renderOv(){
+  const curMonth=getCurrentMonth();
+  const label=MONTH_NAMES[curMonth]||curMonth;
+  const activeMembers=members.filter(r=>r['Status']==='ACTIVE');
+  const newThisMonth=members.filter(r=>(r['Member Activation Date']||'').startsWith(curMonth));
+  const canceledThisMonth=members.filter(r=>(r['Canceled At']||'').startsWith(curMonth));
+
+  // Churning = ACTIVE, Canceled At from 6th of prev month through 5th of this month
+  const [cy,cm]=curMonth.split('-').map(Number);
+  const pm=cm===1?12:cm-1, py=cm===1?cy-1:cy;
+  const churnStart=new Date(py,pm-1,6), churnEnd=new Date(cy,cm-1,5);
+  const churning=activeMembers.filter(r=>{
+    const ca=(r['Canceled At']||'').slice(0,10);
+    if(!ca) return false;
+    const d=new Date(ca);
+    return d>=churnStart&&d<=churnEnd;
+  });
+
+  // Avg matches
+  const uaCur=getUAMonth(curMonth);
+  const matchCounts=getMatchesPerMember(uaCur);
+  const avgMatches=matchCounts.length?Math.round(matchCounts.reduce((s,v)=>s+v,0)/matchCounts.length*10)/10:0;
+
+  // City breakdown
+  const cityNew={},cityCancel={};
+  CITY_ORDER.forEach(c=>{cityNew[c]=0;cityCancel[c]=0;});
+  newThisMonth.forEach(r=>{const c=getCityFromId(r['Member ID']);if(cityNew[c]!==undefined)cityNew[c]++;});
+  canceledThisMonth.forEach(r=>{const c=getCityFromId(r['Member ID']);if(cityCancel[c]!==undefined)cityCancel[c]++;});
+  const maxNew=Math.max(...Object.values(cityNew),1);
+
+  // Avg matches by city
+  const memberEmailToCity=new Map(members.map(r=>[r['Member Email'].trim().toLowerCase(),getCityFromId(r['Member ID'])]));
+  const cityEmailCounts={};
+  CITY_ORDER.forEach(c=>cityEmailCounts[c]={});
+  uaCur.filter(r=>r['Type Of Payment']==='MEMBER').forEach(r=>{
+    const email=(r['Email']||'').trim().toLowerCase();
+    const city=memberEmailToCity.get(email);
+    if(city&&cityEmailCounts[city]) cityEmailCounts[city][email]=(cityEmailCounts[city][email]||0)+1;
+  });
+  const maxAvg=Math.max(...CITY_ORDER.map(c=>{const v=Object.values(cityEmailCounts[c]);return v.length?v.reduce((s,x)=>s+x,0)/v.length:0;}),1);
+
+  // Churning by city
+  const churningByCity={};
+  CITY_ORDER.forEach(c=>churningByCity[c]=0);
+  churning.forEach(r=>{const c=getCityFromId(r['Member ID']);if(churningByCity[c]!==undefined)churningByCity[c]++;});
+
+  document.getElementById('tab-ov').innerHTML=`
+    <div style="font-size:11px;font-family:'DM Mono',monospace;color:#8aa398;margin-bottom:1rem;">${label} · current snapshot</div>
+    <div class="metrics">
+      <div class="m acc"><div class="ml">Active members</div><div class="mv">${fmt(activeMembers.length)}</div><div class="ms">current total</div></div>
+      <div class="m"><div class="ml">New this month</div><div class="mv">${fmt(newThisMonth.length)}</div><div class="ms">joined in ${label}</div></div>
+      <div class="m"><div class="ml">Cancellations</div><div class="mv">${fmt(canceledThisMonth.length)}</div><div class="ms">canceled in ${label}</div></div>
+      <div class="m"><div class="ml">Churning</div><div class="mv">${fmt(churning.length)}</div><div class="ms">leaving end of month</div></div>
+      <div class="m"><div class="ml">Avg matches/member</div><div class="mv">${avgMatches}</div><div class="ms">${matchCounts.length} members tracked</div></div>
+    </div>
+    <div class="two">
+      <div class="card">
+        <div class="ct">New vs cancellations by city</div>
+        <div class="cs">${label}</div>
+        <table class="tbl">
+          <thead><tr><th style="width:32%">City</th><th style="width:18%">New</th><th style="width:20%">Canceled</th><th style="width:30%">New share</th></tr></thead>
+          <tbody>
+            ${CITY_ORDER.map(c=>`<tr><td>${CITY_SHORT[c]||c}</td><td>${cityNew[c]}</td><td>${cityCancel[c]}</td><td><div class="bar"><div class="bf" style="width:${Math.round(cityNew[c]/maxNew*100)}%"></div></div></td></tr>`).join('')}
+            <tr class="tot"><td>Total</td><td>${fmt(newThisMonth.length)}</td><td>${fmt(canceledThisMonth.length)}</td><td></td></tr>
+          </tbody>
+        </table>
+        ${churning.length?`<div style="margin-top:1rem;padding-top:.75rem;border-top:1px solid rgba(26,122,74,0.1);">
+          <div style="font-size:12px;font-weight:600;color:#0f1f17;margin-bottom:.4rem;">Churning <span class="pbad">${churning.length}</span></div>
+          <div style="font-size:11px;color:#4a6358;margin-bottom:.5rem;">Active members who canceled — will be removed end of month</div>
+          <table class="tbl"><thead><tr><th style="width:60%">City</th><th style="width:40%">Count</th></tr></thead>
+          <tbody>${CITY_ORDER.filter(c=>churningByCity[c]>0).map(c=>`<tr><td>${CITY_SHORT[c]||c}</td><td>${churningByCity[c]}</td></tr>`).join('')}</tbody></table>
+        </div>`:''}
+      </div>
+      <div class="card">
+        <div class="ct">Avg matches per member by city</div>
+        <div class="cs">${label}</div>
+        <table class="tbl">
+          <thead><tr><th style="width:32%">City</th><th style="width:20%">Avg matches</th><th style="width:20%">Members</th><th style="width:28%">Bar</th></tr></thead>
+          <tbody>${(()=>{
+            const rows=CITY_ORDER.map(c=>{const v=Object.values(cityEmailCounts[c]);const avg=v.length?Math.round(v.reduce((s,x)=>s+x,0)/v.length*10)/10:0;return{c,avg,cnt:v.length};});
+            const maxA=Math.max(...rows.map(r=>r.avg),1);
+            return rows.map(({c,avg,cnt})=>`<tr><td>${CITY_SHORT[c]||c}</td><td>${avg}</td><td>${cnt}</td><td><div class="bar"><div class="bf" style="width:${Math.round(avg/maxA*100)}%"></div></div></td></tr>`).join('');
+          })()}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderCi(){
+  const allMonths=getAllMonths().filter(m=>m>='2026-01');
+  const recentMonths=allMonths.slice(-6);
+  const cityMonthNew={},cityMonthCancel={};
+  CITY_ORDER.forEach(c=>{cityMonthNew[c]={};cityMonthCancel[c]={};allMonths.forEach(m=>{cityMonthNew[c][m]=0;cityMonthCancel[c][m]=0;});});
+  members.forEach(r=>{
+    const c=getCityFromId(r['Member ID']);
+    if(!CITY_ORDER.includes(c)) return;
+    const am=(r['Member Activation Date']||'').slice(0,7);
+    const cm2=(r['Canceled At']||'').slice(0,7);
+    if(am&&cityMonthNew[c][am]!==undefined) cityMonthNew[c][am]++;
+    if(cm2&&cityMonthCancel[c][cm2]!==undefined) cityMonthCancel[c][cm2]++;
+  });
+
+  document.getElementById('tab-ci').innerHTML=`
+    <div class="card">
+      <div class="ct">New members by city × month</div>
+      <div class="cs">2026 — last 6 months</div>
+      <div style="overflow-x:auto;"><table class="tbl" style="table-layout:auto;">
+        <thead><tr><th style="text-align:left">City</th>${recentMonths.map(m=>`<th>${MONTH_NAMES[m]?.slice(0,3)||m}</th>`).join('')}<th>Total</th></tr></thead>
+        <tbody>
+          ${CITY_ORDER.map(c=>`<tr><td>${c}</td>${recentMonths.map(m=>`<td style="text-align:right">${cityMonthNew[c][m]||0}</td>`).join('')}<td style="text-align:right;font-weight:600">${allMonths.reduce((s,m)=>s+(cityMonthNew[c][m]||0),0)}</td></tr>`).join('')}
+          <tr class="tot"><td>Total</td>${recentMonths.map(m=>`<td style="text-align:right">${CITY_ORDER.reduce((s,c)=>s+(cityMonthNew[c][m]||0),0)}</td>`).join('')}<td style="text-align:right">${members.length}</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="ct">Cancellations by city × month</div>
+      <div class="cs">2026 — last 6 months</div>
+      <div style="overflow-x:auto;"><table class="tbl" style="table-layout:auto;">
+        <thead><tr><th style="text-align:left">City</th>${recentMonths.map(m=>`<th>${MONTH_NAMES[m]?.slice(0,3)||m}</th>`).join('')}<th>Total</th></tr></thead>
+        <tbody>
+          ${CITY_ORDER.map(c=>`<tr><td>${c}</td>${recentMonths.map(m=>`<td style="text-align:right">${cityMonthCancel[c][m]||0}</td>`).join('')}<td style="text-align:right;font-weight:600">${allMonths.reduce((s,m)=>s+(cityMonthCancel[c][m]||0),0)}</td></tr>`).join('')}
+          <tr class="tot"><td>Total</td>${recentMonths.map(m=>`<td style="text-align:right">${CITY_ORDER.reduce((s,c)=>s+(cityMonthCancel[c][m]||0),0)}</td>`).join('')}<td style="text-align:right">${members.filter(r=>(r['Canceled At']||'').trim()).length}</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="ct">New members by city trend</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;font-size:11px;color:#4a6358;">${CITY_ORDER.map((c,i)=>`<span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:${CITY_COLORS[i]};display:inline-block;"></span>${CITY_SHORT[c]||c}</span>`).join('')}</div>
+      <div style="position:relative;height:260px;"><canvas id="ccitytrd" role="img" aria-label="City new members trend"></canvas></div>
+    </div>`;
+
+  dc('ccitytrd');
+  charts['ccitytrd']=new Chart(document.getElementById('ccitytrd'),{
+    type:'line',
+    data:{labels:allMonths.map(m=>MONTH_NAMES[m]?.slice(0,3)||m),datasets:CITY_ORDER.map((city,i)=>({
+      label:city,data:allMonths.map(m=>cityMonthNew[city][m]||0),
+      borderColor:CITY_COLORS[i],tension:.35,pointRadius:3,borderWidth:2,fill:false
+    }))},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y}`}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:10}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:10}},beginAtZero:true}}}
+  });
+}
+
+function renderMa(){
+  if(!uaRows.length){ document.getElementById('tab-ma').innerHTML='<div class="empty"><h3>Upload user analysis CSV(s) to see match activity</h3><button class="ubtn" onclick="document.getElementById(\'uaFiles\').click()">Upload user analysis</button></div>'; return; }
+  const curMonth=getCurrentMonth();
+  const label=MONTH_NAMES[curMonth]||curMonth;
+  const uaCur=getUAMonth(curMonth);
+  const matchCounts=getMatchesPerMember(uaCur);
+  const avg=matchCounts.length?Math.round(matchCounts.reduce((s,v)=>s+v,0)/matchCounts.length*10)/10:0;
+
+  // Distribution buckets
+  const buckets={};
+  for(let i=1;i<=10;i++) buckets[String(i)]=0;
+  buckets['11-15']=0; buckets['16+']=0;
+  matchCounts.forEach(c=>{ if(c<=10) buckets[String(c)]++; else if(c<=15) buckets['11-15']++; else buckets['16+']++; });
+
+  // City avg
+  const memberEmailToCity=new Map(members.map(r=>[r['Member Email'].trim().toLowerCase(),getCityFromId(r['Member ID'])]));
+  const cityEmailCounts={};
+  CITY_ORDER.forEach(c=>cityEmailCounts[c]={});
+  uaCur.filter(r=>r['Type Of Payment']==='MEMBER').forEach(r=>{
+    const email=(r['Email']||'').trim().toLowerCase();
+    const city=memberEmailToCity.get(email);
+    if(city&&cityEmailCounts[city]) cityEmailCounts[city][email]=(cityEmailCounts[city][email]||0)+1;
+  });
+
+  document.getElementById('tab-ma').innerHTML=`
+    <div style="font-size:11px;font-family:'DM Mono',monospace;color:#8aa398;margin-bottom:1rem;">${label}</div>
+    <div class="metrics" style="grid-template-columns:repeat(3,minmax(0,1fr));">
+      <div class="m acc"><div class="ml">Avg matches/member</div><div class="mv">${avg}</div><div class="ms">${matchCounts.length} members tracked</div></div>
+      <div class="m"><div class="ml">Most active city</div><div class="mv">${(()=>{const best=CITY_ORDER.map(c=>{const v=Object.values(cityEmailCounts[c]);return{c,avg:v.length?v.reduce((s,x)=>s+x,0)/v.length:0};}).sort((a,b)=>b.avg-a.avg)[0];return best?.c?.split(' ')[0]||'—';})()}</div><div class="ms">highest avg matches</div></div>
+      <div class="m"><div class="ml">Members 10+ matches</div><div class="mv">${matchCounts.filter(c=>c>=10).length}</div><div class="ms">${matchCounts.length?Math.round(matchCounts.filter(c=>c>=10).length/matchCounts.length*100):0}% of tracked</div></div>
+    </div>
+    <div class="two">
+      <div class="card">
+        <div class="ct">Match distribution — ${label}</div>
+        <div class="cs">How many members played how many matches</div>
+        <div style="position:relative;height:260px;"><canvas id="cdist" role="img" aria-label="Match distribution histogram"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Avg matches per member by city</div>
+        <div class="cs">${label}</div>
+        <table class="tbl">
+          <thead><tr><th style="width:32%">City</th><th style="width:20%">Avg matches</th><th style="width:20%">Members</th><th style="width:28%">Bar</th></tr></thead>
+          <tbody>${(()=>{
+            const rows=CITY_ORDER.map(c=>{const v=Object.values(cityEmailCounts[c]);const avg=v.length?Math.round(v.reduce((s,x)=>s+x,0)/v.length*10)/10:0;return{c,avg,cnt:v.length};});
+            const maxA=Math.max(...rows.map(r=>r.avg),1);
+            return rows.map(({c,avg,cnt})=>`<tr><td>${CITY_SHORT[c]||c}</td><td>${avg}</td><td>${cnt}</td><td><div class="bar"><div class="bf" style="width:${Math.round(avg/maxA*100)}%"></div></div></td></tr>`).join('');
+          })()}</tbody>
+        </table>
+      </div>
+    </div>`;
+
+  dc('cdist');
+  charts['cdist']=new Chart(document.getElementById('cdist'),{
+    type:'bar',
+    data:{labels:Object.keys(buckets),datasets:[{label:'Members',data:Object.values(buckets),backgroundColor:'#1a7a4a',borderRadius:3,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.y} members`}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:10}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:10}},beginAtZero:true}}}
+  });
+}
+
+function renderCh(){
+  const curMonth=getCurrentMonth();
+  const allMonths=getAllMonths().filter(m=>m>='2026-01');
+
+  // Churning
+  const [cy,cm]=curMonth.split('-').map(Number);
+  const pm=cm===1?12:cm-1, py=cm===1?cy-1:cy;
+  const churnStart=new Date(py,pm-1,6), churnEnd=new Date(cy,cm-1,5);
+  const activeMembers=members.filter(r=>r['Status']==='ACTIVE');
+  const churning=activeMembers.filter(r=>{
+    const ca=(r['Canceled At']||'').slice(0,10);
+    if(!ca) return false;
+    const d=new Date(ca);
+    return d>=churnStart&&d<=churnEnd;
+  });
+
+  // Cancel reasons
+  const reasonGroups={};
+  members.filter(r=>(r['Canceled At']||'').trim()).forEach(r=>{
+    const g=groupReason(r['Cancel Reason']);
+    if(g) reasonGroups[g]=(reasonGroups[g]||0)+1;
+  });
+  const sortedReasons=Object.entries(reasonGroups).sort((a,b)=>b[1]-a[1]);
+  const totalReasons=sortedReasons.reduce((s,[,v])=>s+v,0);
+
+  document.getElementById('tab-ch').innerHTML=`
+    <div class="card">
+      <div class="ct">Cancel reasons — all time</div>
+      <div class="cs">${totalReasons} voluntary cancellations · Removed by Retool excluded</div>
+      <div style="position:relative;height:220px;"><canvas id="creason" role="img" aria-label="Cancel reasons"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Currently churning <span class="pbad">${churning.length}</span></div>
+      <div class="cs">Active members who canceled between ${new Date(py,pm-1,6).toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${new Date(cy,cm-1,5).toLocaleDateString('en-US',{month:'short',day:'numeric'})} · will be removed end of month</div>
+      ${churning.length===0?'<div style="color:#8aa398;font-size:12px;">No members currently churning</div>':`
+      <table class="tbl">
+        <thead><tr><th style="width:22%">Name</th><th style="width:12%">City</th><th style="width:28%">Email</th><th style="width:18%">Canceled at</th><th style="width:20%">Reason</th></tr></thead>
+        <tbody>${churning.map(r=>`<tr>
+          <td>${r['First Name']} ${r['Last Name']}</td>
+          <td style="color:#8aa398">${CITY_SHORT[getCityFromId(r['Member ID'])]||'—'}</td>
+          <td style="color:#8aa398;font-size:10px;">${(r['Member Email']||'').slice(0,30)}</td>
+          <td style="font-family:'DM Mono',monospace;font-size:10px;">${(r['Canceled At']||'').slice(0,10)}</td>
+          <td style="color:#8aa398">${(r['Cancel Reason']||'—').slice(0,22)}</td>
+        </tr>`).join('')}</tbody>
+      </table>`}
+    </div>
+    <div class="card">
+      <div class="ct">Cancellations by city × month</div>
+      <div style="overflow-x:auto;"><table class="tbl" style="table-layout:auto;">
+        <thead><tr><th style="text-align:left">City</th>${allMonths.map(m=>`<th>${MONTH_NAMES[m]?.slice(0,3)||m}</th>`).join('')}<th>Total</th></tr></thead>
+        <tbody>
+          ${CITY_ORDER.map(c=>{
+            const tot=allMonths.reduce((s,m)=>s+members.filter(r=>(r['Canceled At']||'').startsWith(m)&&getCityFromId(r['Member ID'])===c).length,0);
+            return `<tr><td>${c}</td>${allMonths.map(m=>`<td style="text-align:right">${members.filter(r=>(r['Canceled At']||'').startsWith(m)&&getCityFromId(r['Member ID'])===c).length||0}</td>`).join('')}<td style="text-align:right;font-weight:600">${tot}</td></tr>`;
+          }).join('')}
+          <tr class="tot"><td>Total</td>${allMonths.map(m=>`<td style="text-align:right">${members.filter(r=>(r['Canceled At']||'').startsWith(m)).length}</td>`).join('')}<td style="text-align:right">${members.filter(r=>(r['Canceled At']||'').trim()).length}</td></tr>
+        </tbody>
+      </table></div>
+    </div>`;
+
+  dc('creason');
+  charts['creason']=new Chart(document.getElementById('creason'),{
+    type:'bar',
+    data:{labels:sortedReasons.map(([k])=>k),datasets:[{data:sortedReasons.map(([,v])=>v),backgroundColor:['#1a7a4a','#c0392b','#d4830a','#8aa398','#c0392b','#d4830a'],borderRadius:4,borderSkipped:false}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.x} (${Math.round(ctx.parsed.x/totalReasons*100)}%)`}}},scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:10}}},y:{grid:{display:false},ticks:{color:tc,font:{size:10}}}}}
+  });
+}
+
+function showTab(id,el){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nt').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>
