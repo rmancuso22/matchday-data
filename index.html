@@ -303,10 +303,20 @@ if (sessionStorage.getItem('md_auth') === '1') {
     <span class="upload-status" id="membersStatus">Not loaded</span>
   </div>
   <div style="width:1px;background:rgba(255,255,255,0.15);margin:0 4px;align-self:stretch;"></div>
-  <div class="upload-label">Auto-loaded:</div>
-  <span class="upload-status" id="stripeStatus">Loading Stripe...</span>
-  <span class="upload-status" id="customersStatus">Loading customers...</span>
-  <button onclick="reloadStripe()" style="font-size:11px;padding:3px 10px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);cursor:pointer;">&#8635; Refresh Stripe</button>
+  <div class="upload-label">Stripe (auto):</div>
+  <span class="upload-status" id="stripeStatus">Loading...</span>
+  <span class="upload-status" id="customersStatus">Loading...</span>
+  <button onclick="reloadStripe()" style="font-size:11px;padding:3px 10px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);cursor:pointer;">&#8635; Refresh</button>
+  <div style="width:1px;background:rgba(255,255,255,0.15);margin:0 4px;align-self:stretch;"></div>
+  <div class="upload-label">If auto fails:</div>
+  <div class="upload-group">
+    <label>Stripe CSV</label>
+    <input type="file" accept=".csv" id="stripeFile">
+  </div>
+  <div class="upload-group">
+    <label>Customers CSV</label>
+    <input type="file" accept=".csv" id="customersFile">
+  </div>
 </div>
 
 <div class="nav">
@@ -960,15 +970,18 @@ function setStatus(id, text, loaded) {
 async function fetchCSV(url, parser, stateKey, statusId, label) {
   try {
     setStatus(statusId, 'Loading ' + label + '...', false);
-    const res = await fetch(url);
+    // Use a CORS proxy since GitHub Pages can't directly fetch Google Sheets
+    const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
+    const res = await fetch(proxyUrl);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const text = await res.text();
+    if (!text || text.length < 100) throw new Error('Empty response');
     state[stateKey] = parser(text);
     setStatus(statusId, '✓ ' + label + ' (live)', true);
     processAll();
   } catch(err) {
-    setStatus(statusId, '✗ Failed to load ' + label, false);
-    console.error(err);
+    setStatus(statusId, '✗ ' + label + ' — upload manually', false);
+    console.error('Fetch error for ' + label + ':', err);
   }
 }
 
@@ -1004,6 +1017,8 @@ function loadFile(inputId, statusId, parser, stateKey) {
 
 loadFile('retoolFile','retoolStatus',parseRetool,'retool');
 loadFile('membersFile','membersStatus',parseMembers,'members');
+loadFile('stripeFile','stripeStatus',parseStripe,'stripe');
+loadFile('customersFile','customersStatus',parseCustomers,'customers');
 
 // ── TAB NAVIGATION ─────────────────────────────────────────────────────────
 function showTab(name) {
