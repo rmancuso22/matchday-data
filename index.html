@@ -300,30 +300,34 @@ function renderOv(){
     </div>`;
 
   pills('pov',selMonth);
-  // Day of week table
+  // Day of week table — cities as rows, days as columns
   const dayTotals = DAYS.map((_,i) => CITY_ORDER.reduce((s,c) => s+(dayCity[c][i]||0), 0));
   const maxDayTot = Math.max(...dayTotals, 1);
   const dowEl = document.getElementById('dowtbl');
   if(dowEl) {
     const activeCities = CITY_ORDER.filter(c => dayCity[c].some(v=>v>0));
-    dowEl.innerHTML = `<table class="tbl" style="font-size:10px;">
+    const maxVal = Math.max(...activeCities.map(c=>Math.max(...dayCity[c])), 1);
+    dowEl.innerHTML = `<table class="tbl" style="font-size:10px;table-layout:auto;">
       <thead><tr>
-        <th style="width:12%">Day</th>
-        <th style="width:14%">Total</th>
-        ${activeCities.map(c=>`<th style="width:11%">${c.split(' ')[0]}</th>`).join('')}
-        <th style="width:20%">Share</th>
+        <th style="width:22%;text-align:left">City</th>
+        ${DAYS.map((d,i)=>`<th style="text-align:right;color:${dayTotals[i]===maxDayTot?'#1a7a4a':'#8aa398'}">${d}</th>`).join('')}
+        <th style="text-align:right">Total</th>
       </tr></thead>
-      <tbody>${DAYS.map((day,i)=>{
-        const tot = dayTotals[i];
-        const pct = Math.round(tot/maxDayTot*100);
-        const isMax = tot===maxDayTot;
-        return `<tr>
-          <td style="font-weight:${isMax?'600':'400'};color:${isMax?'#1a7a4a':'#0f1f17'}">${day}</td>
-          <td style="font-weight:${isMax?'600':'400'};color:${isMax?'#1a7a4a':'#0f1f17'}">$${Math.round(tot).toLocaleString()}</td>
-          ${activeCities.map(c=>`<td style="color:#4a6358">$${Math.round(dayCity[c][i]).toLocaleString()}</td>`).join('')}
-          <td><div class="bar"><div class="bf" style="width:${pct}%;background:${isMax?'#1a7a4a':'rgba(26,122,74,0.4)'}"></div></div></td>
-        </tr>`;
-      }).join('')}</tbody>
+      <tbody>
+        ${activeCities.map(c=>{
+          const cityTotal = dayCity[c].reduce((s,v)=>s+v,0);
+          return `<tr>
+            <td>${c}</td>
+            ${dayCity[c].map(v=>`<td style="text-align:right;color:#4a6358">$${Math.round(v).toLocaleString()}</td>`).join('')}
+            <td style="text-align:right;font-weight:600;color:#0f1f17">$${Math.round(cityTotal).toLocaleString()}</td>
+          </tr>`;
+        }).join('')}
+        <tr style="border-top:2px solid rgba(26,122,74,0.15)">
+          <td style="font-weight:600;color:#0f1f17">Total</td>
+          ${dayTotals.map((t,i)=>`<td style="text-align:right;font-weight:${t===maxDayTot?'600':'500'};color:${t===maxDayTot?'#1a7a4a':'#0f1f17'}">$${Math.round(t).toLocaleString()}</td>`).join('')}
+          <td style="text-align:right;font-weight:600;color:#1a7a4a">$${Math.round(dayTotals.reduce((s,v)=>s+v,0)).toLocaleString()}</td>
+        </tr>
+      </tbody>
     </table>`;
   }
 }
