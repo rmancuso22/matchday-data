@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MatchDay Data Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --green: #1a7a4a;
+    --green-light: #e8f5ee;
+    --green-mid: #2ecc71;
+    --text: #0f1f17;
+    --text-secondary: #4a6358;
+    --text-tertiary: #8aa398;
+    --bg: #f4f7f5;
+    --bg-card: #ffffff;
+    --border: rgba(26,122,74,0.12);
+    --border-strong: rgba(26,122,74,0.25);
+    --red: #c0392b;
+    --red-light: #fdf0ee;
+    --amber: #d4830a;
+    --amber-light: #fdf6e3;
+    --pill-ok-bg: #e8f5ee; --pill-ok-txt: #1a5c35;
+    --pill-warn-bg: #fdf6e3; --pill-warn-txt: #8a5500;
+    --pill-danger-bg: #fdf0ee; --pill-danger-txt: #922b1e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--text);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-logo {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--green-mid);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .header-period {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* UPLOAD BAR */
+  .upload-bar {
+    background: var(--green);
+    padding: 0.75rem 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .upload-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+  .upload-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .upload-group label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.85);
+    white-space: nowrap;
+  }
+  .upload-group input[type=file] {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 4px;
+    padding: 3px 8px;
+    cursor: pointer;
+    max-width: 180px;
+  }
+  .upload-status {
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.6);
+  }
+  .upload-status.loaded { background: rgba(46,204,113,0.2); color: #2ecc71; }
+
+  /* NAV TABS */
+  .nav {
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    gap: 0;
+  }
+  .nav-tab {
+    padding: 0.875rem 1.25rem;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .nav-tab:hover { color: var(--text-secondary); }
+  .nav-tab.active { color: var(--green); border-bottom-color: var(--green); }
+
+  /* MAIN */
+  .main { padding: 1.5rem 2rem 3rem; max-width: 1400px; margin: 0 auto; }
+
+  /* SECTION */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* METRICS GRID */
+  .metrics { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 10px; margin-bottom: 1.25rem; }
+  .metric {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .metric-label { font-size: 11px; color: var(--text-tertiary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .metric-value { font-size: 22px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+  .metric-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 3px; }
+  .metric-accent { border-left: 3px solid var(--green); }
+
+  /* CARDS */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .card-sub { font-size: 11px; color: var(--text-tertiary); margin-bottom: 1rem; }
+
+  .two-col { display: grid; grid-template-columns: minmax(0,1.5fr) minmax(0,1fr); gap: 1rem; margin-bottom: 1rem; }
+  .three-col { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 1rem; margin-bottom: 1rem; }
+
+  /* TABLES */
+  .tbl { width: 100%; font-size: 12px; border-collapse: collapse; table-layout: fixed; }
+  .tbl th { font-size: 10px; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.07em; padding: 0 0 8px; text-align: left; border-bottom: 1px solid var(--border); }
+  .tbl th:not(:first-child) { text-align: right; }
+  .tbl td { padding: 7px 0; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+  .tbl td:first-child { color: var(--text); font-weight: 500; }
+  .tbl td:not(:first-child) { text-align: right; }
+  .tbl tr:last-child td { border-bottom: none; }
+
+  /* PILLS */
+  .pill { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 4px; font-weight: 600; font-family: 'DM Mono', monospace; }
+  .pill-ok { background: var(--pill-ok-bg); color: var(--pill-ok-txt); }
+  .pill-warn { background: var(--pill-warn-bg); color: var(--pill-warn-txt); }
+  .pill-danger { background: var(--pill-danger-bg); color: var(--pill-danger-txt); }
+
+  /* BAR */
+  .bar-wrap { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 4px; }
+  .bar-fill { height: 100%; border-radius: 2px; background: var(--green); }
+
+  /* FILTER BTNS */
+  .filter-btns { display: flex; gap: 6px; margin-bottom: 1rem; flex-wrap: wrap; }
+  .filter-btn {
+    font-size: 11px; padding: 4px 12px; border-radius: 20px;
+    border: 1px solid var(--border-strong); background: transparent;
+    color: var(--text-secondary); cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { background: var(--green-light); }
+  .filter-btn.active { background: var(--green); color: white; border-color: var(--green); }
+
+  /* LEGEND */
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 10px; font-size: 11px; color: var(--text-secondary); }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .leg-sq { width: 9px; height: 9px; border-radius: 2px; flex-shrink: 0; }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-tertiary);
+  }
+  .empty-icon {
+    font-size: 48px;
+    margin-bottom: 1rem;
+    display: block;
+    opacity: 0.3;
+  }
+  .empty h3 { font-size: 16px; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary); }
+  .empty p { font-size: 13px; line-height: 1.6; }
+
+  /* SECTION LABEL */
+  .section-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--text-tertiary);
+    margin-bottom: 12px; margin-top: 1.5rem;
+    font-family: 'DM Mono', monospace;
+  }
+  .section-label:first-child { margin-top: 0; }
+
+  /* MONTH BADGE */
+  .month-badge {
+    display: inline-block;
+    background: var(--green-light);
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 900px) {
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .two-col, .three-col { grid-template-columns: 1fr; }
+    .main { padding: 1rem; }
+    .upload-bar { gap: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<div id="passwordGate" style="position:fixed;inset:0;background:#0f1f17;display:flex;align-items:center;justify-content:center;z-index:9999;">
+  <div style="text-align:center;padding:2rem;">
+    <div style="font-family:'DM Mono',monospace;font-size:13px;color:#2ecc71;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:2rem;">⚽ MatchDay — Data</div>
+    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(26,122,74,0.3);border-radius:12px;padding:2rem 2.5rem;min-width:300px;">
+      <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:1.25rem;font-family:'DM Sans',sans-serif;">Enter password to continue</div>
+      <input id="pwInput" type="password" placeholder="Password" autofocus
+        style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid rgba(26,122,74,0.4);background:rgba(255,255,255,0.06);color:white;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:0.75rem;"
+        onkeydown="if(event.key==='Enter')checkPassword()">
+      <div id="pwError" style="font-size:11px;color:#c0392b;margin-bottom:0.75rem;min-height:16px;"></div>
+      <button onclick="checkPassword()"
+        style="width:100%;padding:10px;background:#1a7a4a;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">
+        Unlock
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+function checkPassword() {
+  const val = document.getElementById('pwInput').value;
+  if (val === 'Matchday1!') {
+    document.getElementById('passwordGate').style.display = 'none';
+    sessionStorage.setItem('md_auth','1');
+  } else {
+    document.getElementById('pwError').textContent = 'Incorrect password. Try again.';
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+  }
+}
+if (sessionStorage.getItem('md_auth') === '1') {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('passwordGate').style.display = 'none';
+  });
+}
+</script>
+
+<div class="header">
+  <div class="header-logo">⚽ MatchDay — Data</div>
+  <div class="header-period" id="headerPeriod">No data loaded</div>
+</div>
+
+<div class="upload-bar">
+  <div class="upload-label">Load data:</div>
+  <div class="upload-group">
+    <label>Retool (user analysis)</label>
+    <input type="file" accept=".csv" id="retoolFile">
+    <span class="upload-status" id="retoolStatus">Not loaded</span>
+  </div>
+  <div class="upload-group">
+    <label>Stripe charges</label>
+    <input type="file" accept=".csv" id="stripeFile">
+    <span class="upload-status" id="stripeStatus">Not loaded</span>
+  </div>
+  <div class="upload-group">
+    <label>Stripe customers</label>
+    <input type="file" accept=".csv" id="customersFile">
+    <span class="upload-status" id="customersStatus">Not loaded</span>
+  </div>
+  <div class="upload-group">
+    <label>Members</label>
+    <input type="file" accept=".csv" id="membersFile">
+    <span class="upload-status" id="membersStatus">Not loaded</span>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="nav-tab active" onclick="showTab('overview')">Overview</div>
+  <div class="nav-tab" onclick="showTab('revenue')">Revenue</div>
+  <div class="nav-tab" onclick="showTab('operations')">Fields & Cities</div>
+  <div class="nav-tab" onclick="showTab('membership')">Membership</div>
+</div>
+
+<div class="main">
+
+  <!-- OVERVIEW TAB -->
+  <div class="section active" id="tab-overview">
+    <div id="overviewContent">
+      <div class="empty">
+        <span class="empty-icon">📊</span>
+        <h3>Load your data files to get started</h3>
+        <p>Upload the Retool user analysis CSV, Stripe charges, Stripe customers,<br>and members CSV using the bar above. All files are processed locally in your browser.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- REVENUE TAB -->
+  <div class="section" id="tab-revenue">
+    <div id="revenueContent">
+      <div class="empty"><span class="empty-icon">💰</span><h3>Load Stripe charges + customers to see revenue</h3></div>
+    </div>
+  </div>
+
+  <!-- OPERATIONS TAB -->
+  <div class="section" id="tab-operations">
+    <div id="operationsContent">
+      <div class="empty"><span class="empty-icon">🏟️</span><h3>Load Retool user analysis to see operations</h3></div>
+    </div>
+  </div>
+
+  <!-- MEMBERSHIP TAB -->
+  <div class="section" id="tab-membership">
+    <div id="membershipContent">
+      <div class="empty"><span class="empty-icon">🎫</span><h3>Load members CSV to see membership data</h3></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────────
+const state = { retool: null, stripe: null, customers: null, members: null };
+const charts = {};
+
+// ── FIELD NORMALIZATION ────────────────────────────────────────────────────
+function normalizeField(name) {
+  const n = name.trim();
+  if (['San Juan Diego Catholic High School','Premier at SJD','San Juan Diego Catholic HS'].includes(n)) return ['San Juan Diego','Austin'];
+  if (['Tourney at Soccer Central','Soccer Central Complex'].includes(n)) return ['Soccer Central','San Antonio'];
+  if (['ATH Pearland','Tourney ATH Pearland'].includes(n)) return ['ATH Pearland','Houston'];
+  if (['North East Metropolitan Park','NEMP Tournaments'].includes(n)) return ['NEMP','Austin'];
+  if (['Stadium Field at Round Rock M.C.','Round Rock Multipurpose Complex'].includes(n)) return ['Round Rock','Austin'];
+  return [n, null];
+}
+function isExcluded(name) {
+  return name.includes('Soccer Central World Cup') || name.includes('St Patty');
+}
+function cityFromCode(code) {
+  const m = {ATX:'Austin',HOU:'Houston',SATX:'San Antonio',STL:'St. Louis',DFW:'Dallas / Fort Worth',ATL:'Atlanta',OKC:'Oklahoma City'};
+  return m[code] || '';
+}
+function cityFromMemberId(id) {
+  const prefixes = [['ATX','Austin'],['SATX','San Antonio'],['HOU','Houston'],['STL','St. Louis'],['DFW','Dallas / Fort Worth'],['ATL','Atlanta'],['OKC','Oklahoma City'],['NYC','New York']];
+  for (const [p,c] of prefixes) if (id.startsWith(p)) return c;
+  return 'Unknown';
+}
+
+// ── CHART HELPERS ──────────────────────────────────────────────────────────
+function destroyChart(id) { if (charts[id]) { charts[id].destroy(); delete charts[id]; } }
+const COLORS = { blue:'#1a7a4a', teal:'#0e9e6e', amber:'#d4830a', red:'#c0392b', gray:'#8aa398', blue2:'#2980b9' };
+const gridColor = 'rgba(0,0,0,0.05)';
+const tickColor = '#8aa398';
+
+function mPill(pct) {
+  if (pct===0) return `<span class="pill pill-ok">0%</span>`;
+  if (pct<10) return `<span class="pill pill-ok">${pct}%</span>`;
+  if (pct<20) return `<span class="pill pill-warn">${pct}%</span>`;
+  return `<span class="pill pill-danger">${pct}%</span>`;
+}
+function pPill(pct) {
+  if (pct===0) return `<span class="pill pill-ok">0%</span>`;
+  if (pct<8) return `<span class="pill pill-ok">${pct}%</span>`;
+  if (pct<15) return `<span class="pill pill-warn">${pct}%</span>`;
+  return `<span class="pill pill-danger">${pct}%</span>`;
+}
+function churnPill(pct) {
+  if (pct<40) return `<span class="pill pill-ok">${pct}%</span>`;
+  if (pct<65) return `<span class="pill pill-warn">${pct}%</span>`;
+  return `<span class="pill pill-danger">${pct}%</span>`;
+}
+
+// ── CSV PARSERS ────────────────────────────────────────────────────────────
+function parseRetool(csv) {
+  const result = Papa.parse(csv, { header: true, skipEmptyLines: true });
+  return result.data;
+}
+function parseStripe(csv) {
+  const lines = csv.split('\n');
+  // Skip Coefficient header (first 2 lines)
+  const clean = lines.slice(2).join('\n');
+  const result = Papa.parse(clean, { header: true, skipEmptyLines: true });
+  return result.data;
+}
+function parseCustomers(csv) {
+  const lines = csv.split('\n');
+  const clean = lines.slice(2).join('\n');
+  const result = Papa.parse(clean, { header: true, skipEmptyLines: true });
+  return result.data;
+}
+function parseMembers(csv) {
+  const result = Papa.parse(csv, { header: true, skipEmptyLines: true });
+  return result.data;
+}
+
+// ── DATA PROCESSING ────────────────────────────────────────────────────────
+function getMonth(rows) {
+  // Detect month from Retool data
+  const dates = rows.map(r => r['Date Of Match Registration'] || r['Match Start'] || '').filter(Boolean).sort();
+  if (!dates.length) return 'Unknown period';
+  const d = new Date(dates[Math.floor(dates.length/2)]);
+  return d.toLocaleString('default', { month: 'long', year: 'numeric' });
+}
+
+function processAll() {
+  if (!state.retool) return;
+
+  const month = getMonth(state.retool);
+  document.getElementById('headerPeriod').textContent = month;
+
+  // Detect month prefix from Retool
+  const sampleDate = state.retool.find(r => r['Match Start'])?.['Match Start'] || '';
+  const monthPrefix = sampleDate.slice(0,7); // e.g. "2026-03"
+
+  // ── RETOOL ANALYSIS ──
+  const fieldMap = {};
+  const cityMap = {};
+  const uidCityMap = {};
+
+  state.retool.forEach(r => {
+    const raw = r['Field']?.trim() || '';
+    if (isExcluded(raw)) return;
+    const [fname, fcity] = normalizeField(raw);
+    const city = fcity || r['City'] || '';
+    const uid = r['User ID']?.trim();
+    if (uid && city) uidCityMap[uid] = city;
+
+    if (!fieldMap[fname]) fieldMap[fname] = {name:fname,city,bookings:0,members:0,matchCanceled:0,playerCanceled:0,matches:new Set(),canceledMatches:new Set()};
+    if (!cityMap[city]) cityMap[city] = {name:city,bookings:0,members:0,matchCanceled:0,playerCanceled:0,matches:new Set(),canceledMatches:new Set()};
+
+    const f = fieldMap[fname];
+    const c = cityMap[city];
+    f.city = city;
+    f.bookings++; c.bookings++;
+
+    const matchKey = fname + '|' + r['Match Start'];
+    const cityMatchKey = city + '|' + r['Match Start'];
+    f.matches.add(matchKey); c.matches.add(cityMatchKey);
+
+    if (r['Type Of Payment'] === 'MEMBER') { f.members++; c.members++; }
+    if (r['Match Canceled'] === 'true') {
+      f.matchCanceled++; c.matchCanceled++;
+      f.canceledMatches.add(matchKey); c.canceledMatches.add(cityMatchKey);
+    }
+    if (r['Canceled At']?.trim()) { f.playerCanceled++; c.playerCanceled++; }
+  });
+
+  const fields = Object.values(fieldMap).sort((a,b) => b.bookings - a.bookings);
+  const cityOrder = ['Austin','Houston','San Antonio','St. Louis','Dallas / Fort Worth','Atlanta','Oklahoma City'];
+  const cities = cityOrder.map(n => cityMap[n]).filter(Boolean);
+
+  // ── STRIPE ANALYSIS ──
+  let matchRevByCity = {}, subRevByCity = {}, otherRev = 0, totalMatchRev = 0, totalSubRev = 0;
+  let introCount = 0, fullCount = 0;
+
+  if (state.stripe) {
+    // Build cus -> uid map
+    const cusToUid = {};
+    if (state.customers) {
+      state.customers.forEach(r => {
+        const cid = r['Id']?.trim();
+        const uid = r['User Id']?.trim();
+        if (cid && uid) cusToUid[cid] = uid;
+      });
+    }
+
+    const monthCharges = state.stripe.filter(r => r['Created']?.startsWith(monthPrefix) && r['Status'] === 'succeeded');
+
+    monthCharges.forEach(r => {
+      const amt = parseFloat(r['Amount']) || 0;
+      const type = r['Type'] || '';
+      if (type === 'match') {
+        const cityCode = r['City Identifier']?.trim();
+        const city = cityFromCode(cityCode);
+        if (city) { matchRevByCity[city] = (matchRevByCity[city]||0) + amt; totalMatchRev += amt; }
+      } else if (type === '') {
+        const cid = r['Customer']?.trim();
+        const uid = cusToUid[cid] || '';
+        const city = uidCityMap[uid] || '';
+        if (city) { subRevByCity[city] = (subRevByCity[city]||0) + amt; }
+        totalSubRev += amt;
+        if (amt <= 1.50) introCount++; else fullCount++;
+      } else {
+        otherRev += amt;
+      }
+    });
+  }
+
+  // ── MEMBERS ANALYSIS ──
+  let activeByCity = {}, mrrByCity = {}, canceledByCity = {}, incompleteByCity = {}, newThisMonth = {};
+  let totalActive = 0, totalMRR = 0, totalCanceled = 0;
+  const cancelReasonGroups = {};
+
+  if (state.members) {
+    state.members.forEach(r => {
+      const city = cityFromMemberId(r['Member ID'] || '');
+      if (!activeByCity[city]) { activeByCity[city]=0; mrrByCity[city]=0; canceledByCity[city]=0; incompleteByCity[city]=0; newThisMonth[city]=0; }
+      const price = parseInt(r['Price']||'0')/100;
+      if (r['Status'] === 'ACTIVE') {
+        activeByCity[city]++; mrrByCity[city] += price;
+        totalActive++; totalMRR += price;
+      } else if (r['Status'] === 'CANCELED') {
+        canceledByCity[city]++; totalCanceled++;
+        const reason = groupReason(r['Cancel Reason']||'');
+        if (reason) cancelReasonGroups[reason] = (cancelReasonGroups[reason]||0) + 1;
+      } else if (r['Status'] === 'INCOMPLETE_EXPIRED') {
+        incompleteByCity[city]++;
+      }
+      if (r['Member Activation Date']?.startsWith(monthPrefix)) newThisMonth[city] = (newThisMonth[city]||0) + 1;
+    });
+  }
+
+  // Render all tabs
+  renderOverview({month, fields, cities, matchRevByCity, subRevByCity, otherRev, totalMatchRev, totalSubRev, introCount, fullCount, totalActive, totalMRR, newThisMonth, monthPrefix});
+  renderRevenue({month, cities, matchRevByCity, subRevByCity, otherRev, totalMatchRev, totalSubRev, introCount, fullCount, monthPrefix});
+  renderOperations({month, fields, cities, monthPrefix});
+  renderMembership({month, cities: cityOrder, activeByCity, mrrByCity, canceledByCity, incompleteByCity, newThisMonth, totalActive, totalMRR, totalCanceled, cancelReasonGroups, monthPrefix});
+}
+
+function groupReason(r) {
+  r = r.trim().toLowerCase();
+  if (!r || ['n','na','n/a','.',''].includes(r)) return null;
+  if (['removed by retool'].some(x => r.includes(x))) return null;
+  if (['moving','leaving','out of town','travel','vacation','out of state'].some(x=>r.includes(x))) return 'Moving / travel';
+  if (['budget','expensive','cost','money','cash','worth','price'].some(x=>r.includes(x))) return 'Budget / cost';
+  if (['time','busy','not using','don\'t use',"don't go",'use it enough','not enough use'].some(x=>r.includes(x))) return 'Not enough time';
+  if (['injur','hurt','acl','surgery','wrist','achilles','sprain','accident'].some(x=>r.includes(x))) return 'Injury';
+  if (['product','alternative','cancel','manager','shady'].some(x=>r.includes(x))) return 'Unhappy with product';
+  return 'Other';
+}
+
+// ── RENDER OVERVIEW ────────────────────────────────────────────────────────
+function renderOverview({month, fields, cities, matchRevByCity, subRevByCity, otherRev, totalMatchRev, totalSubRev, introCount, fullCount, totalActive, totalMRR, newThisMonth, monthPrefix}) {
+  const totalGMV = totalMatchRev + totalSubRev + otherRev;
+  const totalBookings = fields.reduce((s,f)=>s+f.bookings,0);
+  const totalMatches = cities.reduce((s,c)=>s+c.matches.size,0);
+  const totalPlayed = cities.reduce((s,c)=>s+(c.matches.size-c.canceledMatches.size),0);
+  const newTotal = Object.values(newThisMonth).reduce((s,v)=>s+v,0);
+
+  const cityRows = cities.map(c => {
+    const matchRev = matchRevByCity[c.name]||0;
+    const subRev = subRevByCity[c.name]||0;
+    const total = matchRev + subRev;
+    const played = c.matches.size - c.canceledMatches.size;
+    const cancelRate = Math.round(c.canceledMatches.size/c.matches.size*100)||0;
+    const maxTotal = Math.max(...cities.map(x=>(matchRevByCity[x.name]||0)+(subRevByCity[x.name]||0)));
+    const pct = Math.round(total/maxTotal*100);
+    return `<tr>
+      <td>${c.name}</td>
+      <td>${state.stripe ? '$'+Math.round(matchRev).toLocaleString() : '—'}</td>
+      <td>${state.stripe && state.customers ? '$'+Math.round(subRev).toLocaleString() : '—'}</td>
+      <td>${state.stripe ? '<strong>$'+Math.round(total).toLocaleString()+'</strong>' : '—'}</td>
+      <td>${played} <span style="color:var(--text-tertiary);font-size:10px;">/ ${c.matches.size}</span></td>
+      <td>${mPill(cancelRate)}</td>
+      <td><div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div></td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('overviewContent').innerHTML = `
+    <div class="month-badge">${month}</div>
+    <div class="metrics">
+      <div class="metric metric-accent">
+        <div class="metric-label">Total GMV</div>
+        <div class="metric-value">${state.stripe ? '$'+Math.round(totalGMV).toLocaleString() : '—'}</div>
+        <div class="metric-sub">match + membership + other</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Match revenue</div>
+        <div class="metric-value">${state.stripe ? '$'+Math.round(totalMatchRev).toLocaleString() : '—'}</div>
+        <div class="metric-sub">from Stripe charges</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Membership MRR</div>
+        <div class="metric-value">${state.stripe ? '$'+Math.round(totalSubRev).toLocaleString() : '—'}</div>
+        <div class="metric-sub">${introCount} intros · ${fullCount} full/prorated</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Matches played</div>
+        <div class="metric-value">${totalPlayed}</div>
+        <div class="metric-sub">of ${totalMatches} scheduled</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Active members</div>
+        <div class="metric-value">${state.members ? totalActive : '—'}</div>
+        <div class="metric-sub">${state.members ? newTotal+' new this month' : 'load members file'}</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">City summary</div>
+      <div class="card-sub">Match revenue · membership MRR · matches played vs scheduled · match cancellation rate</div>
+      <table class="tbl">
+        <thead><tr>
+          <th style="width:18%">City</th>
+          <th style="width:12%">Match rev</th>
+          <th style="width:12%">Memb. MRR</th>
+          <th style="width:12%">Total rev</th>
+          <th style="width:12%">Played</th>
+          <th style="width:12%">Match cancel</th>
+          <th style="width:22%">Revenue share</th>
+        </tr></thead>
+        <tbody>${cityRows}</tbody>
+      </table>
+    </div>`;
+}
+
+// ── RENDER REVENUE ─────────────────────────────────────────────────────────
+function renderRevenue({month, cities, matchRevByCity, subRevByCity, otherRev, totalMatchRev, totalSubRev, introCount, fullCount}) {
+  if (!state.stripe) return;
+  const totalGMV = totalMatchRev + totalSubRev + otherRev;
+
+  document.getElementById('revenueContent').innerHTML = `
+    <div class="month-badge">${month}</div>
+    <div class="metrics">
+      <div class="metric metric-accent"><div class="metric-label">Total GMV</div><div class="metric-value">$${Math.round(totalGMV).toLocaleString()}</div><div class="metric-sub">all revenue types</div></div>
+      <div class="metric"><div class="metric-label">Match revenue</div><div class="metric-value">$${Math.round(totalMatchRev).toLocaleString()}</div><div class="metric-sub">${Math.round(totalMatchRev/totalGMV*100)}% of GMV</div></div>
+      <div class="metric"><div class="metric-label">Membership MRR</div><div class="metric-value">$${Math.round(totalSubRev).toLocaleString()}</div><div class="metric-sub">${Math.round(totalSubRev/totalGMV*100)}% of GMV</div></div>
+      <div class="metric"><div class="metric-label">Other revenue</div><div class="metric-value">$${Math.round(otherRev).toLocaleString()}</div><div class="metric-sub">strikes, events, captain</div></div>
+      <div class="metric"><div class="metric-label">Intro memberships</div><div class="metric-value">${introCount}</div><div class="metric-sub">${fullCount} full/prorated</div></div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Revenue by city — stacked</div>
+        <div class="card-sub">Match revenue + membership MRR per city</div>
+        <div class="legend">
+          <span><span class="leg-sq" style="background:#1a7a4a"></span>Match revenue</span>
+          <span><span class="leg-sq" style="background:#0e9e6e"></span>Membership MRR</span>
+        </div>
+        <div style="position:relative;height:260px"><canvas id="revCityChart" role="img" aria-label="Stacked bar chart of match and membership revenue by city"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Revenue mix</div>
+        <div class="card-sub">Match vs membership vs other</div>
+        <div class="legend">
+          <span><span class="leg-sq" style="background:#1a7a4a"></span>Match ${Math.round(totalMatchRev/totalGMV*100)}%</span>
+          <span><span class="leg-sq" style="background:#0e9e6e"></span>Membership ${Math.round(totalSubRev/totalGMV*100)}%</span>
+          <span><span class="leg-sq" style="background:#d4830a"></span>Other ${Math.round(otherRev/totalGMV*100)}%</span>
+        </div>
+        <div style="position:relative;height:200px"><canvas id="revMixChart" role="img" aria-label="Donut chart of revenue mix"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Revenue breakdown by city</div>
+      <table class="tbl">
+        <thead><tr>
+          <th style="width:20%">City</th>
+          <th style="width:16%">Match rev</th>
+          <th style="width:16%">Memb. MRR</th>
+          <th style="width:16%">Total</th>
+          <th style="width:12%">Match %</th>
+          <th style="width:20%">Share of total</th>
+        </tr></thead>
+        <tbody id="revCityTbody"></tbody>
+      </table>
+    </div>`;
+
+  const cityNames = cities.map(c=>c.name);
+  const maxRev = Math.max(...cityNames.map(n=>(matchRevByCity[n]||0)+(subRevByCity[n]||0)));
+  const grandTotal = cityNames.reduce((s,n)=>s+(matchRevByCity[n]||0)+(subRevByCity[n]||0),0);
+
+  const tbody = document.getElementById('revCityTbody');
+  cityNames.forEach(name => {
+    const m = matchRevByCity[name]||0;
+    const s = subRevByCity[name]||0;
+    const t = m+s;
+    const pct = Math.round(t/maxRev*100);
+    const share = Math.round(t/grandTotal*100);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${name}</td><td>$${Math.round(m).toLocaleString()}</td><td>$${Math.round(s).toLocaleString()}</td><td><strong>$${Math.round(t).toLocaleString()}</strong></td><td>${Math.round(m/t*100)||0}%</td><td><div style="font-size:10px;color:var(--text-tertiary);margin-bottom:2px">${share}%</div><div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div></td>`;
+    tbody.appendChild(tr);
+  });
+
+  destroyChart('revCityChart');
+  destroyChart('revMixChart');
+  charts['revCityChart'] = new Chart(document.getElementById('revCityChart'), {
+    type:'bar',
+    data:{labels:cityNames,datasets:[
+      {label:'Match',data:cityNames.map(n=>Math.round(matchRevByCity[n]||0)),backgroundColor:'#1a7a4a',borderRadius:0,borderSkipped:false},
+      {label:'Membership',data:cityNames.map(n=>Math.round(subRevByCity[n]||0)),backgroundColor:'#0e9e6e',borderRadius:4,borderSkipped:'bottom'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' $'+ctx.parsed.y.toLocaleString()}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:tickColor,font:{size:11}}},y:{stacked:true,grid:{color:gridColor},ticks:{color:tickColor,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'}}}}
+  });
+  charts['revMixChart'] = new Chart(document.getElementById('revMixChart'), {
+    type:'doughnut',
+    data:{labels:['Match','Membership','Other'],datasets:[{data:[Math.round(totalMatchRev),Math.round(totalSubRev),Math.round(otherRev)],backgroundColor:['#1a7a4a','#0e9e6e','#d4830a'],borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` $${ctx.parsed.toLocaleString()}`}}}}
+  });
+}
+
+// ── RENDER OPERATIONS ──────────────────────────────────────────────────────
+function renderOperations({month, fields, cities}) {
+  const totalBookings = fields.reduce((s,f)=>s+f.bookings,0);
+  const totalPlayed = cities.reduce((s,c)=>s+(c.matches.size-c.canceledMatches.size),0);
+  const totalScheduled = cities.reduce((s,c)=>s+c.matches.size,0);
+  const totalMatchCanceled = cities.reduce((s,c)=>s+c.canceledMatches.size,0);
+  const totalPlayerCanceled = cities.reduce((s,c)=>s+c.playerCanceled,0);
+
+  document.getElementById('operationsContent').innerHTML = `
+    <div class="month-badge">${month}</div>
+    <div class="metrics">
+      <div class="metric metric-accent"><div class="metric-label">Matches played</div><div class="metric-value">${totalPlayed}</div><div class="metric-sub">of ${totalScheduled} scheduled</div></div>
+      <div class="metric"><div class="metric-label">Total bookings</div><div class="metric-value">${totalBookings.toLocaleString()}</div><div class="metric-sub">across all fields</div></div>
+      <div class="metric"><div class="metric-label">Match cancellations</div><div class="metric-value">${totalMatchCanceled}</div><div class="metric-sub">${Math.round(totalMatchCanceled/totalScheduled*100)}% of scheduled</div></div>
+      <div class="metric"><div class="metric-label">Player cancellations</div><div class="metric-value">${totalPlayerCanceled}</div><div class="metric-sub">${Math.round(totalPlayerCanceled/totalBookings*100)}% of bookings</div></div>
+      <div class="metric"><div class="metric-label">Avg bookings / match</div><div class="metric-value">${Math.round(totalBookings/totalPlayed)}</div><div class="metric-sub">played matches only</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">City operations</div>
+      <div class="card-sub">Matches scheduled vs played · cancellation rates</div>
+      <table class="tbl">
+        <thead><tr>
+          <th style="width:20%">City</th>
+          <th style="width:12%">Played</th>
+          <th style="width:12%">Scheduled</th>
+          <th style="width:12%">Bookings</th>
+          <th style="width:14%">Match cancel</th>
+          <th style="width:14%">Player cancel</th>
+          <th style="width:16%">Played share</th>
+        </tr></thead>
+        <tbody id="opsCityTbody"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="card-title">Field breakdown</div>
+      <div class="card-sub">Match cancellations = MatchDay-initiated · player cancellations = individual dropouts</div>
+      <div class="filter-btns">
+        <button class="filter-btn active" onclick="filterFields('all',event)">All fields</button>
+        <button class="filter-btn" onclick="filterFields('Austin',event)">Austin</button>
+        <button class="filter-btn" onclick="filterFields('Houston',event)">Houston</button>
+        <button class="filter-btn" onclick="filterFields('San Antonio',event)">San Antonio</button>
+        <button class="filter-btn" onclick="filterFields('other',event)">Other cities</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="tbl" style="min-width:600px">
+          <thead><tr>
+            <th style="width:22%">Field</th>
+            <th style="width:12%">City</th>
+            <th style="width:8%">Played</th>
+            <th style="width:8%">Sched.</th>
+            <th style="width:10%">Bookings</th>
+            <th style="width:10%">Members</th>
+            <th style="width:13%">Match cancel</th>
+            <th style="width:13%">Player cancel</th>
+            <th style="width:8%">Share</th>
+          </tr></thead>
+          <tbody id="opsFieldTbody"></tbody>
+        </table>
+      </div>
+    </div>`;
+
+  // Store fields for filtering
+  window._opsFields = fields;
+  window._opsTotalPlayed = totalPlayed;
+
+  const cityTbody = document.getElementById('opsCityTbody');
+  cities.forEach(c => {
+    const played = c.matches.size - c.canceledMatches.size;
+    const mc = Math.round(c.canceledMatches.size/c.matches.size*100)||0;
+    const pc = Math.round(c.playerCanceled/c.bookings*100)||0;
+    const share = Math.round(played/totalPlayed*100);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${c.name}</td><td><strong>${played}</strong></td><td style="color:var(--text-tertiary)">${c.matches.size}</td><td>${c.bookings.toLocaleString()}</td><td>${mPill(mc)}</td><td>${pPill(pc)}</td><td><div style="font-size:10px;color:var(--text-tertiary);margin-bottom:2px">${share}%</div><div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(played/cities[0].matches.size*100)}%"></div></div></td>`;
+    cityTbody.appendChild(tr);
+  });
+
+  renderFieldTable('all');
+}
+
+function renderFieldTable(filter) {
+  const fields = window._opsFields || [];
+  const totalPlayed = window._opsTotalPlayed || 1;
+  const tbody = document.getElementById('opsFieldTbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  const filtered = filter === 'all' ? fields :
+    filter === 'other' ? fields.filter(f => !['Austin','Houston','San Antonio'].includes(f.city)) :
+    fields.filter(f => f.city === filter);
+
+  const maxBook = Math.max(...filtered.map(f=>f.bookings),1);
+  filtered.forEach(f => {
+    const played = f.matches.size - f.canceledMatches.size;
+    const mc = Math.round(f.matchCanceled/f.bookings*100)||0;
+    const pc = Math.round(f.playerCanceled/f.bookings*100)||0;
+    const share = Math.round(played/totalPlayed*100);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${f.name}</td><td style="color:var(--text-secondary)">${f.city}</td><td><strong>${played}</strong></td><td style="color:var(--text-tertiary)">${f.matches.size}</td><td>${f.bookings.toLocaleString()}</td><td>${f.members}</td><td>${mPill(mc)}</td><td>${pPill(pc)}</td><td style="color:var(--text-tertiary)">${share}%</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function filterFields(filter, e) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  e.target.classList.add('active');
+  renderFieldTable(filter);
+}
+
+// ── RENDER MEMBERSHIP ──────────────────────────────────────────────────────
+function renderMembership({month, cities, activeByCity, mrrByCity, canceledByCity, incompleteByCity, newThisMonth, totalActive, totalMRR, totalCanceled, cancelReasonGroups}) {
+  if (!state.members) return;
+  const totalEver = totalActive + totalCanceled + Object.values(incompleteByCity).reduce((s,v)=>s+v,0);
+  const newTotal = Object.values(newThisMonth).reduce((s,v)=>s+v,0);
+  const maxActive = Math.max(...cities.map(c=>activeByCity[c]||0),1);
+
+  const cityRows = cities.filter(c=>c!=='New York'&&c!=='Unknown').map(c => {
+    const active = activeByCity[c]||0;
+    const canceled = canceledByCity[c]||0;
+    const incomplete = incompleteByCity[c]||0;
+    const total = active+canceled+incomplete;
+    const churn = total > 0 ? Math.round(canceled/total*100) : 0;
+    const share = Math.round(active/totalActive*100);
+    const pct = Math.round(active/maxActive*100);
+    return `<tr>
+      <td>${c}</td>
+      <td><strong>${active}</strong></td>
+      <td>$${Math.round(mrrByCity[c]||0).toLocaleString()}</td>
+      <td>${newThisMonth[c]||0}</td>
+      <td>${churnPill(churn)}</td>
+      <td><div style="font-size:10px;color:var(--text-tertiary);margin-bottom:2px">${share}%</div><div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div></td>
+    </tr>`;
+  }).join('');
+
+  const reasons = Object.entries(cancelReasonGroups).sort((a,b)=>b[1]-a[1]);
+  const totalReasons = reasons.reduce((s,[,v])=>s+v,0);
+
+  document.getElementById('membershipContent').innerHTML = `
+    <div class="month-badge">${month}</div>
+    <div class="metrics">
+      <div class="metric metric-accent"><div class="metric-label">Active members</div><div class="metric-value">${totalActive}</div><div class="metric-sub">across all cities</div></div>
+      <div class="metric"><div class="metric-label">Current MRR</div><div class="metric-value">$${Math.round(totalMRR).toLocaleString()}</div><div class="metric-sub">from active members</div></div>
+      <div class="metric"><div class="metric-label">New this month</div><div class="metric-value">${newTotal}</div><div class="metric-sub">across all cities</div></div>
+      <div class="metric"><div class="metric-label">All-time members</div><div class="metric-value">${totalEver.toLocaleString()}</div><div class="metric-sub">${totalCanceled.toLocaleString()} canceled</div></div>
+      <div class="metric"><div class="metric-label">Overall churn rate</div><div class="metric-value">${Math.round(totalCanceled/totalEver*100)}%</div><div class="metric-sub">of all-time members</div></div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">Active members + MRR by city</div>
+        <table class="tbl">
+          <thead><tr>
+            <th style="width:26%">City</th>
+            <th style="width:12%">Active</th>
+            <th style="width:14%">MRR</th>
+            <th style="width:14%">New (month)</th>
+            <th style="width:14%">Churn</th>
+            <th style="width:20%">Share</th>
+          </tr></thead>
+          <tbody>${cityRows}</tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="card-title">Cancel reasons</div>
+        <div class="card-sub">${totalReasons} voluntary cancellations grouped</div>
+        <div style="position:relative;height:240px"><canvas id="cancelReasonChart" role="img" aria-label="Bar chart of cancel reasons"></canvas></div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">New activations this month by city</div>
+        <div style="position:relative;height:200px"><canvas id="newMemberChart" role="img" aria-label="Bar chart of new member activations by city"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">All-time member status</div>
+        <div class="legend">
+          <span><span class="leg-sq" style="background:#1a7a4a"></span>Active</span>
+          <span><span class="leg-sq" style="background:#c0392b"></span>Canceled</span>
+          <span><span class="leg-sq" style="background:#8aa398"></span>Incomplete</span>
+        </div>
+        <div style="position:relative;height:160px"><canvas id="memberStatusChart" role="img" aria-label="Donut chart of member status"></canvas></div>
+        <div style="margin-top:12px;font-size:11px;color:var(--text-tertiary);line-height:1.7">
+          Top cancel reason: <strong style="color:var(--text)">Moving / travel (${Math.round((cancelReasonGroups['Moving / travel']||0)/totalReasons*100)}%)</strong> — largely out of your control.<br>
+          Budget concerns: <strong style="color:var(--text)">${Math.round((cancelReasonGroups['Budget / cost']||0)/totalReasons*100)}%</strong> of voluntary cancels.
+        </div>
+      </div>
+    </div>`;
+
+  destroyChart('cancelReasonChart');
+  destroyChart('newMemberChart');
+  destroyChart('memberStatusChart');
+
+  const incomplete = Object.values(incompleteByCity).reduce((s,v)=>s+v,0);
+
+  charts['cancelReasonChart'] = new Chart(document.getElementById('cancelReasonChart'), {
+    type:'bar',
+    data:{labels:reasons.map(([k])=>k),datasets:[{data:reasons.map(([,v])=>v),backgroundColor:['#1a7a4a','#c0392b','#d4830a','#c0392b','#8aa398','#d4830a'],borderRadius:4,borderSkipped:false}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.x} (${Math.round(ctx.parsed.x/totalReasons*100)}%)`}}},scales:{x:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:11}}},y:{grid:{display:false},ticks:{color:tickColor,font:{size:10}}}}}
+  });
+
+  const newCities = cities.filter(c=>c!=='New York'&&c!=='Unknown'&&(newThisMonth[c]||0)>0);
+  charts['newMemberChart'] = new Chart(document.getElementById('newMemberChart'), {
+    type:'bar',
+    data:{labels:newCities,datasets:[{data:newCities.map(c=>newThisMonth[c]||0),backgroundColor:'#0e9e6e',borderRadius:4,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.parsed.y} new members`}}},scales:{x:{grid:{display:false},ticks:{color:tickColor,font:{size:11}}},y:{grid:{color:gridColor},ticks:{color:tickColor,font:{size:11}},beginAtZero:true}}}
+  });
+
+  charts['memberStatusChart'] = new Chart(document.getElementById('memberStatusChart'), {
+    type:'doughnut',
+    data:{labels:['Active','Canceled','Incomplete'],datasets:[{data:[totalActive,totalCanceled,incomplete],backgroundColor:['#1a7a4a','#c0392b','#8aa398'],borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.label}: ${ctx.parsed.toLocaleString()}`}}}}
+  });
+}
+
+// ── FILE LOADERS ───────────────────────────────────────────────────────────
+function loadFile(inputId, statusId, parser, stateKey) {
+  document.getElementById(inputId).addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      try {
+        state[stateKey] = parser(ev.target.result);
+        const el = document.getElementById(statusId);
+        el.textContent = '✓ ' + file.name.split('/').pop().substring(0,20);
+        el.className = 'upload-status loaded';
+        processAll();
+      } catch(err) {
+        document.getElementById(statusId).textContent = 'Error loading';
+        console.error(err);
+      }
+    };
+    reader.readAsText(file);
+  });
+}
+
+loadFile('retoolFile','retoolStatus',parseRetool,'retool');
+loadFile('stripeFile','stripeStatus',parseStripe,'stripe');
+loadFile('customersFile','customersStatus',parseCustomers,'customers');
+loadFile('membersFile','membersStatus',parseMembers,'members');
+
+// ── TAB NAVIGATION ─────────────────────────────────────────────────────────
+function showTab(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
