@@ -96,28 +96,57 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f5;color:#0f1f17;font-size
 
 <script>
 const FIELD_CITY = {
-  'San Juan Diego':'Austin','Premier match at SJD':'Austin','NEMP - Field 12':'Austin','NEMP - Field 13':'Austin','NEMP - Field 14':'Austin',
-  'The Hattrick (Leander)':'Austin','🎥The Hattrick (Leander)':'Austin','Round Rock - Field 1':'Austin','Stony Point High School':'Austin','Onion Creek':'Austin',
-  'ATH Pearland':'Houston','ATH Katy':'Houston','PAC GLOBAL':'Houston','Katy International Sports Complex':'Houston','Katy International Sports Complex - Field 8':'Houston',
-  'Soccer Central Field 4':'San Antonio','Soccer Central Field 4A':'San Antonio','Soccer Central Field 3':'San Antonio','STAR Soccer Complex Field 11':'San Antonio',
-  'Lou Fusz - Outdoor Field 10':'St. Louis','🎥 Lou Fusz - Outdoor Field 10':'St. Louis','Lou Fusz - Indoor Field':'St. Louis','🎥 Lou Fusz - Indoor Field':'St. Louis','Centennial Commons':'St. Louis','🎥 Centennial Commons':'St. Louis',
-  'Bicentennial Park':'Dallas / Fort Worth','Carroll Senior High School':'Dallas / Fort Worth',
-  'Hammond Park':'Atlanta','🎥 Hammond Park':'Atlanta','PRUMC':'Atlanta','🎥 PRUMC':'Atlanta',
-  'Scissortail Park':'Oklahoma City'
+  'San Juan Diego':'Austin','Premier match at SJD':'Austin',
+  'NEMP - Field 12':'Austin','NEMP - Field 13':'Austin','NEMP - Field 14':'Austin',
+  'The Hattrick (Leander)':'Austin','🎥The Hattrick (Leander)':'Austin',
+  'Round Rock - Field 1':'Austin','Round Rock - Field 7':'Austin',
+  'Stony Point High School':'Austin','🎥 Stony Point High School':'Austin',
+  'Onion Creek':'Austin','Onion Creek - Field 4':'Austin','Onion Creek Field 4':'Austin','Onion Creek- Field 1':'Austin',
+  'ATH Pearland':'Houston','ATH Katy':'Houston',
+  'PAC GLOBAL':'Houston','PAC GLOBAL - Field J2':'Houston',
+  'Katy International Sports Complex':'Houston','Katy International Sports Complex - Field 8':'Houston',
+  'Soccer Central Field 3':'San Antonio','Soccer Central Field 4':'San Antonio','Soccer Central Field 4A':'San Antonio',
+  'STAR Soccer Complex Field 11':'San Antonio','STAR Soccer Complex Field 7':'San Antonio',
+  'Lou Fusz - Outdoor Field':'St. Louis','Lou Fusz - Outdoor Field 10':'St. Louis',
+  '🎥 Lou Fusz - Outdoor Field':'St. Louis','🎥 Lou Fusz - Outdoor Field 10':'St. Louis',
+  '🎥 Lou Fusz - Outdoor Field 5':'St. Louis','🎥 Lou Fusz - Outdoor Field 8':'St. Louis',
+  'MatchDay Combine at Lou Fusz':'St. Louis',
+  'Lou Fusz - Indoor Field':'St. Louis','🎥 Lou Fusz - Indoor':'St. Louis',
+  '🎥 Lou Fusz - Indoor Field':'St. Louis','🎥 Lou Fusz TC Indoor Field':'St. Louis',
+  'Centennial Commons':'St. Louis','🎥 Centennial Commons':'St. Louis',
+  'Bicentennial Park':'Dallas / Fort Worth','Bicentennial Park - Friday':'Dallas / Fort Worth',
+  'Carroll Senior High School':'Dallas / Fort Worth',
+  'Hammond Park':'Atlanta','Hammond Park - Friday':'Atlanta',
+  '🎥 Hammond Park':'Atlanta','🎥 Hammond Park - Saturday':'Atlanta',
+  'PRUMC':'Atlanta','🎥 PRUMC':'Atlanta','🎥 PRUMC - Thursday':'Atlanta',
+  'Scissortail Park':'Oklahoma City','Scissortail Park - Thursday':'Oklahoma City',
+  'Helix Park':'Oklahoma City'
 };
 
 const FIELD_NORMALIZE = {
-  'Premier match at SJD':'San Juan Diego','NEMP - Field 12':'NEMP','NEMP - Field 13':'NEMP','NEMP - Field 14':'NEMP',
+  'Premier match at SJD':'San Juan Diego',
+  'NEMP - Field 12':'NEMP','NEMP - Field 13':'NEMP','NEMP - Field 14':'NEMP',
   'The Hattrick (Leander)':'The Hattrick','🎥The Hattrick (Leander)':'The Hattrick',
-  'Round Rock - Field 1':'Round Rock','Soccer Central Field 4':'Soccer Central','Soccer Central Field 4A':'Soccer Central','Soccer Central Field 3':'Soccer Central',
-  'Lou Fusz - Outdoor Field 10':'Lou Fusz Outdoor','🎥 Lou Fusz - Outdoor Field 10':'Lou Fusz Outdoor',
-  'Lou Fusz - Indoor Field':'Lou Fusz Indoor','🎥 Lou Fusz - Indoor Field':'Lou Fusz Indoor',
+  'Round Rock - Field 1':'Round Rock','Round Rock - Field 7':'Round Rock',
+  'Soccer Central Field 3':'Soccer Central','Soccer Central Field 4':'Soccer Central','Soccer Central Field 4A':'Soccer Central',
+  'Lou Fusz - Outdoor Field':'Lou Fusz Outdoor','Lou Fusz - Outdoor Field 10':'Lou Fusz Outdoor',
+  '🎥 Lou Fusz - Outdoor Field':'Lou Fusz Outdoor','🎥 Lou Fusz - Outdoor Field 10':'Lou Fusz Outdoor',
+  '🎥 Lou Fusz - Outdoor Field 5':'Lou Fusz Outdoor','🎥 Lou Fusz - Outdoor Field 8':'Lou Fusz Outdoor',
+  'MatchDay Combine at Lou Fusz':'Lou Fusz Outdoor',
+  'Lou Fusz - Indoor Field':'Lou Fusz Indoor','🎥 Lou Fusz - Indoor':'Lou Fusz Indoor',
+  '🎥 Lou Fusz - Indoor Field':'Lou Fusz Indoor','🎥 Lou Fusz TC Indoor Field':'Lou Fusz Indoor',
   'Centennial Commons':'Centennial Commons','🎥 Centennial Commons':'Centennial Commons',
-  'Hammond Park':'Hammond Park','🎥 Hammond Park':'Hammond Park',
-  'PRUMC':'PRUMC','🎥 PRUMC':'PRUMC',
-  'STAR Soccer Complex Field 11':'STAR Soccer Complex',
+  'Hammond Park':'Hammond Park','Hammond Park - Friday':'Hammond Park',
+  '🎥 Hammond Park':'Hammond Park','🎥 Hammond Park - Saturday':'Hammond Park',
+  'Scissortail Park':'Scissortail Park','Scissortail Park - Thursday':'Scissortail Park',
+  'PRUMC':'PRUMC','🎥 PRUMC':'PRUMC','🎥 PRUMC - Thursday':'PRUMC',
+  'Onion Creek - Field 4':'Onion Creek','Onion Creek Field 4':'Onion Creek','Onion Creek- Field 1':'Onion Creek',
+  'Bicentennial Park - Friday':'Bicentennial Park',
+  'STAR Soccer Complex Field 11':'STAR Soccer Complex','STAR Soccer Complex Field 7':'STAR Soccer Complex',
   'Katy International Sports Complex - Field 8':'Katy Intl Sports Complex',
-  'PAC GLOBAL':'PAC Global'
+  'Katy International Sports Complex':'Katy Intl Sports Complex',
+  'PAC GLOBAL':'PAC Global','PAC GLOBAL - Field J2':'PAC Global',
+  'Stony Point High School':'Stony Point','🎥 Stony Point High School':'Stony Point'
 };
 
 const CODE_CITY={'ATX':'Austin','HOU':'Houston','SATX':'San Antonio','STL':'St. Louis','DFW':'Dallas / Fort Worth','ATL':'Atlanta','OKC':'Oklahoma City'};
@@ -256,8 +285,8 @@ function renderOv(){
           <div class="bar" style="height:7px;"><div class="bf" style="width:${Math.round(v/Math.max(tot,1)*100)}%;background:${c};"></div></div></div>`).join('')}
         </div>
         <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(26,122,74,0.1);">
-          <div class="ct" style="margin-bottom:.5rem;">Avg revenue by day of week</div>
-          <div style="position:relative;height:130px;"><canvas id="cdow" role="img" aria-label="Total match revenue by day of week stacked by city"></canvas></div>
+          <div class="ct" style="margin-bottom:.75rem;">Revenue by day of week</div>
+          <div id="dowtbl"></div>
         </div>
       </div>
     </div>
@@ -271,17 +300,32 @@ function renderOv(){
     </div>`;
 
   pills('pov',selMonth);
-  dc('cdow');
-  charts['cdow']=new Chart(document.getElementById('cdow'),{
-    type:'bar',
-    data:{labels:DAYS,datasets:CITY_ORDER.map((city,i)=>({
-      label:city,
-      data:dayCity[city].map(v=>Math.round(v)),
-      backgroundColor:CITY_COLORS[i],
-      borderRadius:0,borderSkipped:false,stack:'dow'
-    }))},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',callbacks:{label:ctx=>` ${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:tc,font:{size:10}}},y:{stacked:true,grid:{color:gc},ticks:{color:tc,font:{size:10},callback:v=>'$'+Math.round(v/1000)+'k'},beginAtZero:true}}}
-  });
+  // Day of week table
+  const dayTotals = DAYS.map((_,i) => CITY_ORDER.reduce((s,c) => s+(dayCity[c][i]||0), 0));
+  const maxDayTot = Math.max(...dayTotals, 1);
+  const dowEl = document.getElementById('dowtbl');
+  if(dowEl) {
+    const activeCities = CITY_ORDER.filter(c => dayCity[c].some(v=>v>0));
+    dowEl.innerHTML = `<table class="tbl" style="font-size:10px;">
+      <thead><tr>
+        <th style="width:12%">Day</th>
+        <th style="width:14%">Total</th>
+        ${activeCities.map(c=>`<th style="width:11%">${c.split(' ')[0]}</th>`).join('')}
+        <th style="width:20%">Share</th>
+      </tr></thead>
+      <tbody>${DAYS.map((day,i)=>{
+        const tot = dayTotals[i];
+        const pct = Math.round(tot/maxDayTot*100);
+        const isMax = tot===maxDayTot;
+        return `<tr>
+          <td style="font-weight:${isMax?'600':'400'};color:${isMax?'#1a7a4a':'#0f1f17'}">${day}</td>
+          <td style="font-weight:${isMax?'600':'400'};color:${isMax?'#1a7a4a':'#0f1f17'}">$${Math.round(tot).toLocaleString()}</td>
+          ${activeCities.map(c=>`<td style="color:#4a6358">$${Math.round(dayCity[c][i]).toLocaleString()}</td>`).join('')}
+          <td><div class="bar"><div class="bf" style="width:${pct}%;background:${isMax?'#1a7a4a':'rgba(26,122,74,0.4)'}"></div></div></td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  }
 }
 
 function renderMo(){
