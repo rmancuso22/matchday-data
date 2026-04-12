@@ -3,309 +3,354 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MatchDay — Revenue</title>
+<title>MatchDay — Data</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
-:root{
-  --green:#1a7a4a;--green-light:#e8f5ee;--green-mid:#2ecc71;
-  --text:#0f1f17;--text-s:#4a6358;--text-t:#8aa398;
-  --bg:#f4f7f5;--card:#ffffff;
-  --border:rgba(26,122,74,0.12);--border-s:rgba(26,122,74,0.25);
-  --red:#c0392b;--amber:#d4830a;
-}
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
-.header{background:#0f1f17;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:50;}
-.logo{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:#2ecc71;letter-spacing:.15em;text-transform:uppercase;}
-.hbtn{font-size:12px;padding:6px 14px;border-radius:6px;border:1px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.1);color:white;cursor:pointer;margin-left:8px;}
-.hbtn:hover{background:rgba(255,255,255,0.2);}
-.status{background:#1a7a4a;padding:8px 2rem;font-size:12px;color:rgba(255,255,255,0.85);display:flex;align-items:center;gap:8px;}
-.sdot{width:7px;height:7px;border-radius:50%;background:#2ecc71;flex-shrink:0;}
-.nav{background:white;border-bottom:1px solid var(--border);padding:0 2rem;display:flex;}
-.ntab{padding:.875rem 1.25rem;font-size:13px;font-weight:500;color:var(--text-t);cursor:pointer;border-bottom:2px solid transparent;}
-.ntab.active{color:var(--green);border-bottom-color:var(--green);}
-.main{padding:1.5rem 2rem 3rem;max-width:1400px;margin:0 auto;}
+body{font-family:'DM Sans',sans-serif;background:#f4f7f5;color:#0f1f17;font-size:14px;}
+.header{background:#0f1f17;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:54px;position:sticky;top:0;z-index:50;}
+.logo{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:#2ecc71;letter-spacing:.15em;text-transform:uppercase;}
+.hright{display:flex;align-items:center;gap:8px;}
+.lupd{font-size:11px;color:rgba(255,255,255,0.35);font-family:'DM Mono',monospace;}
+.hbtn{font-size:11px;padding:5px 14px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.85);cursor:pointer;}
+.hbtn:hover{background:rgba(255,255,255,0.15);}
+.sbar{background:#1a7a4a;padding:7px 2rem;font-size:11px;color:rgba(255,255,255,0.8);display:flex;align-items:center;gap:8px;}
+.sdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.nav{background:#fff;border-bottom:1px solid rgba(26,122,74,0.12);padding:0 2rem;display:flex;}
+.nt{padding:.8rem 1.1rem;font-size:12px;font-weight:500;color:#8aa398;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
+.nt.active{color:#1a7a4a;border-bottom-color:#1a7a4a;}
+.main{padding:1.25rem 2rem 3rem;max-width:1400px;margin:0 auto;}
 .sec{display:none;}.sec.active{display:block;}
-.mpills{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap;}
-.mpill{font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--border-s);background:transparent;color:var(--text-s);cursor:pointer;font-family:'DM Mono',monospace;}
-.mpill:hover,.mpill.active{background:var(--green);color:white;border-color:var(--green);}
-.metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:1.25rem;}
-.metric{background:white;border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
-.metric.acc{border-left:3px solid var(--green);}
-.mlabel{font-size:10px;color:var(--text-t);margin-bottom:6px;text-transform:uppercase;letter-spacing:.07em;}
-.mvalue{font-size:22px;font-weight:600;color:var(--text);font-family:'DM Mono',monospace;}
-.msub{font-size:11px;color:var(--text-t);margin-top:3px;}
-.card{background:white;border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem;}
-.ctitle{font-size:13px;font-weight:600;color:var(--text);margin-bottom:.3rem;}
-.csub{font-size:11px;color:var(--text-t);margin-bottom:1rem;}
+.pills{display:flex;gap:5px;margin-bottom:1.25rem;flex-wrap:wrap;}
+.pill{font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid rgba(26,122,74,0.25);background:transparent;color:#4a6358;cursor:pointer;font-family:'DM Mono',monospace;}
+.pill.active{background:#1a7a4a;color:#fff;border-color:#1a7a4a;}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1.25rem;}
+.m{background:#fff;border:1px solid rgba(26,122,74,0.12);border-radius:10px;padding:13px 15px;}
+.m.acc{border-left:3px solid #1a7a4a;border-radius:0 10px 10px 0;}
+.ml{font-size:10px;color:#8aa398;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+.mv{font-size:21px;font-weight:600;color:#0f1f17;font-family:'DM Mono',monospace;}
+.ms{font-size:11px;color:#8aa398;margin-top:3px;}
+.card{background:#fff;border:1px solid rgba(26,122,74,0.12);border-radius:12px;padding:1.1rem;margin-bottom:1rem;}
+.ct{font-size:12px;font-weight:600;color:#0f1f17;margin-bottom:.25rem;}
+.cs{font-size:11px;color:#8aa398;margin-bottom:.75rem;}
 .two{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:1rem;margin-bottom:1rem;}
-.tbl{width:100%;font-size:12px;border-collapse:collapse;table-layout:fixed;}
-.tbl th{font-size:10px;font-weight:600;color:var(--text-t);text-transform:uppercase;letter-spacing:.07em;padding:0 0 8px;text-align:left;border-bottom:1px solid var(--border);}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin-bottom:1rem;}
+.tbl{width:100%;font-size:11px;border-collapse:collapse;table-layout:fixed;}
+.tbl th{font-size:10px;font-weight:600;color:#8aa398;text-transform:uppercase;letter-spacing:.06em;padding:0 0 7px;text-align:left;border-bottom:1px solid rgba(26,122,74,0.1);}
 .tbl th:not(:first-child){text-align:right;}
-.tbl td{padding:7px 0;border-bottom:1px solid var(--border);color:var(--text-s);}
-.tbl td:first-child{color:var(--text);font-weight:500;}
+.tbl td{padding:6px 0;border-bottom:1px solid rgba(26,122,74,0.07);color:#4a6358;}
+.tbl td:first-child{color:#0f1f17;font-weight:500;}
 .tbl td:not(:first-child){text-align:right;}
 .tbl tr:last-child td{border-bottom:none;}
-.bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:4px;}
-.bfill{height:100%;border-radius:2px;background:var(--green);}
-.leg{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px;font-size:11px;color:var(--text-s);}
-.leg span{display:flex;align-items:center;gap:5px;}
-.lsq{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
-.empty{text-align:center;padding:4rem 2rem;}
-.empty h3{font-size:18px;font-weight:500;color:var(--text-s);margin-bottom:.75rem;}
-.empty p{font-size:13px;color:var(--text-t);margin-bottom:1.5rem;}
-.ubtn{padding:12px 28px;background:var(--green);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.bar{height:4px;background:rgba(26,122,74,0.1);border-radius:2px;overflow:hidden;margin-top:3px;}
+.bf{height:100%;border-radius:2px;background:#1a7a4a;}
+.fbtns{display:flex;gap:6px;margin-bottom:.75rem;flex-wrap:wrap;}
+.fbtn{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid rgba(26,122,74,0.2);background:transparent;color:#4a6358;cursor:pointer;}
+.fbtn.active{background:#1a7a4a;color:#fff;border-color:#1a7a4a;}
+.empty{text-align:center;padding:5rem 2rem;}
+.empty h3{font-size:17px;font-weight:500;color:#4a6358;margin-bottom:.75rem;}
+.empty p{font-size:13px;color:#8aa398;margin-bottom:1.5rem;line-height:1.6;}
+.ubtn{padding:11px 26px;background:#1a7a4a;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
 .ubtn:hover{background:#156038;}
-@media(max-width:900px){.metrics{grid-template-columns:repeat(2,1fr);}.two{grid-template-columns:1fr;}.main{padding:1rem;}}
+@media(max-width:900px){.metrics{grid-template-columns:repeat(2,1fr);}.two,.three{grid-template-columns:1fr;}.main{padding:1rem;}}
 </style>
 </head>
 <body>
 
-<!-- PASSWORD GATE -->
-<div id="gate" style="position:fixed;inset:0;background:#0f1f17;display:flex;align-items:center;justify-content:center;z-index:999;">
-  <div style="text-align:center;padding:2rem;">
-    <div style="font-family:'DM Mono',monospace;font-size:13px;color:#2ecc71;letter-spacing:.15em;text-transform:uppercase;margin-bottom:2rem;">⚽ MatchDay — Revenue</div>
-    <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(26,122,74,0.3);border-radius:12px;padding:2rem 2.5rem;min-width:300px;">
-      <div style="font-size:13px;color:rgba(255,255,255,0.5);margin-bottom:1.25rem;">Enter password</div>
-      <input id="pwin" type="password" placeholder="Password" autofocus
-        style="width:100%;padding:10px 14px;border-radius:8px;border:1px solid rgba(26,122,74,0.4);background:rgba(255,255,255,0.06);color:white;font-size:14px;outline:none;margin-bottom:.75rem;"
-        onkeydown="if(event.key==='Enter')auth()">
-      <div id="pwerr" style="font-size:11px;color:#c0392b;min-height:16px;margin-bottom:.75rem;"></div>
-      <button onclick="auth()" style="width:100%;padding:10px;background:#1a7a4a;color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Unlock</button>
-    </div>
-  </div>
-</div>
-
-<!-- HEADER -->
 <div class="header">
-  <div class="logo">⚽ MatchDay — Revenue</div>
-  <div style="display:flex;align-items:center;">
-    <span id="lupd" style="font-size:11px;color:rgba(255,255,255,0.4);font-family:'DM Mono',monospace;margin-right:12px;">No data loaded</span>
-    <button class="hbtn" onclick="triggerUpload()">Upload CSV</button>
-    <button class="hbtn" onclick="loadFromGitHub()">↺ Refresh</button>
+  <div class="logo">⚽ MatchDay — Data</div>
+  <div class="hright">
+    <span class="lupd" id="lupd">No data loaded</span>
+    <input type="file" id="csvfile" accept=".csv" style="display:none;" onchange="handleFile(event)">
+    <button class="hbtn" onclick="document.getElementById('csvfile').click()">Upload Stripe CSV</button>
   </div>
 </div>
 
-<!-- HIDDEN FILE INPUT - outside everything -->
-<input type="file" id="csvfile" accept=".csv" style="position:absolute;left:-9999px;top:-9999px;" onchange="handleFile(event)">
-
-<!-- STATUS BAR -->
-<div class="status">
+<div class="sbar">
   <div class="sdot" id="sdot" style="background:#888;"></div>
-  <span id="stxt">Upload your Stripe charges CSV to view revenue data</span>
+  <span id="stxt">Upload your Stripe charges CSV to get started</span>
 </div>
 
-<!-- NAV -->
 <div class="nav">
-  <div class="ntab active" onclick="showTab('ov',this)">Overview</div>
-  <div class="ntab" onclick="showTab('mo',this)">Monthly</div>
-  <div class="ntab" onclick="showTab('ci',this)">Cities</div>
-  <div class="ntab" onclick="showTab('me',this)">Membership</div>
+  <div class="nt active" onclick="showTab('ov',this)">Overview</div>
+  <div class="nt" onclick="showTab('mo',this)">Monthly</div>
+  <div class="nt" onclick="showTab('ci',this)">Cities</div>
+  <div class="nt" onclick="showTab('fi',this)">Fields</div>
+  <div class="nt" onclick="showTab('me',this)">Membership</div>
 </div>
 
-<!-- MAIN -->
 <div class="main">
   <div class="sec active" id="tab-ov">
     <div class="empty">
       <h3>No data loaded</h3>
-      <p>Download your Stripe charges CSV from Coefficient and upload it here</p>
-      <button class="ubtn" onclick="triggerUpload()">Upload Stripe CSV</button>
+      <p>Download your Stripe charges CSV from Coefficient<br>and upload it using the button in the top right</p>
+      <button class="ubtn" onclick="document.getElementById('csvfile').click()">Upload Stripe CSV</button>
     </div>
   </div>
-  <div class="sec" id="tab-mo"><div class="empty"><h3>Upload a CSV to get started</h3><button class="ubtn" onclick="triggerUpload()">Upload Stripe CSV</button></div></div>
-  <div class="sec" id="tab-ci"><div class="empty"><h3>Upload a CSV to get started</h3><button class="ubtn" onclick="triggerUpload()">Upload Stripe CSV</button></div></div>
-  <div class="sec" id="tab-me"><div class="empty"><h3>Upload a CSV to get started</h3><button class="ubtn" onclick="triggerUpload()">Upload Stripe CSV</button></div></div>
+  <div class="sec" id="tab-mo"><div class="empty"><h3>Upload a CSV to get started</h3><button class="ubtn" onclick="document.getElementById('csvfile').click()">Upload Stripe CSV</button></div></div>
+  <div class="sec" id="tab-ci"><div class="empty"><h3>Upload a CSV to get started</h3><button class="ubtn" onclick="document.getElementById('csvfile').click()">Upload Stripe CSV</button></div></div>
+  <div class="sec" id="tab-fi"><div class="empty"><h3>Upload a CSV to get started</h3><button class="ubtn" onclick="document.getElementById('csvfile').click()">Upload Stripe CSV</button></div></div>
+  <div class="sec" id="tab-me"><div class="empty"><h3>Upload a CSV to get started</h3><button class="ubtn" onclick="document.getElementById('csvfile').click()">Upload Stripe CSV</button></div></div>
 </div>
 
 <script>
-// ── AUTH ──
-
-function auth() {
-  if (document.getElementById('pwin').value === 'Matchday1!') {
-    document.getElementById('gate').style.display = 'none';
-    sessionStorage.setItem('md_auth','1');
-    loadFromGitHub();
-  } else {
-    document.getElementById('pwerr').textContent = 'Incorrect password.';
-    document.getElementById('pwin').value = '';
-  }
-}
-document.getElementById('pwin').addEventListener('keydown', e => { if(e.key==='Enter') auth(); });
-if (sessionStorage.getItem('md_auth')==='1') {
-  document.getElementById('gate').style.display = 'none';
-  loadFromGitHub();
-}
-
-// ── UPLOAD ──
-function triggerUpload() {
-  document.getElementById('csvfile').click();
-}
-
-function handleFile(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  setStatus('Reading '+file.name+'...', '#888');
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      processCSV(e.target.result);
-      document.getElementById('lupd').textContent = 'Loaded '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
-      setStatus(allCharges.length.toLocaleString()+' charges loaded from '+file.name, '#2ecc71');
-    } catch(err) {
-      setStatus('Error reading file: '+err.message, '#c0392b');
-      console.error(err);
-    }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
-}
-
-// ── No GitHub persistence — data lives in session only ──
-function loadFromGitHub() {
-  setStatus('Upload a Stripe CSV to get started', '#888');
-}
-
-function setStatus(msg, color) {
-  document.getElementById('stxt').textContent = msg;
-  document.getElementById('sdot').style.background = color;
-}
-
-// ── DATA ──
-let allCharges = [];
-let selMonth = '';
-
 const FIELD_CITY = {
-  'San Juan Diego':'Austin','Premier match at SJD':'Austin','NEMP - Field 12':'Austin',
-  'NEMP - Field 13':'Austin','NEMP - Field 14':'Austin','The Hattrick (Leander)':'Austin',
-  '🎥The Hattrick (Leander)':'Austin','Round Rock - Field 1':'Austin','Stony Point High School':'Austin','Onion Creek':'Austin',
-  'ATH Pearland':'Houston','ATH Katy':'Houston','PAC GLOBAL':'Houston',
-  'Katy International Sports Complex':'Houston','Katy International Sports Complex - Field 8':'Houston',
+  'San Juan Diego':'Austin','Premier match at SJD':'Austin','NEMP - Field 12':'Austin','NEMP - Field 13':'Austin','NEMP - Field 14':'Austin',
+  'The Hattrick (Leander)':'Austin','🎥The Hattrick (Leander)':'Austin','Round Rock - Field 1':'Austin','Stony Point High School':'Austin','Onion Creek':'Austin',
+  'ATH Pearland':'Houston','ATH Katy':'Houston','PAC GLOBAL':'Houston','Katy International Sports Complex':'Houston','Katy International Sports Complex - Field 8':'Houston',
   'Soccer Central Field 4':'San Antonio','Soccer Central Field 4A':'San Antonio','Soccer Central Field 3':'San Antonio','STAR Soccer Complex Field 11':'San Antonio',
   'Lou Fusz - Outdoor Field 10':'St. Louis','🎥 Lou Fusz - Outdoor Field 10':'St. Louis','Lou Fusz - Indoor Field':'St. Louis','🎥 Lou Fusz - Indoor Field':'St. Louis','Centennial Commons':'St. Louis','🎥 Centennial Commons':'St. Louis',
   'Bicentennial Park':'Dallas / Fort Worth','Carroll Senior High School':'Dallas / Fort Worth',
   'Hammond Park':'Atlanta','🎥 Hammond Park':'Atlanta','PRUMC':'Atlanta','🎥 PRUMC':'Atlanta',
-  'Scissortail Park':'Oklahoma City',
+  'Scissortail Park':'Oklahoma City'
 };
-const CODE_CITY = {ATX:'Austin',HOU:'Houston',SATX:'San Antonio',STL:'St. Louis',DFW:'Dallas / Fort Worth',ATL:'Atlanta',OKC:'Oklahoma City'};
-const CITY_ORDER = ['Austin','Houston','San Antonio','St. Louis','Dallas / Fort Worth','Atlanta','Oklahoma City'];
-const MONTHS = {'2026-01':'Jan','2026-02':'Feb','2026-03':'Mar','2026-04':'Apr','2026-05':'May','2026-06':'Jun','2026-07':'Jul','2026-08':'Aug','2026-09':'Sep','2026-10':'Oct','2026-11':'Nov','2026-12':'Dec'};
-const COLORS = ['#1a7a4a','#0e9e6e','#2980b9','#d4830a','#8e44ad','#c0392b','#16a085'];
-const gc='rgba(0,0,0,0.05)', tc='#8aa398';
-const charts={};
 
-function cityFromCharge(r) {
-  const code = r['City Identifier']?.trim();
-  if (code && CODE_CITY[code]) return CODE_CITY[code];
-  const name = r['Match Name']?.trim()||'';
-  for (const [f,c] of Object.entries(FIELD_CITY)) { if (name.includes(f)||f.includes(name)) return c; }
+const FIELD_NORMALIZE = {
+  'Premier match at SJD':'San Juan Diego','NEMP - Field 12':'NEMP','NEMP - Field 13':'NEMP','NEMP - Field 14':'NEMP',
+  'The Hattrick (Leander)':'The Hattrick','🎥The Hattrick (Leander)':'The Hattrick',
+  'Round Rock - Field 1':'Round Rock','Soccer Central Field 4':'Soccer Central','Soccer Central Field 4A':'Soccer Central','Soccer Central Field 3':'Soccer Central',
+  'Lou Fusz - Outdoor Field 10':'Lou Fusz Outdoor','🎥 Lou Fusz - Outdoor Field 10':'Lou Fusz Outdoor',
+  'Lou Fusz - Indoor Field':'Lou Fusz Indoor','🎥 Lou Fusz - Indoor Field':'Lou Fusz Indoor',
+  'Centennial Commons':'Centennial Commons','🎥 Centennial Commons':'Centennial Commons',
+  'Hammond Park':'Hammond Park','🎥 Hammond Park':'Hammond Park',
+  'PRUMC':'PRUMC','🎥 PRUMC':'PRUMC',
+  'STAR Soccer Complex Field 11':'STAR Soccer Complex',
+  'Katy International Sports Complex - Field 8':'Katy Intl Sports Complex',
+  'PAC GLOBAL':'PAC Global'
+};
+
+const CODE_CITY={'ATX':'Austin','HOU':'Houston','SATX':'San Antonio','STL':'St. Louis','DFW':'Dallas / Fort Worth','ATL':'Atlanta','OKC':'Oklahoma City'};
+const CITY_ORDER=['Austin','Houston','San Antonio','St. Louis','Dallas / Fort Worth','Atlanta','Oklahoma City'];
+const MONTHS={'2026-01':'Jan','2026-02':'Feb','2026-03':'Mar','2026-04':'Apr','2026-05':'May','2026-06':'Jun','2026-07':'Jul','2026-08':'Aug','2026-09':'Sep','2026-10':'Oct','2026-11':'Nov','2026-12':'Dec'};
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const CITY_COLORS=['#1a7a4a','#0e9e6e','#2980b9','#d4830a','#8e44ad','#c0392b','#16a085'];
+const gc='rgba(0,0,0,0.05)',tc='#8aa398';
+
+let allCharges=[], selMonth='', charts={};
+
+function cityFromCharge(r){
+  const code=(r['City Identifier']||'').trim();
+  if(code && CODE_CITY[code]) return CODE_CITY[code];
+  const name=(r['Match Name']||'').trim();
+  for(const [f,c] of Object.entries(FIELD_CITY)){ if(name===f||name.startsWith(f)||f.startsWith(name)) return c; }
   return '';
 }
 
-function processCSV(text) {
-  const lines = text.split('\n').filter(l=>l.trim());
-  let start=0;
-  for(let i=0;i<Math.min(5,lines.length);i++){ if(/^Amount/i.test(lines[i].trim())){start=i;break;} }
-  allCharges = parseCSV(lines.slice(start).join('\n')).filter(r=>r['Status']==='succeeded');
-  // Default to current month
-  const now = new Date();
-  selMonth = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  renderAll();
+function fieldFromCharge(r){
+  const name=(r['Match Name']||'').trim();
+  return FIELD_NORMALIZE[name]||name;
 }
 
-function parseCSV(text) {
-  const lines = text.split('\n');
-  const headers = lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,''));
-  return lines.slice(1).filter(l=>l.trim()).map(line=>{
+function getCharges(m){ return m==='all'?allCharges:allCharges.filter(r=>r['Created']?.startsWith(m)); }
+function getMonths(){ return [...new Set(allCharges.map(r=>r['Created']?.slice(0,7)).filter(Boolean))].sort(); }
+function dc(id){ if(charts[id]){charts[id].destroy();delete charts[id];} }
+function fmt(n){ return '$'+Math.round(n).toLocaleString(); }
+
+function parseCSV(text){
+  const lines=text.split('\n').filter(l=>l.trim());
+  let start=0;
+  for(let i=0;i<Math.min(6,lines.length);i++){ if(/^"?Amount"?/i.test(lines[i].trim())){start=i;break;} }
+  const headers=lines[start].split(',').map(h=>h.trim().replace(/^"|"$/g,''));
+  return lines.slice(start+1).filter(l=>l.trim()).map(line=>{
     const vals=[]; let cur='',inQ=false;
-    for(const ch of line){ if(ch==='"')inQ=!inQ; else if(ch===','&&!inQ){vals.push(cur.trim());cur='';} else cur+=ch; }
-    vals.push(cur.trim());
-    const obj={}; headers.forEach((h,i)=>obj[h]=(vals[i]||'').replace(/^"|"$/g,''));
+    for(const ch of line){ if(ch==='"')inQ=!inQ; else if(ch===','&&!inQ){vals.push(cur.trim().replace(/^"|"$/g,''));cur='';} else cur+=ch; }
+    vals.push(cur.trim().replace(/^"|"$/g,''));
+    const obj={}; headers.forEach((h,i)=>obj[h]=vals[i]||'');
     return obj;
   });
 }
 
-function getCharges(m) { return m==='all'?allCharges:allCharges.filter(r=>r['Created']?.startsWith(m)); }
-function getMonths() { return [...new Set(allCharges.map(r=>r['Created']?.slice(0,7)).filter(Boolean))].sort(); }
-function dc(id){if(charts[id]){charts[id].destroy();delete charts[id];}}
+function handleFile(event){
+  const file=event.target.files[0];
+  if(!file) return;
+  document.getElementById('stxt').textContent='Reading '+file.name+'...';
+  document.getElementById('sdot').style.background='#888';
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      allCharges=parseCSV(e.target.result).filter(r=>r['Status']==='succeeded');
+      const months=getMonths();
+      const now=new Date();
+      const cur=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+      selMonth=months.includes(cur)?cur:months[months.length-1]||'all';
+      document.getElementById('sdot').style.background='#2ecc71';
+      document.getElementById('stxt').textContent=allCharges.length.toLocaleString()+' charges loaded from '+file.name;
+      document.getElementById('lupd').textContent='Loaded '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      renderAll();
+    } catch(err){
+      document.getElementById('sdot').style.background='#c0392b';
+      document.getElementById('stxt').textContent='Error reading file: '+err.message;
+      console.error(err);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
 
-function pills(containerId, cur) {
-  const months = getMonths();
-  const el = document.getElementById(containerId);
+function pills(id,cur){
+  const el=document.getElementById(id);
   if(!el) return;
-  el.innerHTML = months.map(m=>`<button class="mpill${cur===m?' active':''}" onclick="selMonth='${m}';renderAll()">${MONTHS[m]||m}</button>`).join('')
-    + `<button class="mpill${cur==='all'?' active':''}" onclick="selMonth='all';renderAll()">YTD</button>`;
-}
-
-function renderAll() {
-  renderOv(); renderMo(); renderCi(); renderMe();
-}
-
-// ── OVERVIEW ──
-function renderOv() {
-  const ch=getCharges(selMonth);
-  const mR=ch.filter(r=>r['Type']==='match').reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
-  const sR=ch.filter(r=>r['Type']==='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
-  const oR=ch.filter(r=>r['Type']!=='match'&&r['Type']!=='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
-  const tot=mR+sR+oR;
-  const mC=ch.filter(r=>r['Type']==='match').length;
-  const sC=ch.filter(r=>r['Type']==='').length;
   const months=getMonths();
+  el.innerHTML=months.map(m=>`<button class="pill${cur===m?' active':''}" onclick="selMonth='${m}';renderAll()">${MONTHS[m]||m}</button>`).join('')
+    +`<button class="pill${cur==='all'?' active':''}" onclick="selMonth='all';renderAll()">YTD</button>`;
+}
+
+function renderAll(){ renderOv(); renderMo(); renderCi(); renderFi(); renderMe(); }
+
+function renderOv(){
+  const ch=getCharges(selMonth);
+  const mch=ch.filter(r=>r['Type']==='match');
+  const sch=ch.filter(r=>r['Type']==='');
+  const och=ch.filter(r=>r['Type']!=='match'&&r['Type']!=='');
+  const mR=mch.reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
+  const sR=sch.reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
+  const oR=och.reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
+  const tot=mR+sR+oR;
   const label=selMonth==='all'?'YTD':((MONTHS[selMonth]||selMonth)+' 2026');
 
+  // City revenue
+  const cityRev={},cityCnt={};
+  CITY_ORDER.forEach(c=>{cityRev[c]=0;cityCnt[c]=0;});
+  let unt=0;
+  mch.forEach(r=>{ const c=cityFromCharge(r); const a=parseFloat(r['Amount']||0); if(c&&cityRev[c]!==undefined){cityRev[c]+=a;cityCnt[c]++;}else unt+=a; });
+  const maxCityRev=Math.max(...Object.values(cityRev),1);
+
+  // Field revenue
+  const fieldRev={},fieldCity={},fieldCnt={};
+  mch.forEach(r=>{ const f=fieldFromCharge(r); const c=cityFromCharge(r); const a=parseFloat(r['Amount']||0); fieldRev[f]=(fieldRev[f]||0)+a; fieldCity[f]=c; fieldCnt[f]=(fieldCnt[f]||0)+1; });
+  const topFields=Object.entries(fieldRev).filter(([f])=>f).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxFieldRev=Math.max(...topFields.map(([,v])=>v),1);
+
+  // Day of week avg revenue
+  const dayRev=[0,0,0,0,0,0,0], dayCnt=[0,0,0,0,0,0,0];
+  mch.forEach(r=>{ if(!r['Created']) return; const d=new Date(r['Created']); const dow=d.getDay(); dayRev[dow]+=parseFloat(r['Amount']||0); dayCnt[dow]++; });
+  const dayAvg=dayRev.map((v,i)=>dayCnt[i]?Math.round(v/dayCnt[i]):0);
+
   document.getElementById('tab-ov').innerHTML=`
-    <div class="mpills" id="pov"></div>
-    <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-t);margin-bottom:1rem;">${label}</div>
+    <div class="pills" id="pov"></div>
+    <div style="font-size:11px;font-family:'DM Mono',monospace;color:#8aa398;margin-bottom:1rem;">${label}</div>
     <div class="metrics">
-      <div class="metric acc"><div class="mlabel">Gross Revenue</div><div class="mvalue">$${Math.round(tot).toLocaleString()}</div><div class="msub">match + membership + other</div></div>
-      <div class="metric"><div class="mlabel">Match revenue</div><div class="mvalue">$${Math.round(mR).toLocaleString()}</div><div class="msub">${mC.toLocaleString()} charges</div></div>
-      <div class="metric"><div class="mlabel">Membership MRR</div><div class="mvalue">$${Math.round(sR).toLocaleString()}</div><div class="msub">${sC} charges</div></div>
-      <div class="metric"><div class="mlabel">Other revenue</div><div class="mvalue">$${Math.round(oR).toLocaleString()}</div><div class="msub">strikes, events, captain</div></div>
-      <div class="metric"><div class="mlabel">Avg match charge</div><div class="mvalue">$${mC?Math.round(mR/mC):0}</div><div class="msub">per transaction</div></div>
+      <div class="m acc"><div class="ml">Gross revenue</div><div class="mv">${fmt(tot)}</div><div class="ms">match + membership + other</div></div>
+      <div class="m"><div class="ml">Match revenue</div><div class="mv">${fmt(mR)}</div><div class="ms">${mch.length.toLocaleString()} charges</div></div>
+      <div class="m"><div class="ml">Membership MRR</div><div class="mv">${fmt(sR)}</div><div class="ms">${sch.length} charges</div></div>
+      <div class="m"><div class="ml">Other revenue</div><div class="mv">${fmt(oR)}</div><div class="ms">strikes, events, captain</div></div>
     </div>
     <div class="two">
       <div class="card">
-        <div class="ctitle">Gross revenue by month</div>
-        <div class="csub">Match + membership + other stacked</div>
-        <div class="leg"><span><span class="lsq" style="background:#1a7a4a"></span>Match</span><span><span class="lsq" style="background:#0e9e6e"></span>Membership</span><span><span class="lsq" style="background:#d4830a"></span>Other</span></div>
-        <div style="position:relative;height:240px"><canvas id="cov1" role="img" aria-label="Monthly gross revenue"></canvas></div>
+        <div class="ct">Revenue by city</div>
+        <div class="cs">Match revenue · ${label}</div>
+        <table class="tbl">
+          <thead><tr><th style="width:30%">City</th><th style="width:18%">Revenue</th><th style="width:12%">Charges</th><th style="width:40%">Share</th></tr></thead>
+          <tbody>${CITY_ORDER.map(c=>`<tr><td>${c}</td><td>${fmt(cityRev[c])}</td><td>${cityCnt[c]}</td><td><div style="font-size:9px;color:#8aa398;margin-bottom:2px">${Math.round(cityRev[c]/Math.max(mR,1)*100)}%</div><div class="bar"><div class="bf" style="width:${Math.round(cityRev[c]/maxCityRev*100)}%"></div></div></td></tr>`).join('')}
+          ${unt>0?`<tr><td style="color:#8aa398">Untagged</td><td style="color:#8aa398">${fmt(unt)}</td><td style="color:#8aa398">—</td><td></td></tr>`:''}</tbody>
+        </table>
       </div>
       <div class="card">
-        <div class="ctitle">Revenue mix</div>
-        <div class="csub">Share of gross revenue</div>
-        <div class="leg"><span><span class="lsq" style="background:#1a7a4a"></span>Match ${Math.round(mR/tot*100)||0}%</span><span><span class="lsq" style="background:#0e9e6e"></span>Membership ${Math.round(sR/tot*100)||0}%</span><span><span class="lsq" style="background:#d4830a"></span>Other ${Math.round(oR/tot*100)||0}%</span></div>
-        <div style="position:relative;height:200px"><canvas id="cov2" role="img" aria-label="Revenue mix donut"></canvas></div>
+        <div class="ct">Revenue mix</div>
+        <div class="cs">${label}</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:.25rem;">
+          ${[['Match revenue',mR,'#1a7a4a'],['Membership MRR',sR,'#0e9e6e'],['Other',oR,'#d4830a']].map(([l,v,c])=>`
+          <div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;"><span style="color:#0f1f17;font-weight:500;">${l}</span><span style="color:#4a6358;">${fmt(v)} · ${Math.round(v/Math.max(tot,1)*100)}%</span></div>
+          <div class="bar" style="height:7px;"><div class="bf" style="width:${Math.round(v/Math.max(tot,1)*100)}%;background:${c};"></div></div></div>`).join('')}
+        </div>
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(26,122,74,0.1);">
+          <div class="ct" style="margin-bottom:.5rem;">Avg revenue by day of week</div>
+          <div style="position:relative;height:100px;"><canvas id="cdow" role="img" aria-label="Average match revenue by day of week"></canvas></div>
+        </div>
       </div>
+    </div>
+    <div class="card">
+      <div class="ct">Top fields</div>
+      <div class="cs">Match revenue by field · ${label}</div>
+      <table class="tbl">
+        <thead><tr><th style="width:30%">Field</th><th style="width:15%">City</th><th style="width:15%">Revenue</th><th style="width:12%">Charges</th><th style="width:28%">Share</th></tr></thead>
+        <tbody>${topFields.map(([f,v])=>`<tr><td>${f||'—'}</td><td style="color:#8aa398">${fieldCity[f]||'—'}</td><td>${fmt(v)}</td><td>${fieldCnt[f]}</td><td><div class="bar"><div class="bf" style="width:${Math.round(v/maxFieldRev*100)}%"></div></div></td></tr>`).join('')}</tbody>
+      </table>
     </div>`;
 
-  pills('pov', selMonth);
-  const mo=getMonths();
-  const byM=(t)=>mo.map(m=>{ const c=allCharges.filter(r=>r['Created']?.startsWith(m)&&r['Status']==='succeeded'); if(t==='m')return Math.round(c.filter(r=>r['Type']==='match').reduce((s,r)=>s+parseFloat(r['Amount']||0),0)); if(t==='s')return Math.round(c.filter(r=>r['Type']==='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0)); return Math.round(c.filter(r=>r['Type']!=='match'&&r['Type']!=='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0)); });
-  dc('cov1'); charts['cov1']=new Chart(document.getElementById('cov1'),{type:'bar',data:{labels:mo.map(m=>MONTHS[m]||m),datasets:[{label:'Match',data:byM('m'),backgroundColor:'#1a7a4a',borderRadius:0,borderSkipped:false},{label:'Sub',data:byM('s'),backgroundColor:'#0e9e6e',borderRadius:0,borderSkipped:false},{label:'Other',data:byM('o'),backgroundColor:'#d4830a',borderRadius:4,borderSkipped:'bottom'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' $'+ctx.parsed.y.toLocaleString()}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:tc,font:{size:11}}},y:{stacked:true,grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'}}}}});
-  dc('cov2'); charts['cov2']=new Chart(document.getElementById('cov2'),{type:'doughnut',data:{labels:['Match','Membership','Other'],datasets:[{data:[Math.round(mR),Math.round(sR),Math.round(oR)],backgroundColor:['#1a7a4a','#0e9e6e','#d4830a'],borderWidth:0,hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` $${ctx.parsed.toLocaleString()}`}}}}});
+  pills('pov',selMonth);
+  dc('cdow');
+  charts['cdow']=new Chart(document.getElementById('cdow'),{
+    type:'bar',
+    data:{labels:DAYS,datasets:[{data:dayAvg,backgroundColor:DAYS.map((_,i)=>dayAvg[i]===Math.max(...dayAvg)?'#1a7a4a':'rgba(26,122,74,0.35)'),borderRadius:3,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' avg $'+ctx.parsed.y.toLocaleString()+' / charge'}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:10}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:10},callback:v=>'$'+v},beginAtZero:true}}}
+  });
 }
 
-// ── MONTHLY ──
-function renderMo() {
-  const mo=getMonths();
-  const rows=mo.map(m=>{ const c=allCharges.filter(r=>r['Created']?.startsWith(m)&&r['Status']==='succeeded'); const mr=c.filter(r=>r['Type']==='match').reduce((s,r)=>s+parseFloat(r['Amount']||0),0); const sr=c.filter(r=>r['Type']==='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0); const or=c.filter(r=>r['Type']!=='match'&&r['Type']!=='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0); return{m,mr,sr,or,tot:mr+sr+or,intros:c.filter(r=>r['Type']===''&&parseFloat(r['Amount']||0)<=1.5).length}; });
+function renderMo(){
+  const months=getMonths();
+  const rows=months.map(m=>{
+    const c=allCharges.filter(r=>r['Created']?.startsWith(m)&&r['Status']==='succeeded');
+    const mr=c.filter(r=>r['Type']==='match').reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
+    const sr=c.filter(r=>r['Type']==='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
+    const or=c.filter(r=>r['Type']!=='match'&&r['Type']!=='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
+    return {m,mr,sr,or,tot:mr+sr+or};
+  });
   const grand=rows.reduce((s,r)=>s+r.tot,0);
   const maxT=Math.max(...rows.map(r=>r.tot),1);
+
   document.getElementById('tab-mo').innerHTML=`
     <div class="card">
-      <div class="ctitle">Month by month</div>
-      <div class="csub">All revenue types · April is partial</div>
-      <table class="tbl"><thead><tr><th style="width:12%">Month</th><th style="width:15%">Match</th><th style="width:15%">Membership</th><th style="width:10%">Other</th><th style="width:13%">Total</th><th style="width:10%">Intros</th><th style="width:25%">YTD share</th></tr></thead>
-      <tbody>${rows.map(r=>`<tr><td style="font-family:'DM Mono',monospace">${MONTHS[r.m]||r.m}</td><td>$${Math.round(r.mr).toLocaleString()}</td><td>$${Math.round(r.sr).toLocaleString()}</td><td>$${Math.round(r.or).toLocaleString()}</td><td><strong>$${Math.round(r.tot).toLocaleString()}</strong></td><td>${r.intros}</td><td><div style="font-size:10px;color:var(--text-t);margin-bottom:2px">${Math.round(r.tot/grand*100)}%</div><div class="bar"><div class="bfill" style="width:${Math.round(r.tot/maxT*100)}%"></div></div></td></tr>`).join('')}
-      <tr style="font-weight:600"><td>YTD</td><td>$${Math.round(rows.reduce((s,r)=>s+r.mr,0)).toLocaleString()}</td><td>$${Math.round(rows.reduce((s,r)=>s+r.sr,0)).toLocaleString()}</td><td>$${Math.round(rows.reduce((s,r)=>s+r.or,0)).toLocaleString()}</td><td><strong>$${Math.round(grand).toLocaleString()}</strong></td><td>${rows.reduce((s,r)=>s+r.intros,0)}</td><td></td></tr>
-      </tbody></table>
+      <div class="ct">Month by month</div>
+      <div class="cs">All revenue types</div>
+      <table class="tbl">
+        <thead><tr><th style="width:12%">Month</th><th style="width:16%">Match</th><th style="width:16%">Membership</th><th style="width:12%">Other</th><th style="width:14%">Total</th><th style="width:30%">YTD share</th></tr></thead>
+        <tbody>${rows.map(r=>`<tr>
+          <td style="font-family:'DM Mono',monospace">${MONTHS[r.m]||r.m}</td>
+          <td>${fmt(r.mr)}</td><td>${fmt(r.sr)}</td><td>${fmt(r.or)}</td>
+          <td><strong>${fmt(r.tot)}</strong></td>
+          <td><div style="font-size:9px;color:#8aa398;margin-bottom:2px">${Math.round(r.tot/grand*100)}%</div><div class="bar"><div class="bf" style="width:${Math.round(r.tot/maxT*100)}%"></div></div></td>
+        </tr>`).join('')}
+        <tr style="font-weight:600;border-top:2px solid rgba(26,122,74,0.15)">
+          <td>YTD</td><td>${fmt(rows.reduce((s,r)=>s+r.mr,0))}</td><td>${fmt(rows.reduce((s,r)=>s+r.sr,0))}</td><td>${fmt(rows.reduce((s,r)=>s+r.or,0))}</td><td><strong>${fmt(grand)}</strong></td><td></td>
+        </tr></tbody>
+      </table>
     </div>
-    <div class="card"><div class="ctitle">Match vs membership trend</div><div class="leg"><span><span class="lsq" style="background:#1a7a4a"></span>Match revenue</span><span><span class="lsq" style="background:#0e9e6e;"></span>Membership MRR</span></div><div style="position:relative;height:260px"><canvas id="cmo1" role="img" aria-label="Monthly revenue trend"></canvas></div></div>`;
-  dc('cmo1'); charts['cmo1']=new Chart(document.getElementById('cmo1'),{type:'line',data:{labels:rows.map(r=>MONTHS[r.m]||r.m),datasets:[{label:'Match',data:rows.map(r=>Math.round(r.mr)),borderColor:'#1a7a4a',backgroundColor:'rgba(26,122,74,0.08)',tension:.35,pointRadius:4,pointBackgroundColor:'#1a7a4a',fill:true,borderWidth:2},{label:'Membership',data:rows.map(r=>Math.round(r.sr)),borderColor:'#0e9e6e',backgroundColor:'rgba(14,158,110,0.06)',tension:.35,pointRadius:4,pointBackgroundColor:'#0e9e6e',fill:true,borderWidth:2,borderDash:[5,3]}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' $'+ctx.parsed.y.toLocaleString()}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:11}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'},beginAtZero:true}}}});
+    <div class="card">
+      <div class="ct">Gross revenue trend</div>
+      <div style="display:flex;gap:14px;margin-bottom:10px;font-size:11px;color:#4a6358;">
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#1a7a4a;display:inline-block;"></span>Match</span>
+        <span style="display:flex;align-items:center;gap:5px;"><span style="width:10px;height:10px;border-radius:2px;background:#0e9e6e;display:inline-block;"></span>Membership</span>
+      </div>
+      <div style="position:relative;height:260px;"><canvas id="cmo" role="img" aria-label="Monthly revenue trend line chart"></canvas></div>
+    </div>`;
+
+  dc('cmo');
+  charts['cmo']=new Chart(document.getElementById('cmo'),{
+    type:'line',
+    data:{labels:rows.map(r=>MONTHS[r.m]||r.m),datasets:[
+      {label:'Match',data:rows.map(r=>Math.round(r.mr)),borderColor:'#1a7a4a',backgroundColor:'rgba(26,122,74,0.07)',tension:.35,pointRadius:4,pointBackgroundColor:'#1a7a4a',fill:true,borderWidth:2},
+      {label:'Membership',data:rows.map(r=>Math.round(r.sr)),borderColor:'#0e9e6e',backgroundColor:'rgba(14,158,110,0.05)',tension:.35,pointRadius:4,pointBackgroundColor:'#0e9e6e',fill:true,borderWidth:2,borderDash:[5,3]}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' $'+ctx.parsed.y.toLocaleString()}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:11}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'},beginAtZero:true}}}
+  });
 }
 
-// ── CITIES ──
-function renderCi() {
+function renderCi(){
+  const months=getMonths();
+  document.getElementById('tab-ci').innerHTML=`
+    <div class="pills" id="pci"></div>
+    <div class="two">
+      <div class="card">
+        <div class="ct">Match revenue by city</div>
+        <div class="cs">${selMonth==='all'?'YTD':((MONTHS[selMonth]||selMonth)+' 2026')}</div>
+        <div style="position:relative;height:${CITY_ORDER.length*42+60}px;"><canvas id="cci1" role="img" aria-label="City revenue horizontal bar chart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">City breakdown</div>
+        <div class="cs">Revenue · charges · share</div>
+        <div id="cityTbl"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">City revenue by month</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;font-size:11px;color:#4a6358;" id="cityLeg"></div>
+      <div style="position:relative;height:280px;"><canvas id="cci2" role="img" aria-label="City revenue trend by month"></canvas></div>
+    </div>`;
+
+  pills('pci',selMonth);
+
   const ch=getCharges(selMonth).filter(r=>r['Type']==='match');
   const rev={},cnt={};
   CITY_ORDER.forEach(c=>{rev[c]=0;cnt[c]=0;});
@@ -313,60 +358,133 @@ function renderCi() {
   ch.forEach(r=>{ const c=cityFromCharge(r); const a=parseFloat(r['Amount']||0); if(c&&rev[c]!==undefined){rev[c]+=a;cnt[c]++;}else unt+=a; });
   const tot=Object.values(rev).reduce((s,v)=>s+v,0);
   const maxR=Math.max(...Object.values(rev),1);
-  const mo=getMonths();
-  const label=selMonth==='all'?'YTD':((MONTHS[selMonth]||selMonth)+' 2026');
-  document.getElementById('tab-ci').innerHTML=`
-    <div class="mpills" id="pci"></div>
-    <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-t);margin-bottom:1rem;">${label} · match revenue only</div>
-    <div class="two">
-      <div class="card"><div class="ctitle">Match revenue by city</div><div style="position:relative;height:280px"><canvas id="cci1" role="img" aria-label="City revenue bar chart"></canvas></div></div>
-      <div class="card"><div class="ctitle">City breakdown</div><div class="csub">Match revenue · charges · share</div>
-        <table class="tbl"><thead><tr><th style="width:35%">City</th><th style="width:22%">Revenue</th><th style="width:15%">Charges</th><th style="width:28%">Share</th></tr></thead>
-        <tbody>${CITY_ORDER.map(c=>`<tr><td>${c}</td><td>$${Math.round(rev[c]).toLocaleString()}</td><td>${cnt[c]}</td><td><div style="font-size:10px;color:var(--text-t);margin-bottom:2px">${Math.round(rev[c]/tot*100)||0}%</div><div class="bar"><div class="bfill" style="width:${Math.round(rev[c]/maxR*100)}%"></div></div></td></tr>`).join('')}
-        ${unt>0?`<tr><td style="color:var(--text-t)">Untagged</td><td style="color:var(--text-t)">$${Math.round(unt).toLocaleString()}</td><td style="color:var(--text-t)">—</td><td></td></tr>`:''}
-        </tbody></table>
-      </div>
-    </div>
-    <div class="card"><div class="ctitle">City revenue by month</div><div style="position:relative;height:280px"><canvas id="cci2" role="img" aria-label="City revenue over time"></canvas></div></div>`;
-  pills('pci',selMonth);
-  dc('cci1'); charts['cci1']=new Chart(document.getElementById('cci1'),{type:'bar',data:{labels:CITY_ORDER,datasets:[{data:CITY_ORDER.map(c=>Math.round(rev[c])),backgroundColor:'#1a7a4a',borderRadius:4,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' $'+ctx.parsed.x.toLocaleString()}}},scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'}},y:{grid:{display:false},ticks:{color:tc,font:{size:10}}}}}});
-  dc('cci2'); charts['cci2']=new Chart(document.getElementById('cci2'),{type:'line',data:{labels:mo.map(m=>MONTHS[m]||m),datasets:CITY_ORDER.map((city,i)=>({label:city,data:mo.map(m=>{ const c=allCharges.filter(r=>r['Created']?.startsWith(m)&&r['Type']==='match'&&r['Status']==='succeeded'); return Math.round(c.filter(r=>cityFromCharge(r)===city).reduce((s,r)=>s+parseFloat(r['Amount']||0),0)); }),borderColor:COLORS[i],tension:.35,pointRadius:3,borderWidth:2,fill:false}))},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:11}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'},beginAtZero:true}}}});
+
+  document.getElementById('cityTbl').innerHTML=`<table class="tbl">
+    <thead><tr><th style="width:35%">City</th><th style="width:22%">Revenue</th><th style="width:15%">Charges</th><th style="width:28%">Share</th></tr></thead>
+    <tbody>${CITY_ORDER.map(c=>`<tr><td>${c}</td><td>${fmt(rev[c])}</td><td>${cnt[c]}</td><td><div style="font-size:9px;color:#8aa398;margin-bottom:2px">${Math.round(rev[c]/Math.max(tot,1)*100)}%</div><div class="bar"><div class="bf" style="width:${Math.round(rev[c]/maxR*100)}%"></div></div></td></tr>`).join('')}
+    ${unt>0?`<tr><td style="color:#8aa398">Untagged</td><td style="color:#8aa398">${fmt(unt)}</td><td style="color:#8aa398">—</td><td></td></tr>`:''}</tbody>
+  </table>`;
+
+  dc('cci1');
+  charts['cci1']=new Chart(document.getElementById('cci1'),{
+    type:'bar',
+    data:{labels:CITY_ORDER,datasets:[{data:CITY_ORDER.map(c=>Math.round(rev[c])),backgroundColor:'#1a7a4a',borderRadius:4,borderSkipped:false}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' $'+ctx.parsed.x.toLocaleString()}}},scales:{x:{grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'}},y:{grid:{display:false},ticks:{color:tc,font:{size:10}}}}}
+  });
+
+  document.getElementById('cityLeg').innerHTML=CITY_ORDER.map((c,i)=>`<span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:${CITY_COLORS[i]};display:inline-block;"></span>${c}</span>`).join('');
+
+  dc('cci2');
+  charts['cci2']=new Chart(document.getElementById('cci2'),{
+    type:'line',
+    data:{labels:months.map(m=>MONTHS[m]||m),datasets:CITY_ORDER.map((city,i)=>({
+      label:city,
+      data:months.map(m=>{ const c=allCharges.filter(r=>r['Created']?.startsWith(m)&&r['Type']==='match'&&r['Status']==='succeeded'); return Math.round(c.filter(r=>cityFromCharge(r)===city).reduce((s,r)=>s+parseFloat(r['Amount']||0),0)); }),
+      borderColor:CITY_COLORS[i],tension:.35,pointRadius:3,borderWidth:2,fill:false
+    }))},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:11}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'},beginAtZero:true}}}
+  });
 }
 
-// ── MEMBERSHIP ──
-function renderMe() {
-  const ch=getCharges(selMonth).filter(r=>r['Type']==='');
-  const tot=ch.reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
-  const intros=ch.filter(r=>parseFloat(r['Amount']||0)<=1.5);
-  const full=ch.filter(r=>parseFloat(r['Amount']||0)>1.5);
-  const mo=getMonths();
-  const mrows=mo.map(m=>{ const c=allCharges.filter(r=>r['Created']?.startsWith(m)&&r['Type']===''&&r['Status']==='succeeded'); return{m,tot:c.reduce((s,r)=>s+parseFloat(r['Amount']||0),0),intros:c.filter(r=>parseFloat(r['Amount']||0)<=1.5).length,full:c.filter(r=>parseFloat(r['Amount']||0)>1.5).length}; });
-  const label=selMonth==='all'?'YTD':((MONTHS[selMonth]||selMonth)+' 2026');
-  document.getElementById('tab-me').innerHTML=`
-    <div class="mpills" id="pme"></div>
-    <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text-t);margin-bottom:1rem;">${label}</div>
-    <div class="metrics">
-      <div class="metric acc"><div class="mlabel">Total MRR</div><div class="mvalue">$${Math.round(tot).toLocaleString()}</div><div class="msub">${ch.length} charges</div></div>
-      <div class="metric"><div class="mlabel">Full / prorated</div><div class="mvalue">${full.length}</div><div class="msub">$${Math.round(full.reduce((s,r)=>s+parseFloat(r['Amount']||0),0)).toLocaleString()}</div></div>
-      <div class="metric"><div class="mlabel">$1 intros</div><div class="mvalue">${intros.length}</div><div class="msub">$${Math.round(intros.reduce((s,r)=>s+parseFloat(r['Amount']||0),0)).toLocaleString()}</div></div>
-      <div class="metric"><div class="mlabel">Avg charge</div><div class="mvalue">$${ch.length?Math.round(tot/ch.length):0}</div><div class="msub">per membership charge</div></div>
-      <div class="metric"><div class="mlabel">Intro rate</div><div class="mvalue">${ch.length?Math.round(intros.length/ch.length*100):0}%</div><div class="msub">of all membership charges</div></div>
-    </div>
-    <div class="two">
-      <div class="card"><div class="ctitle">MRR by month</div><div class="leg"><span><span class="lsq" style="background:#1a7a4a"></span>Full/prorated</span><span><span class="lsq" style="background:#d4830a"></span>$1 intros</span></div><div style="position:relative;height:220px"><canvas id="cme1" role="img" aria-label="Monthly MRR chart"></canvas></div></div>
-      <div class="card"><div class="ctitle">Monthly summary</div>
-        <table class="tbl"><thead><tr><th style="width:20%">Month</th><th style="width:22%">MRR</th><th style="width:18%">Full</th><th style="width:18%">Intros</th><th style="width:22%">Intro %</th></tr></thead>
-        <tbody>${mrows.map(r=>`<tr><td style="font-family:'DM Mono',monospace">${MONTHS[r.m]||r.m}</td><td>$${Math.round(r.tot).toLocaleString()}</td><td>${r.full}</td><td>${r.intros}</td><td>${r.full+r.intros?Math.round(r.intros/(r.full+r.intros)*100):0}%</td></tr>`).join('')}</tbody>
+function renderFi(){
+  const ch=getCharges(selMonth).filter(r=>r['Type']==='match');
+  const fRev={},fCity={},fCnt={};
+  ch.forEach(r=>{ const f=fieldFromCharge(r); const c=cityFromCharge(r); const a=parseFloat(r['Amount']||0); fRev[f]=(fRev[f]||0)+a; fCity[f]=c; fCnt[f]=(fCnt[f]||0)+1; });
+  const allFields=Object.entries(fRev).filter(([f])=>f).sort((a,b)=>b[1]-a[1]);
+  const maxR=Math.max(...allFields.map(([,v])=>v),1);
+  const cities=['All',...CITY_ORDER];
+
+  document.getElementById('tab-fi').innerHTML=`
+    <div class="pills" id="pfi"></div>
+    <div class="card">
+      <div class="ct">Field breakdown</div>
+      <div class="cs">${selMonth==='all'?'YTD':((MONTHS[selMonth]||selMonth)+' 2026')} · match revenue by field</div>
+      <div class="fbtns" id="cityFilter">
+        ${cities.map(c=>`<button class="fbtn${c==='All'?' active':''}" onclick="filterFields('${c}',this)">${c}</button>`).join('')}
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="tbl" id="fieldTbl" style="min-width:500px;">
+          <thead><tr><th style="width:28%">Field</th><th style="width:18%">City</th><th style="width:15%">Revenue</th><th style="width:12%">Charges</th><th style="width:27%">Revenue share</th></tr></thead>
+          <tbody id="fieldTbody"></tbody>
         </table>
       </div>
     </div>`;
-  pills('pme',selMonth);
-  dc('cme1'); charts['cme1']=new Chart(document.getElementById('cme1'),{type:'bar',data:{labels:mrows.map(r=>MONTHS[r.m]||r.m),datasets:[{label:'Full',data:mrows.map(r=>{ const c=allCharges.filter(x=>x['Created']?.startsWith(r.m)&&x['Type']===''&&x['Status']==='succeeded'&&parseFloat(x['Amount']||0)>1.5); return Math.round(c.reduce((s,x)=>s+parseFloat(x['Amount']||0),0)); }),backgroundColor:'#1a7a4a',borderRadius:0,borderSkipped:false},{label:'Intros',data:mrows.map(r=>Math.round(r.intros*1.09)),backgroundColor:'#d4830a',borderRadius:4,borderSkipped:'bottom'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' $'+ctx.parsed.y.toLocaleString()}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:tc,font:{size:11}}},y:{stacked:true,grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'}}}}});
+
+  pills('pfi',selMonth);
+  window._fieldData=allFields.map(([f,v])=>({f,v,city:fCity[f]||'',cnt:fCnt[f]}));
+  window._maxFieldR=maxR;
+  renderFieldRows('All');
 }
 
-function showTab(id, el) {
+function renderFieldRows(cityFilter){
+  const data=window._fieldData||[];
+  const maxR=window._maxFieldR||1;
+  const filtered=cityFilter==='All'?data:data.filter(d=>d.city===cityFilter);
+  const tot=filtered.reduce((s,d)=>s+d.v,0);
+  document.getElementById('fieldTbody').innerHTML=filtered.map(d=>`<tr>
+    <td>${d.f||'—'}</td>
+    <td style="color:#8aa398">${d.city||'—'}</td>
+    <td>${fmt(d.v)}</td>
+    <td>${d.cnt}</td>
+    <td><div style="font-size:9px;color:#8aa398;margin-bottom:2px">${Math.round(d.v/Math.max(tot,1)*100)}%</div><div class="bar"><div class="bf" style="width:${Math.round(d.v/maxR*100)}%"></div></div></td>
+  </tr>`).join('');
+}
+
+function filterFields(city,btn){
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFieldRows(city);
+}
+
+function renderMe(){
+  const months=getMonths();
+  const mrows=months.map(m=>{
+    const c=allCharges.filter(r=>r['Created']?.startsWith(m)&&r['Type']===''&&r['Status']==='succeeded');
+    return{m,tot:c.reduce((s,r)=>s+parseFloat(r['Amount']||0),0),cnt:c.length};
+  });
+  const ch=getCharges(selMonth).filter(r=>r['Type']==='');
+  const tot=ch.reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
+  const label=selMonth==='all'?'YTD':((MONTHS[selMonth]||selMonth)+' 2026');
+  const ytdTot=mrows.reduce((s,r)=>s+r.tot,0);
+  const ytdCnt=mrows.reduce((s,r)=>s+r.cnt,0);
+
+  document.getElementById('tab-me').innerHTML=`
+    <div class="pills" id="pme"></div>
+    <div style="font-size:11px;font-family:'DM Mono',monospace;color:#8aa398;margin-bottom:1rem;">${label}</div>
+    <div class="metrics">
+      <div class="m acc"><div class="ml">Membership MRR</div><div class="mv">${fmt(tot)}</div><div class="ms">${ch.length} charges</div></div>
+      <div class="m"><div class="ml">Avg charge</div><div class="mv">$${ch.length?Math.round(tot/ch.length):0}</div><div class="ms">per membership charge</div></div>
+      <div class="m"><div class="ml">YTD membership</div><div class="mv">${fmt(ytdTot)}</div><div class="ms">${ytdCnt} total charges</div></div>
+      <div class="m"><div class="ml">Avg MRR / month</div><div class="mv">${fmt(mrows.length?ytdTot/mrows.length:0)}</div><div class="ms">${mrows.length} months</div></div>
+    </div>
+    <div class="two">
+      <div class="card">
+        <div class="ct">Membership MRR by month</div>
+        <div style="position:relative;height:220px;"><canvas id="cme1" role="img" aria-label="Monthly membership MRR bar chart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="ct">Monthly summary</div>
+        <table class="tbl">
+          <thead><tr><th style="width:25%">Month</th><th style="width:30%">MRR</th><th style="width:25%">Charges</th><th style="width:20%">Avg</th></tr></thead>
+          <tbody>${mrows.map(r=>`<tr><td style="font-family:'DM Mono',monospace">${MONTHS[r.m]||r.m}</td><td>${fmt(r.tot)}</td><td>${r.cnt}</td><td>$${r.cnt?Math.round(r.tot/r.cnt):0}</td></tr>`).join('')}
+          <tr style="font-weight:600;border-top:2px solid rgba(26,122,74,0.15)"><td>YTD</td><td>${fmt(ytdTot)}</td><td>${ytdCnt}</td><td>$${ytdCnt?Math.round(ytdTot/ytdCnt):0}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+
+  pills('pme',selMonth);
+  dc('cme1');
+  charts['cme1']=new Chart(document.getElementById('cme1'),{
+    type:'bar',
+    data:{labels:mrows.map(r=>MONTHS[r.m]||r.m),datasets:[{data:mrows.map(r=>Math.round(r.tot)),backgroundColor:'#1a7a4a',borderRadius:4,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' $'+ctx.parsed.y.toLocaleString()}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:11}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'},beginAtZero:true}}}
+  });
+}
+
+function showTab(id,el){
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nt').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   el.classList.add('active');
 }
