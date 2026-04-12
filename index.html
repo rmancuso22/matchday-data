@@ -115,8 +115,10 @@ if(sessionStorage.getItem('md_auth')==='1'){
 <div class="header">
   <div class="logo">⚽ MatchDay — Revenue</div>
   <div class="header-right">
-    <div class="last-updated" id="lastUpdated">Loading...</div>
-    <button class="refresh-btn" onclick="loadStripeData()">↺ Refresh</button>
+    <div class="last-updated" id="lastUpdated">No data loaded</div>
+    <input type="file" accept=".csv" id="stripeUpload" style="display:none;" onchange="handleUpload(event)">
+    <button class="refresh-btn" onclick="document.getElementById('stripeUpload').click()">Upload CSV</button>
+    <button class="refresh-btn" onclick="loadFromGitHub()">↺ Refresh</button>
   </div>
 </div>
 
