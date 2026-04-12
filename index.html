@@ -187,10 +187,19 @@ async function loadStripeData() {
   document.getElementById('statusDot').style.cssText='width:6px;height:6px;border-radius:50%;background:#888;animation:none;';
   document.getElementById('statusText').textContent = 'Fetching Stripe data...';
   try {
-    const proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(STRIPE_URL);
-    const res = await fetch(proxy);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const text = await res.text();
+    const proxies = [
+      'https://corsproxy.io/?' + STRIPE_URL,
+      'https://api.allorigins.win/raw?url=' + encodeURIComponent(STRIPE_URL),
+      'https://thingproxy.freeboard.io/fetch/' + STRIPE_URL,
+    ];
+    let text = null;
+    for (const proxyUrl of proxies) {
+      try {
+        const r = await fetch(proxyUrl);
+        if (r.ok) { const t = await r.text(); if (t && t.length > 200) { text = t; break; } }
+      } catch(e) { console.warn('Proxy failed:', proxyUrl, e.message); }
+    }
+    if (!text) throw new Error('All proxies failed - check console');
     const lines = text.split('\n').filter(l=>l.trim());
     let start = 0;
     for(let i=0;i<Math.min(5,lines.length);i++){ if(lines[i].startsWith('Amount')){start=i;break;} }
