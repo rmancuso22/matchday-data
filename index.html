@@ -133,7 +133,11 @@ if(sessionStorage.getItem('md_auth')==='1'){
 </div>
 
 <div class="main">
-  <div class="section active" id="tab-overview"><div class="loading"><h3>Upload your Stripe charges CSV</h3><p>Download from Coefficient → upload using the button in the top right</p></div></div>
+  <div class="section active" id="tab-overview"><div class="loading">
+  <h3>No data loaded</h3>
+  <p style="margin-bottom:1.5rem">Download your Stripe charges CSV from Coefficient and upload it here</p>
+  <button onclick="document.getElementById('stripeUpload').click()" style="padding:10px 24px;background:#1a7a4a;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;">Upload Stripe CSV</button>
+</div></div>
   <div class="section" id="tab-monthly"><div class="loading"><h3>Upload your Stripe charges CSV to get started</h3></div></div>
   <div class="section" id="tab-cities"><div class="loading"><h3>Upload your Stripe charges CSV to get started</h3></div></div>
   <div class="section" id="tab-membership"><div class="loading"><h3>Upload your Stripe charges CSV to get started</h3></div></div>
@@ -141,7 +145,7 @@ if(sessionStorage.getItem('md_auth')==='1'){
 
 <script>
 
-const GITHUB_TOKEN = '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';
+let GITHUB_TOKEN = sessionStorage.getItem('md_github_token') || '';
 const GITHUB_REPO = 'rmancuso22/matchday-data';
 const GITHUB_FILE = 'stripe_charges.csv';
 const GITHUB_API = 'https://api.github.com/repos/' + GITHUB_REPO + '/contents/' + GITHUB_FILE;
@@ -192,18 +196,14 @@ let lastFileSha = null;
 async function loadFromGitHub() {
   try {
     document.getElementById('statusText').textContent = 'Loading saved data...';
-    const res = await fetch(GITHUB_API, {
-      headers: { 'Authorization': 'token ' + GITHUB_TOKEN, 'Accept': 'application/vnd.github.v3+json' }
-    });
+    // Public repo — read raw file without token
+    const rawUrl = 'https://raw.githubusercontent.com/' + GITHUB_REPO + '/main/' + GITHUB_FILE;
+    const res = await fetch(rawUrl);
     if (!res.ok) throw new Error('No saved data yet');
-    const json = await res.json();
-    lastFileSha = json.sha;
-    const text = atob(json.content.replace(/\n/g, ''));
-    processCSV(text, json.name, json.committer?.date || '');
-    // Show last updated from commit
-    const commitRes = await fetch('https://api.github.com/repos/' + GITHUB_REPO + '/commits?path=' + GITHUB_FILE + '&per_page=1', {
-      headers: { 'Authorization': 'token ' + GITHUB_TOKEN }
-    });
+    const text = await res.text();
+    processCSV(text, GITHUB_FILE, '');
+    // Get last commit date (public API, no token needed)
+    const commitRes = await fetch('https://api.github.com/repos/' + GITHUB_REPO + '/commits?path=' + GITHUB_FILE + '&per_page=1');
     if (commitRes.ok) {
       const commits = await commitRes.json();
       if (commits[0]) {
@@ -221,6 +221,13 @@ async function loadFromGitHub() {
 
 async function pushToGitHub(text, filename) {
   document.getElementById('statusText').textContent = 'Saving to GitHub...';
+  // Get current SHA if we don't have it
+  if (!lastFileSha) {
+    try {
+      const shaRes = await fetch(GITHUB_API, { headers: { 'Authorization': 'token ' + GITHUB_TOKEN, 'Accept': 'application/vnd.github.v3+json' } });
+      if (shaRes.ok) { const j = await shaRes.json(); lastFileSha = j.sha; }
+    } catch(e) {}
+  }
   const encoded = btoa(unescape(encodeURIComponent(text)));
   const now = new Date().toISOString();
   const body = {
@@ -260,6 +267,13 @@ function processCSV(text, filename, updatedAt) {
 function handleUpload(event) {
   const file = event.target.files[0];
   if (!file) return;
+  // Prompt for GitHub token if not stored in session
+  if (!GITHUB_TOKEN) {
+    const token = prompt('Enter your GitHub Personal Access Token to save data for all users:');
+    if (!token) { event.target.value=''; return; }
+    GITHUB_TOKEN = token.trim();
+    sessionStorage.setItem('md_github_token', GITHUB_TOKEN);
+  }
   document.getElementById('statusDot').style.cssText='width:6px;height:6px;border-radius:50%;background:#888;animation:none;';
   document.getElementById('statusText').textContent = 'Reading ' + file.name + '...';
   const reader = new FileReader();
