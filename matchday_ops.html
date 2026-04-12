@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MatchDay — Operations</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#f4f7f5;color:#0f1f17;font-size:14px;}
+.header{background:#0f1f17;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:54px;position:sticky;top:0;z-index:50;}
+.logo{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:#2ecc71;letter-spacing:.15em;text-transform:uppercase;}
+.hright{display:flex;align-items:center;gap:8px;}
+.lupd{font-size:11px;color:rgba(255,255,255,0.35);font-family:'DM Mono',monospace;}
+.hbtn{font-size:11px;padding:5px 14px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.85);cursor:pointer;}
+.hbtn:hover{background:rgba(255,255,255,0.15);}
+.sbar{background:#1a7a4a;padding:7px 2rem;font-size:11px;color:rgba(255,255,255,0.8);display:flex;align-items:center;gap:8px;}
+.sdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;background:#888;}
+.nav{background:#fff;border-bottom:1px solid rgba(26,122,74,0.12);padding:0 2rem;display:flex;}
+.nt{padding:.8rem 1.1rem;font-size:12px;font-weight:500;color:#8aa398;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
+.nt.active{color:#1a7a4a;border-bottom-color:#1a7a4a;}
+.main{padding:1.25rem 2rem 3rem;max-width:1400px;margin:0 auto;}
+.sec{display:none;}.sec.active{display:block;}
+.wpills{display:flex;gap:5px;margin-bottom:1.25rem;flex-wrap:wrap;}
+.wpill{font-size:10px;padding:4px 10px;border-radius:20px;border:1px solid rgba(26,122,74,0.25);background:transparent;color:#4a6358;cursor:pointer;font-family:'DM Mono',monospace;white-space:nowrap;}
+.wpill.active{background:#1a7a4a;color:#fff;border-color:#1a7a4a;}
+.metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:1.25rem;}
+.m{background:#fff;border:1px solid rgba(26,122,74,0.12);border-radius:10px;padding:13px 15px;}
+.m.acc{border-left:3px solid #1a7a4a;border-radius:0 10px 10px 0;}
+.ml{font-size:10px;color:#8aa398;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+.mv{font-size:21px;font-weight:600;color:#0f1f17;font-family:'DM Mono',monospace;}
+.ms{font-size:11px;color:#8aa398;margin-top:3px;}
+.card{background:#fff;border:1px solid rgba(26,122,74,0.12);border-radius:12px;padding:1.1rem;margin-bottom:1rem;}
+.ct{font-size:12px;font-weight:600;color:#0f1f17;margin-bottom:.25rem;}
+.cs{font-size:11px;color:#8aa398;margin-bottom:.75rem;}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1rem;margin-bottom:1rem;}
+.tbl{width:100%;font-size:11px;border-collapse:collapse;table-layout:fixed;}
+.tbl th{font-size:10px;font-weight:600;color:#8aa398;text-transform:uppercase;letter-spacing:.06em;padding:0 0 7px;text-align:left;border-bottom:1px solid rgba(26,122,74,0.1);}
+.tbl th:not(:first-child){text-align:right;}
+.tbl td{padding:6px 0;border-bottom:1px solid rgba(26,122,74,0.07);color:#4a6358;}
+.tbl td:first-child{color:#0f1f17;font-weight:500;}
+.tbl td:not(:first-child){text-align:right;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr.tot td{font-weight:600;color:#0f1f17;border-top:2px solid rgba(26,122,74,0.15);border-bottom:none;}
+.bar{height:5px;background:rgba(26,122,74,0.1);border-radius:2px;overflow:hidden;margin-top:3px;}
+.bf{height:100%;border-radius:2px;}
+.pok{display:inline-block;font-size:9px;padding:2px 6px;border-radius:3px;background:#e8f5ee;color:#1a5c35;font-weight:600;}
+.pwarn{display:inline-block;font-size:9px;padding:2px 6px;border-radius:3px;background:#fdf6e3;color:#8a5500;font-weight:600;}
+.pbad{display:inline-block;font-size:9px;padding:2px 6px;border-radius:3px;background:#fdf0ee;color:#922b1e;font-weight:600;}
+.fbtns{display:flex;gap:6px;margin-bottom:.75rem;flex-wrap:wrap;}
+.fbtn{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid rgba(26,122,74,0.2);background:transparent;color:#4a6358;cursor:pointer;}
+.fbtn.active{background:#1a7a4a;color:#fff;border-color:#1a7a4a;}
+.empty{text-align:center;padding:5rem 2rem;}
+.empty h3{font-size:17px;font-weight:500;color:#4a6358;margin-bottom:.75rem;}
+.empty p{font-size:13px;color:#8aa398;margin-bottom:1.5rem;line-height:1.6;}
+.ubtn{padding:11px 26px;background:#1a7a4a;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;}
+.ubtn:hover{background:#156038;}
+@media(max-width:900px){.metrics{grid-template-columns:repeat(2,1fr);}.two{grid-template-columns:1fr;}.main{padding:1rem;}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">⚽ MatchDay — Operations</div>
+  <div class="hright">
+    <span class="lupd" id="lupd">No data loaded</span>
+    <input type="file" id="csvfiles" accept=".csv" multiple style="display:none;" onchange="handleFiles(event)">
+    <button class="hbtn" onclick="document.getElementById('csvfiles').click()">Upload CSV(s)</button>
+  </div>
+</div>
+
+<div class="sbar">
+  <div class="sdot" id="sdot"></div>
+  <span id="stxt">Upload your Retool user analysis CSV(s) to get started — select multiple files at once to merge</span>
+</div>
+
+<div class="nav">
+  <div class="nt active" onclick="showTab('ov',this)">Weekly overview</div>
+  <div class="nt" onclick="showTab('ci',this)">City breakdown</div>
+  <div class="nt" onclick="showTab('fi',this)">Field fill rates</div>
+  <div class="nt" onclick="showTab('ca',this)">Cancellations</div>
+</div>
+
+<div class="main">
+  <div class="sec active" id="tab-ov"><div class="empty"><h3>No data loaded</h3><p>Upload your Retool user analysis CSV(s)<br>Select multiple files at once to merge all periods</p><button class="ubtn" onclick="document.getElementById('csvfiles').click()">Upload CSV(s)</button></div></div>
+  <div class="sec" id="tab-ci"><div class="empty"><h3>Upload CSV(s) to get started</h3><button class="ubtn" onclick="document.getElementById('csvfiles').click()">Upload CSV(s)</button></div></div>
+  <div class="sec" id="tab-fi"><div class="empty"><h3>Upload CSV(s) to get started</h3><button class="ubtn" onclick="document.getElementById('csvfiles').click()">Upload CSV(s)</button></div></div>
+  <div class="sec" id="tab-ca"><div class="empty"><h3>Upload CSV(s) to get started</h3><button class="ubtn" onclick="document.getElementById('csvfiles').click()">Upload CSV(s)</button></div></div>
+</div>
+
+<script>
+const FIELD_MAX = {
+  'San Juan Diego':16,'NEMP':40,'The Hattrick':18,'Round Rock':40,'Onion Creek':22,'Stony Point':40,
+  'ATH Pearland':40,'ATH Katy':40,'PAC Global':18,'Soccer Central':36,'STAR Soccer Complex':40,
+  'Lou Fusz Outdoor':40,'Lou Fusz Indoor':36,'Centennial Commons':24,'Bicentennial Park':18,
+  'Carroll Senior HS':32,'Hammond Park':22,'PRUMC':14,'Scissortail Park':22,'Helix Park':14
+};
+
+const CITY_ORDER = ['Austin','Houston','San Antonio','St. Louis','Dallas / Fort Worth','Atlanta','Oklahoma City'];
+const CITY_SHORT = {'Austin':'Austin','Houston':'Houston','San Antonio':'San Antonio','St. Louis':'St. Louis','Dallas / Fort Worth':'DFW','Atlanta':'Atlanta','Oklahoma City':'OKC'};
+const CITY_COLORS = ['#1a7a4a','#0e9e6e','#2980b9','#d4830a','#8e44ad','#c0392b','#16a085'];
+const gc='rgba(0,0,0,0.05)', tc='#8aa398';
+
+let allRows=[], selWeek='', weekMeta={}, charts={};
+
+function normField(name){
+  const n=name.trim();
+  if(['San Juan Diego Catholic High School','Premier at SJD','San Juan Diego Catholic HS'].includes(n)) return 'San Juan Diego';
+  if(n.includes('Tourney at Soccer Central')||n.includes('Soccer Central Complex')||n.includes('Soccer Central Field')) return 'Soccer Central';
+  if(n.includes('ATH Pearland')||n.includes('Tourney ATH Pearland')) return 'ATH Pearland';
+  if(n.includes('North East Metropolitan Park')||n.includes('NEMP')) return 'NEMP';
+  if(n.includes('Stadium Field at Round Rock')||n.includes('Round Rock')) return 'Round Rock';
+  if(n.includes('Lou Fusz')&&n.includes('Indoor')) return 'Lou Fusz Indoor';
+  if(n.includes('Lou Fusz')) return 'Lou Fusz Outdoor';
+  if(n.includes('Onion Creek')) return 'Onion Creek';
+  if(n.includes('Hammond Park')) return 'Hammond Park';
+  if(n.includes('PRUMC')) return 'PRUMC';
+  if(n.includes('Scissortail')) return 'Scissortail Park';
+  if(n.includes('Bicentennial')) return 'Bicentennial Park';
+  if(n.includes('PAC GLOBAL')||n.includes('PAC Global')) return 'PAC Global';
+  if(n.includes('STAR Soccer')) return 'STAR Soccer Complex';
+  if(n.includes('ATH Katy')||n.includes('Katy International')) return 'ATH Katy';
+  if(n.includes('Stony Point')) return 'Stony Point';
+  if(n.includes('The Hattrick')) return 'The Hattrick';
+  if(n.includes('Carroll Senior')) return 'Carroll Senior HS';
+  if(n.includes('Centennial Commons')) return 'Centennial Commons';
+  if(n.includes('Helix Park')) return 'Helix Park';
+  return n;
+}
+
+function getWeekNum(dateStr){
+  try{
+    const d=new Date(dateStr);
+    // ISO week number calculation
+    const jan4=new Date(d.getFullYear(),0,4);
+    const startOfWeek1=new Date(jan4);
+    startOfWeek1.setDate(jan4.getDate()-((jan4.getDay()+6)%7));
+    const diff=d-startOfWeek1;
+    return diff<0?52:Math.floor(diff/604800000)+1;
+  } catch(e){ return null; }
+}
+
+function weekLabel(w){
+  const meta=weekMeta[w];
+  if(!meta) return 'W'+w;
+  return `W${w} ${meta.start}`;
+}
+
+function fillPill(pct){
+  if(pct>=80) return `<span class="pok">${pct}%</span>`;
+  if(pct>=50) return `<span class="pwarn">${pct}%</span>`;
+  return `<span class="pbad">${pct}%</span>`;
+}
+function cancelPill(pct){
+  if(pct<10) return `<span class="pok">${pct}%</span>`;
+  if(pct<20) return `<span class="pwarn">${pct}%</span>`;
+  return `<span class="pbad">${pct}%</span>`;
+}
+
+function dc(id){ if(charts[id]){charts[id].destroy();delete charts[id];} }
+function fmt(n){ return Math.round(n).toLocaleString(); }
+
+function handleFiles(event){
+  const files=Array.from(event.target.files);
+  if(!files.length) return;
+  document.getElementById('stxt').textContent=`Loading ${files.length} file(s)...`;
+  document.getElementById('sdot').style.background='#888';
+  allRows=[];
+  let loaded=0;
+  files.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=function(e){
+      const result=Papa.parse(e.target.result,{header:true,skipEmptyLines:true});
+      allRows=allRows.concat(result.data);
+      loaded++;
+      if(loaded===files.length) processData(files.map(f=>f.name).join(', '));
+    };
+    reader.readAsText(file);
+  });
+  event.target.value='';
+}
+
+function processData(filenames){
+  // Build week metadata — always use ISO Monday as week start
+  weekMeta={};
+  allRows.forEach(r=>{
+    const ms=r['Match Start'];
+    if(!ms) return;
+    const w=getWeekNum(ms);
+    if(!w) return;
+    if(!weekMeta[w]) weekMeta[w]=true;
+  });
+  Object.keys(weekMeta).forEach(w=>{
+    const wn=parseInt(w);
+    const year=2026;
+    // Find the Monday of ISO week wn
+    const jan4=new Date(year,0,4);
+    const monday=new Date(jan4);
+    monday.setDate(jan4.getDate()-((jan4.getDay()+6)%7)+(wn-1)*7);
+    const sunday=new Date(monday);
+    sunday.setDate(monday.getDate()+6);
+    const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    weekMeta[w]={
+      start:mn[monday.getMonth()]+' '+String(monday.getDate()).padStart(2,'0'),
+      end:mn[sunday.getMonth()]+' '+String(sunday.getDate()).padStart(2,'0')
+    };
+  });
+
+  const weeks=Object.keys(weekMeta).map(Number).sort((a,b)=>a-b);
+  // Default to most recent complete week
+  selWeek=String(weeks[weeks.length-2]||weeks[weeks.length-1]);
+
+  document.getElementById('sdot').style.background='#2ecc71';
+  document.getElementById('stxt').textContent=`${allRows.length.toLocaleString()} bookings loaded · ${weeks.length} weeks · ${filenames}`;
+  document.getElementById('lupd').textContent='Loaded '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  renderAll();
+}
+
+function getRows(week){
+  if(week==='all') return allRows;
+  return allRows.filter(r=>{
+    const ms=r['Match Start'];
+    if(!ms) return false;
+    return getWeekNum(ms)===parseInt(week);
+  });
+}
+
+function aggregateRows(rows){
+  const cityData={}, fieldData={};
+  CITY_ORDER.forEach(c=>{ cityData[c]={spots:0,member:0,daily:0,promo:0,allMatches:new Set(),playedMatches:new Set(),playerCanceled:0}; });
+
+  rows.forEach(r=>{
+    const city=(r['City']||'').trim();
+    if(!CITY_ORDER.includes(city)) return;
+    const fname=normField(r['Field']||'');
+    const matchKey=city+'|'+fname+'|'+(r['Match Start']||'');
+    const canceled=r['Match Canceled']==='true';
+    const playerCanceled=!!(r['Canceled At']||'').trim();
+    const pay=r['Type Of Payment']||'';
+
+    cityData[city].spots++;
+    if(pay==='MEMBER') cityData[city].member++;
+    else if(pay==='DAILY PAID') cityData[city].daily++;
+    else if(pay==='PROMOCODE') cityData[city].promo++;
+    cityData[city].allMatches.add(matchKey);
+    if(!canceled){ cityData[city].playedMatches.add(matchKey); }
+    if(playerCanceled) cityData[city].playerCanceled++;
+
+    if(!fieldData[fname]) fieldData[fname]={city,spots:0,playedSpots:0,allMatches:new Set(),playedMatches:new Set()};
+    fieldData[fname].city=city;
+    fieldData[fname].spots++;
+    fieldData[fname].allMatches.add(r['Match Start']||matchKey);
+    if(!canceled){
+      fieldData[fname].playedMatches.add(r['Match Start']||matchKey);
+      fieldData[fname].playedSpots++;
+    }
+  });
+
+  return {cityData, fieldData};
+}
+
+function renderAll(){ renderOv(); renderCi(); renderFi(); renderCa(); }
+
+function wpills(id){
+  const weeks=Object.keys(weekMeta).map(Number).sort((a,b)=>a-b);
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.innerHTML=weeks.map(w=>`<button class="wpill${String(w)===selWeek?' active':''}" onclick="selWeek='${w}';renderAll()">${weekLabel(w)}</button>`).join('')
+    +`<button class="wpill${selWeek==='all'?' active':''}" onclick="selWeek='all';renderAll()">All weeks</button>`;
+}
+
+function renderOv(){
+  const rows=getRows(selWeek);
+  const {cityData}=aggregateRows(rows);
+  const totSpots=CITY_ORDER.reduce((s,c)=>s+cityData[c].spots,0);
+  const totMember=CITY_ORDER.reduce((s,c)=>s+cityData[c].member,0);
+  const totDaily=CITY_ORDER.reduce((s,c)=>s+cityData[c].daily,0);
+  const totPromo=CITY_ORDER.reduce((s,c)=>s+cityData[c].promo,0);
+  const totAllMatches=new Set(CITY_ORDER.flatMap(c=>[...cityData[c].allMatches])).size;
+  const totPlayedMatches=new Set(CITY_ORDER.flatMap(c=>[...cityData[c].playedMatches])).size;
+  const totMatchCanceled=totAllMatches-totPlayedMatches;
+  const totPlayerCanceled=CITY_ORDER.reduce((s,c)=>s+cityData[c].playerCanceled,0);
+  const matchCancelPct=totAllMatches?Math.round(totMatchCanceled/totAllMatches*100):0;
+  const playerCancelPct=totSpots?Math.round(totPlayerCanceled/totSpots*100):0;
+  const wlabel=selWeek==='all'?'All weeks':`W${selWeek} · ${weekMeta[selWeek]?.start||''} – ${weekMeta[selWeek]?.end||''}`;
+  const maxSpots=Math.max(...CITY_ORDER.map(c=>cityData[c].spots),1);
+
+  // Trend data
+  const weeks=Object.keys(weekMeta).map(Number).sort((a,b)=>a-b);
+  const trendData=weeks.map(w=>{
+    const wr=getRows(String(w));
+    const tot=wr.filter(r=>CITY_ORDER.includes((r['City']||'').trim())).length;
+    const mem=wr.filter(r=>r['Type Of Payment']==='MEMBER'&&CITY_ORDER.includes((r['City']||'').trim())).length;
+    const dai=wr.filter(r=>r['Type Of Payment']==='DAILY PAID'&&CITY_ORDER.includes((r['City']||'').trim())).length;
+    return {w,tot,mem,dai};
+  });
+
+  document.getElementById('tab-ov').innerHTML=`
+    <div class="wpills" id="pov"></div>
+    <div style="font-size:11px;font-family:'DM Mono',monospace;color:#8aa398;margin-bottom:1rem;">${wlabel}</div>
+    <div class="metrics" style="grid-template-columns:repeat(6,minmax(0,1fr));">
+      <div class="m acc"><div class="ml">Total spots</div><div class="mv">${fmt(totSpots)}</div><div class="ms">${fmt(totPlayedMatches)} matches played</div></div>
+      <div class="m"><div class="ml">Member spots</div><div class="mv">${fmt(totMember)}</div><div class="ms">${totSpots?Math.round(totMember/totSpots*100):0}% of spots</div></div>
+      <div class="m"><div class="ml">Daily paid spots</div><div class="mv">${fmt(totDaily)}</div><div class="ms">${totSpots?Math.round(totDaily/totSpots*100):0}% of spots</div></div>
+      <div class="m"><div class="ml">Promo spots</div><div class="mv">${fmt(totPromo)}</div><div class="ms">${totSpots?Math.round(totPromo/totSpots*100):0}% of spots</div></div>
+      <div class="m"><div class="ml">Match cancellations</div><div class="mv">${fmt(totMatchCanceled)}</div><div class="ms">${cancelPill(matchCancelPct)} of scheduled</div></div>
+      <div class="m"><div class="ml">Player cancellations</div><div class="mv">${fmt(totPlayerCanceled)}</div><div class="ms">${cancelPill(playerCancelPct)} of spots</div></div>
+    </div>
+    <div class="two">
+      <div class="card">
+        <div class="ct">Spots by city</div>
+        <div class="cs">Total · member · daily paid · ${wlabel}</div>
+        <table class="tbl">
+          <thead><tr><th style="width:22%">City</th><th style="width:10%">Total</th><th style="width:10%">Member</th><th style="width:10%">Daily</th><th style="width:10%">Promo</th><th style="width:14%">Matches</th><th style="width:24%">Share</th></tr></thead>
+          <tbody>
+            ${CITY_ORDER.map(c=>{
+              const d=cityData[c];
+              const played=d.playedMatches.size;
+              const all=d.allMatches.size;
+              const pct=Math.round(d.spots/maxSpots*100);
+              return `<tr><td>${CITY_SHORT[c]||c}</td><td>${fmt(d.spots)}</td><td>${fmt(d.member)}</td><td>${fmt(d.daily)}</td><td>${fmt(d.promo)}</td><td>${played}<span style="color:#8aa398;font-size:10px"> /${all}</span></td><td><div class="bar"><div class="bf" style="width:${pct}%;background:#1a7a4a"></div></div></td></tr>`;
+            }).join('')}
+            <tr class="tot"><td>Total</td><td>${fmt(totSpots)}</td><td>${fmt(totMember)}</td><td>${fmt(totDaily)}</td><td>${fmt(totPromo)}</td><td>${totPlayedMatches}<span style="color:#8aa398;font-size:10px"> /${totAllMatches}</span></td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="ct">Weekly trend</div>
+        <div class="cs">Total · member · daily paid spots</div>
+        <div style="display:flex;gap:12px;margin-bottom:10px;font-size:11px;color:#4a6358;">
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#1a7a4a;display:inline-block;"></span>Total</span>
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#0e9e6e;display:inline-block;"></span>Member</span>
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#2980b9;display:inline-block;"></span>Daily</span>
+        </div>
+        <div style="position:relative;height:220px;"><canvas id="ctrd" role="img" aria-label="Weekly spots trend"></canvas></div>
+      </div>
+    </div>`;
+
+  // Canceled match detail table
+  const canceledMatches = {};
+  rows.forEach(r=>{
+    if(!CITY_ORDER.includes((r['City']||'').trim())) return;
+    if(r['Match Canceled']!=='true') return;
+    const key=(r['City']||'').trim()+'|'+(r['Field']||'').trim()+'|'+(r['Match Start']||'');
+    if(!canceledMatches[key]){
+      canceledMatches[key]={city:(r['City']||'').trim(),field:normField(r['Field']||''),startTime:r['Match Start']||'',spots:0};
+    }
+    canceledMatches[key].spots++;
+  });
+
+  const canceledList=Object.values(canceledMatches).sort((a,b)=>{
+    const ci=CITY_ORDER.indexOf(a.city)-CITY_ORDER.indexOf(b.city);
+    return ci!==0?ci:a.startTime.localeCompare(b.startTime);
+  });
+
+  const canceledHtml=canceledList.length===0
+    ? '<div style="color:#8aa398;font-size:12px;padding:.5rem 0">No match cancellations this week</div>'
+    : `<table class="tbl">
+        <thead><tr>
+          <th style="width:20%">City</th>
+          <th style="width:28%">Field</th>
+          <th style="width:24%">Match start</th>
+          <th style="width:14%">Spots booked</th>
+          <th style="width:14%">Spots lost</th>
+        </tr></thead>
+        <tbody>${canceledList.map(m=>{
+          const cap=FIELD_MAX[m.field]||0;
+          const d=new Date(m.startTime);
+          const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+          const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+          const dayLabel=days[d.getDay()]+' '+months[d.getMonth()]+' '+d.getDate()+' · '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true});
+          return `<tr>
+            <td>${CITY_SHORT[m.city]||m.city}</td>
+            <td>${m.field}</td>
+            <td style="font-family:'DM Mono',monospace;font-size:10px;">${dayLabel}</td>
+            <td>${m.spots}</td>
+            <td style="color:#c0392b">${cap?cap-m.spots:'—'}</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>`;
+
+  const cancelCard=`<div class="card" style="margin-top:0;">
+    <div class="ct">Canceled matches detail</div>
+    <div class="cs">${canceledList.length} match${canceledList.length!==1?'es':''} canceled · ${wlabel} · sorted by city then start time</div>
+    ${canceledHtml}
+  </div>`;
+
+  document.getElementById('tab-ov').insertAdjacentHTML('beforeend', cancelCard);
+
+  wpills('pov');
+  dc('ctrd');
+  charts['ctrd']=new Chart(document.getElementById('ctrd'),{
+    type:'line',
+    data:{labels:trendData.map(d=>weekLabel(d.w)),datasets:[
+      {label:'Total',data:trendData.map(d=>d.tot),borderColor:'#1a7a4a',backgroundColor:'rgba(26,122,74,0.07)',tension:.35,pointRadius:3,pointBackgroundColor:'#1a7a4a',fill:true,borderWidth:2},
+      {label:'Member',data:trendData.map(d=>d.mem),borderColor:'#0e9e6e',tension:.35,pointRadius:3,pointBackgroundColor:'#0e9e6e',fill:false,borderWidth:2,borderDash:[4,3]},
+      {label:'Daily',data:trendData.map(d=>d.dai),borderColor:'#2980b9',tension:.35,pointRadius:3,pointBackgroundColor:'#2980b9',fill:false,borderWidth:2,borderDash:[4,3]},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:9},maxRotation:45}},y:{grid:{color:gc},ticks:{color:tc,font:{size:10}},beginAtZero:false}}}
+  });
+}
+
+function renderCi(){
+  const weeks=Object.keys(weekMeta).map(Number).sort((a,b)=>a-b);
+  // Build city × week table
+  const cityWeekSpots={};
+  CITY_ORDER.forEach(c=>{ cityWeekSpots[c]={}; weeks.forEach(w=>cityWeekSpots[c][w]=0); });
+  allRows.forEach(r=>{
+    const city=(r['City']||'').trim();
+    if(!CITY_ORDER.includes(city)) return;
+    const w=getWeekNum(r['Match Start']||'');
+    if(!w) return;
+    cityWeekSpots[city][w]=(cityWeekSpots[city][w]||0)+1;
+  });
+
+  const recentWeeks=weeks.slice(-8);
+  document.getElementById('tab-ci').innerHTML=`
+    <div class="card">
+      <div class="ct">Spots by city × week</div>
+      <div class="cs">Total spots per city per week</div>
+      <div style="overflow-x:auto;">
+        <table class="tbl" style="min-width:600px;table-layout:auto;">
+          <thead><tr>
+            <th style="text-align:left;width:18%">City</th>
+            ${recentWeeks.map(w=>`<th style="text-align:right">${weekLabel(w)}</th>`).join('')}
+            <th style="text-align:right">Total</th>
+          </tr></thead>
+          <tbody>
+            ${CITY_ORDER.map(c=>{
+              const tot=weeks.reduce((s,w)=>s+(cityWeekSpots[c][w]||0),0);
+              return `<tr><td>${c}</td>${recentWeeks.map(w=>`<td style="text-align:right">${fmt(cityWeekSpots[c][w]||0)}</td>`).join('')}<td style="text-align:right;font-weight:600">${fmt(tot)}</td></tr>`;
+            }).join('')}
+            <tr class="tot"><td>Total</td>${recentWeeks.map(w=>`<td style="text-align:right">${fmt(CITY_ORDER.reduce((s,c)=>s+(cityWeekSpots[c][w]||0),0))}</td>`).join('')}<td style="text-align:right">${fmt(allRows.filter(r=>CITY_ORDER.includes((r['City']||'').trim())).length)}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">City spots trend</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;font-size:11px;color:#4a6358;" id="cityLeg"></div>
+      <div style="position:relative;height:300px;"><canvas id="ccit" role="img" aria-label="City spots trend by week"></canvas></div>
+    </div>`;
+
+  document.getElementById('cityLeg').innerHTML=CITY_ORDER.map((c,i)=>`<span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:${CITY_COLORS[i]};display:inline-block;"></span>${CITY_SHORT[c]||c}</span>`).join('');
+
+  dc('ccit');
+  charts['ccit']=new Chart(document.getElementById('ccit'),{
+    type:'line',
+    data:{labels:weeks.map(w=>weekLabel(w)),datasets:CITY_ORDER.map((city,i)=>({
+      label:city,
+      data:weeks.map(w=>cityWeekSpots[city][w]||0),
+      borderColor:CITY_COLORS[i],tension:.35,pointRadius:3,borderWidth:2,fill:false
+    }))},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:9},maxRotation:45}},y:{grid:{color:gc},ticks:{color:tc,font:{size:10}},beginAtZero:true}}}
+  });
+}
+
+let fiViewMode='week'; // 'week' or 'month'
+
+function renderFi(){
+  const rows=fiViewMode==='month'?getRowsByMonth(selFiMonth):getRows(selWeek);
+  const {fieldData}=aggregateRows(rows);
+  const wlabel=fiViewMode==='month'
+    ? (selFiMonth==='all'?'All months':selFiMonth)
+    : (selWeek==='all'?'All weeks':`W${selWeek} · ${weekMeta[selWeek]?.start||''} – ${weekMeta[selWeek]?.end||''}`);
+  const cities=['All',...CITY_ORDER];
+  const fields=Object.entries(fieldData).filter(([f])=>f&&FIELD_MAX[f]).sort((a,b)=>b[1].playedSpots-a[1].playedSpots);
+
+  // Get available months
+  const months=[...new Set(allRows.map(r=>(r['Match Start']||'').slice(0,7)).filter(Boolean))].sort();
+  const monthNames={'2026-01':'Jan 2026','2026-02':'Feb 2026','2026-03':'Mar 2026','2026-04':'Apr 2026','2026-05':'May 2026','2026-06':'Jun 2026','2026-07':'Jul 2026','2026-08':'Aug 2026','2026-09':'Sep 2026','2026-10':'Oct 2026','2026-11':'Nov 2026','2026-12':'Dec 2026'};
+
+  document.getElementById('tab-fi').innerHTML=`
+    <div style="display:flex;gap:8px;margin-bottom:1rem;align-items:center;">
+      <button class="fbtn${fiViewMode==='week'?' active':''}" onclick="fiViewMode='week';renderFi()">By week</button>
+      <button class="fbtn${fiViewMode==='month'?' active':''}" onclick="fiViewMode='month';renderFi()">By month</button>
+      <div style="width:1px;background:rgba(26,122,74,0.2);height:20px;margin:0 4px;"></div>
+      ${fiViewMode==='week'
+        ? `<div class="wpills" id="pfi" style="margin-bottom:0;"></div>`
+        : `<div style="display:flex;gap:5px;flex-wrap:wrap;" id="pfi">
+            ${months.map(m=>`<button class="wpill${selFiMonth===m?' active':''}" onclick="selFiMonth='${m}';renderFi()">${monthNames[m]||m}</button>`).join('')}
+            <button class="wpill${selFiMonth==='all'?' active':''}" onclick="selFiMonth='all';renderFi()">All months</button>
+          </div>`
+      }
+    </div>
+    <div style="font-size:11px;font-family:'DM Mono',monospace;color:#8aa398;margin-bottom:1rem;">${wlabel}</div>
+    <div class="card">
+      <div class="ct">Field fill rates</div>
+      <div class="cs">Played spots ÷ (all scheduled matches × field capacity) · canceled matches count as lost capacity</div>
+      <div class="fbtns" id="cityFilter">${cities.map(c=>`<button class="fbtn${c==='All'?' active':''}" onclick="filterFi('${c}',this)">${CITY_SHORT[c]||c}</button>`).join('')}</div>
+      <div style="overflow-x:auto;">
+        <table class="tbl" id="fiTbl" style="min-width:560px;">
+          <thead><tr>
+            <th style="width:24%">Field</th>
+            <th style="width:13%">City</th>
+            <th style="width:11%">Played spots</th>
+            <th style="width:10%">Sched.</th>
+            <th style="width:10%">Played</th>
+            <th style="width:10%">Capacity</th>
+            <th style="width:10%">Fill %</th>
+            <th style="width:12%">Fill bar</th>
+          </tr></thead>
+          <tbody id="fiBody"></tbody>
+        </table>
+      </div>
+    </div>`;
+
+  if(fiViewMode==='week') wpills('pfi');
+  window._fiFields=fields;
+  renderFiRows('All');
+}
+
+function getRowsByMonth(month){
+  if(month==='all') return allRows;
+  return allRows.filter(r=>(r['Match Start']||'').startsWith(month));
+}
+
+let selFiMonth='all';
+
+function renderFiRows(cityFilter){
+  const fields=window._fiFields||[];
+  const filtered=cityFilter==='All'?fields:fields.filter(([,d])=>d.city===cityFilter);
+  document.getElementById('fiBody').innerHTML=filtered.map(([f,d])=>{
+    const cap=FIELD_MAX[f]||0;
+    const allM=d.allMatches.size;
+    const playedM=d.playedMatches.size;
+    const capacity=allM*cap;
+    const fill=capacity?Math.round(d.playedSpots/capacity*100):0;
+    const barW=Math.min(fill,100);
+    const barColor=fill>=80?'#1a7a4a':fill>=50?'#d4830a':'#c0392b';
+    return `<tr>
+      <td>${f}</td>
+      <td style="color:#8aa398">${CITY_SHORT[d.city]||d.city}</td>
+      <td>${fmt(d.playedSpots)}</td>
+      <td>${allM}</td>
+      <td>${playedM}</td>
+      <td>${fmt(capacity)}</td>
+      <td>${fillPill(fill)}</td>
+      <td><div class="bar"><div class="bf" style="width:${barW}%;background:${barColor}"></div></div></td>
+    </tr>`;
+  }).join('');
+}
+
+function filterFi(city,btn){
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFiRows(city);
+}
+
+function renderCa(){
+  const rows=getRows(selWeek);
+  const {cityData,fieldData}=aggregateRows(rows);
+  const wlabel=selWeek==='all'?'All weeks':`W${selWeek} · ${weekMeta[selWeek]?.start||''} – ${weekMeta[selWeek]?.end||''}`;
+
+  // Weekly cancellation trend
+  const weeks=Object.keys(weekMeta).map(Number).sort((a,b)=>a-b);
+  const trendCa=weeks.map(w=>{
+    const wr=getRows(String(w));
+    const allM=new Set(), playedM=new Set();
+    let spots=0, playerCa=0;
+    wr.forEach(r=>{
+      if(!CITY_ORDER.includes((r['City']||'').trim())) return;
+      const mk=(r['City']||'')+'|'+(r['Field']||'')+'|'+(r['Match Start']||'');
+      allM.add(mk); spots++;
+      if(r['Match Canceled']!=='true') playedM.add(mk);
+      if((r['Canceled At']||'').trim()) playerCa++;
+    });
+    const matchCa=allM.size-playedM.size;
+    return {w,matchCaPct:allM.size?Math.round(matchCa/allM.size*100):0,playerCaPct:spots?Math.round(playerCa/spots*100):0,matchCa,playerCa};
+  });
+
+  document.getElementById('tab-ca').innerHTML=`
+    <div class="wpills" id="pca"></div>
+    <div style="font-size:11px;font-family:'DM Mono',monospace;color:#8aa398;margin-bottom:1rem;">${wlabel}</div>
+    <div class="two">
+      <div class="card">
+        <div class="ct">Match cancellation rate by city</div>
+        <div class="cs">MatchDay-initiated cancellations · ${wlabel}</div>
+        <table class="tbl">
+          <thead><tr><th style="width:30%">City</th><th style="width:15%">Scheduled</th><th style="width:15%">Canceled</th><th style="width:15%">Played</th><th style="width:25%">Cancel rate</th></tr></thead>
+          <tbody>${CITY_ORDER.map(c=>{
+            const d=cityData[c];
+            const all=d.allMatches.size, played=d.playedMatches.size, canceled=all-played;
+            const pct=all?Math.round(canceled/all*100):0;
+            return `<tr><td>${CITY_SHORT[c]||c}</td><td>${all}</td><td>${canceled}</td><td>${played}</td><td>${cancelPill(pct)}</td></tr>`;
+          }).join('')}</tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="ct">Player cancellation rate by city</div>
+        <div class="cs">Individual player dropouts · ${wlabel}</div>
+        <table class="tbl">
+          <thead><tr><th style="width:30%">City</th><th style="width:20%">Spots</th><th style="width:20%">Player cancel</th><th style="width:30%">Cancel rate</th></tr></thead>
+          <tbody>${CITY_ORDER.map(c=>{
+            const d=cityData[c];
+            const pct=d.spots?Math.round(d.playerCanceled/d.spots*100):0;
+            return `<tr><td>${CITY_SHORT[c]||c}</td><td>${fmt(d.spots)}</td><td>${fmt(d.playerCanceled)}</td><td>${cancelPill(pct)}</td></tr>`;
+          }).join('')}</tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Cancellation trend by week</div>
+      <div style="display:flex;gap:14px;margin-bottom:10px;font-size:11px;color:#4a6358;">
+        <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#c0392b;display:inline-block;"></span>Match cancel %</span>
+        <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#d4830a;display:inline-block;"></span>Player cancel %</span>
+      </div>
+      <div style="position:relative;height:240px;"><canvas id="ccatrd" role="img" aria-label="Weekly cancellation rate trend"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="ct">Field match cancellations</div>
+      <div class="cs">Fields with highest match cancellation rates · ${wlabel}</div>
+      <table class="tbl">
+        <thead><tr><th style="width:28%">Field</th><th style="width:14%">City</th><th style="width:12%">Scheduled</th><th style="width:12%">Canceled</th><th style="width:12%">Played</th><th style="width:22%">Cancel rate</th></tr></thead>
+        <tbody>${Object.entries(fieldData).filter(([f])=>f&&FIELD_MAX[f]).sort((a,b)=>{
+          const aAll=a[1].allMatches.size, aPct=aAll?(aAll-a[1].playedMatches.size)/aAll:0;
+          const bAll=b[1].allMatches.size, bPct=bAll?(bAll-b[1].playedMatches.size)/bAll:0;
+          return bPct-aPct;
+        }).map(([f,d])=>{
+          const all=d.allMatches.size, played=d.playedMatches.size, canceled=all-played;
+          const pct=all?Math.round(canceled/all*100):0;
+          return `<tr><td>${f}</td><td style="color:#8aa398">${CITY_SHORT[d.city]||d.city}</td><td>${all}</td><td>${canceled}</td><td>${played}</td><td>${cancelPill(pct)}</td></tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>`;
+
+  wpills('pca');
+  dc('ccatrd');
+  charts['ccatrd']=new Chart(document.getElementById('ccatrd'),{
+    type:'line',
+    data:{labels:trendCa.map(d=>weekLabel(d.w)),datasets:[
+      {label:'Match cancel %',data:trendCa.map(d=>d.matchCaPct),borderColor:'#c0392b',backgroundColor:'rgba(192,57,43,0.06)',tension:.35,pointRadius:3,pointBackgroundColor:'#c0392b',fill:true,borderWidth:2},
+      {label:'Player cancel %',data:trendCa.map(d=>d.playerCaPct),borderColor:'#d4830a',tension:.35,pointRadius:3,pointBackgroundColor:'#d4830a',fill:false,borderWidth:2,borderDash:[4,3]},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y}%`}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:9},maxRotation:45}},y:{grid:{color:gc},ticks:{color:tc,font:{size:10},callback:v=>v+'%'},beginAtZero:true}}}
+  });
+}
+
+function showTab(id,el){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nt').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>
