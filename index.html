@@ -222,10 +222,11 @@ function renderOv(){
   const topFields=Object.entries(fieldRev).filter(([f])=>f).sort((a,b)=>b[1]-a[1]).slice(0,8);
   const maxFieldRev=Math.max(...topFields.map(([,v])=>v),1);
 
-  // Day of week avg revenue
-  const dayRev=[0,0,0,0,0,0,0], dayCnt=[0,0,0,0,0,0,0];
-  mch.forEach(r=>{ if(!r['Created']) return; const d=new Date(r['Created']); const dow=d.getDay(); dayRev[dow]+=parseFloat(r['Amount']||0); dayCnt[dow]++; });
-  const dayAvg=dayRev.map((v,i)=>dayCnt[i]?Math.round(v/dayCnt[i]):0);
+  // Day of week total revenue by city
+  const dayCity={};
+  CITY_ORDER.forEach(c=>{ dayCity[c]=[0,0,0,0,0,0,0]; });
+  dayCity['Other']=[0,0,0,0,0,0,0];
+  mch.forEach(r=>{ if(!r['Created']) return; const d=new Date(r['Created']); const dow=d.getDay(); const c=cityFromCharge(r)||'Other'; const a=parseFloat(r['Amount']||0); if(dayCity[c]) dayCity[c][dow]+=a; else dayCity['Other'][dow]+=a; });
 
   document.getElementById('tab-ov').innerHTML=`
     <div class="pills" id="pov"></div>
@@ -256,7 +257,7 @@ function renderOv(){
         </div>
         <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(26,122,74,0.1);">
           <div class="ct" style="margin-bottom:.5rem;">Avg revenue by day of week</div>
-          <div style="position:relative;height:100px;"><canvas id="cdow" role="img" aria-label="Average match revenue by day of week"></canvas></div>
+          <div style="position:relative;height:130px;"><canvas id="cdow" role="img" aria-label="Total match revenue by day of week stacked by city"></canvas></div>
         </div>
       </div>
     </div>
@@ -273,8 +274,13 @@ function renderOv(){
   dc('cdow');
   charts['cdow']=new Chart(document.getElementById('cdow'),{
     type:'bar',
-    data:{labels:DAYS,datasets:[{data:dayAvg,backgroundColor:DAYS.map((_,i)=>dayAvg[i]===Math.max(...dayAvg)?'#1a7a4a':'rgba(26,122,74,0.35)'),borderRadius:3,borderSkipped:false}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' avg $'+ctx.parsed.y.toLocaleString()+' / charge'}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:10}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:10},callback:v=>'$'+v},beginAtZero:true}}}
+    data:{labels:DAYS,datasets:CITY_ORDER.map((city,i)=>({
+      label:city,
+      data:dayCity[city].map(v=>Math.round(v)),
+      backgroundColor:CITY_COLORS[i],
+      borderRadius:0,borderSkipped:false,stack:'dow'
+    }))},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{mode:'index',callbacks:{label:ctx=>` ${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:tc,font:{size:10}}},y:{stacked:true,grid:{color:gc},ticks:{color:tc,font:{size:10},callback:v=>'$'+Math.round(v/1000)+'k'},beginAtZero:true}}}
   });
 }
 
