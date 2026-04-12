@@ -308,22 +308,7 @@ if (sessionStorage.getItem('md_auth') === '1') {
   <span class="upload-status" id="customersStatus">Loading customers...</span>
   <button onclick="reloadStripe()" style="font-size:11px;padding:3px 10px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);cursor:pointer;">&#8635; Refresh Stripe</button>
   <div style="width:1px;background:rgba(255,255,255,0.15);margin:0 4px;align-self:stretch;"></div>
-  <div class="upload-label">Month:</div>
-  <select id="monthFilter" onchange="processAll()" style="font-size:11px;padding:3px 8px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:white;cursor:pointer;">
-    <option value="auto">Auto (from Retool)</option>
-    <option value="2026-01">Jan 2026</option>
-    <option value="2026-02">Feb 2026</option>
-    <option value="2026-03">Mar 2026</option>
-    <option value="2026-04">Apr 2026</option>
-    <option value="2026-05">May 2026</option>
-    <option value="2026-06">Jun 2026</option>
-    <option value="2026-07">Jul 2026</option>
-    <option value="2026-08">Aug 2026</option>
-    <option value="2026-09">Sep 2026</option>
-    <option value="2026-10">Oct 2026</option>
-    <option value="2026-11">Nov 2026</option>
-    <option value="2026-12">Dec 2026</option>
-  </select>
+  <span id="detectedMonth" class="upload-status" style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);">Month: auto</span>
 </div>
 
 <div class="nav">
@@ -466,21 +451,19 @@ function processAll() {
 
   const month = getMonth(state.retool);
   document.getElementById('headerPeriod').textContent = month;
+  const mEl = document.getElementById('detectedMonth');
+  if (mEl) mEl.textContent = 'Month: ' + monthPrefix;
 
-  // Detect month prefix — use selector if set, otherwise auto-detect from Retool
-  const monthSel = document.getElementById('monthFilter')?.value || 'auto';
-  let monthPrefix;
-  if (monthSel !== 'auto') {
-    monthPrefix = monthSel;
-  } else {
-    const sampleDate = state.retool.find(r => r['Match Start'])?.['Match Start'] || '';
-    monthPrefix = sampleDate.slice(0,7); // e.g. "2026-03"
-  }
-  // Set selector to match detected month if on auto
-  if (monthSel === 'auto') {
-    const sel = document.getElementById('monthFilter');
-    if (sel) { const opt = sel.querySelector('option[value="'+monthPrefix+'"]'); if (opt) opt.selected = true; }
-  }
+  // Detect month prefix from Retool data (the source of truth for which month we're viewing)
+  const allDates = state.retool
+    .map(r => r['Match Start'] || '')
+    .filter(d => d.match(/^\d{4}-\d{2}/))
+    .map(d => d.slice(0,7));
+  // Find the most common month in Retool data
+  const monthCounts = {};
+  allDates.forEach(d => { monthCounts[d] = (monthCounts[d]||0) + 1; });
+  const monthPrefix = Object.entries(monthCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || '2026-03';
+  console.log('Detected month:', monthPrefix, 'from', Object.keys(monthCounts));
 
   // ── RETOOL ANALYSIS ──
   const fieldMap = {};
@@ -1035,5 +1018,3 @@ function showTab(name) {
 </script>
 </body>
 </html>
-
-
