@@ -427,17 +427,23 @@ function parseRetool(csv) {
   return result.data;
 }
 function parseStripe(csv) {
-  const lines = csv.split('\n');
-  // Skip Coefficient header rows if present (starts with "Stripe Import")
-  const skip = lines[0].includes('Stripe Import') ? 2 : 0;
-  const clean = lines.slice(skip).join('\n');
+  const lines = csv.split('\n').filter(l => l.trim());
+  // Find the real header row — look for "Amount" as first field
+  let startIdx = 0;
+  for (let i = 0; i < Math.min(5, lines.length); i++) {
+    if (lines[i].startsWith('Amount') || lines[i].startsWith('"Amount')) { startIdx = i; break; }
+  }
+  const clean = lines.slice(startIdx).join('\n');
   const result = Papa.parse(clean, { header: true, skipEmptyLines: true });
   return result.data;
 }
 function parseCustomers(csv) {
-  const lines = csv.split('\n');
-  const skip = lines[0].includes('Stripe Import') ? 2 : 0;
-  const clean = lines.slice(skip).join('\n');
+  const lines = csv.split('\n').filter(l => l.trim());
+  let startIdx = 0;
+  for (let i = 0; i < Math.min(5, lines.length); i++) {
+    if (lines[i].startsWith('Id') || lines[i].startsWith('"Id')) { startIdx = i; break; }
+  }
+  const clean = lines.slice(startIdx).join('\n');
   const result = Papa.parse(clean, { header: true, skipEmptyLines: true });
   return result.data;
 }
@@ -1029,4 +1035,5 @@ function showTab(name) {
 </script>
 </body>
 </html>
+
 
