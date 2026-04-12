@@ -307,8 +307,6 @@ if (sessionStorage.getItem('md_auth') === '1') {
   <span class="upload-status" id="stripeStatus">Loading Stripe...</span>
   <span class="upload-status" id="customersStatus">Loading customers...</span>
   <button onclick="reloadStripe()" style="font-size:11px;padding:3px 10px;border-radius:4px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);cursor:pointer;">&#8635; Refresh Stripe</button>
-  <div style="width:1px;background:rgba(255,255,255,0.15);margin:0 4px;align-self:stretch;"></div>
-  <span id="detectedMonth" class="upload-status" style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);">Month: auto</span>
 </div>
 
 <div class="nav">
@@ -451,8 +449,7 @@ function processAll() {
 
   const month = getMonth(state.retool);
   document.getElementById('headerPeriod').textContent = month;
-  const mEl = document.getElementById('detectedMonth');
-  if (mEl) mEl.textContent = 'Month: ' + monthPrefix;
+
 
   // Detect month prefix from Retool data (the source of truth for which month we're viewing)
   const allDates = state.retool
