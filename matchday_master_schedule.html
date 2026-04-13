@@ -3,61 +3,55 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MatchDay Master Schedule</title>
+<title>MatchDay — Master Schedule</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
---bg:#f8f7f4;--card:#ffffff;--text:#1a1a1a;--muted:#6b6b6b;--border:#e5e3de;
---accent:#0d7c5f;--accent-light:#e8f5f0;--accent-dark:#095a45;
+--bg:#F4EEE1;--card:#ffffff;--text:#003326;--muted:#5a6e68;--border:#d4cfc4;
+--accent:#2CDB87;--accent-light:#e0faf0;--accent-dark:#003326;
+--green-deep:#003326;--green-bright:#2CDB87;--cream:#F4EEE1;
 }
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);padding:0;min-height:100vh}
-.header{background:var(--text);color:white;padding:2rem 2.5rem 1.5rem;position:sticky;top:0;z-index:100}
-.header h1{font-size:1.5rem;font-weight:700;letter-spacing:-0.5px;margin-bottom:4px}
-.header p{font-size:.85rem;color:rgba(255,255,255,.6);font-family:'Space Mono',monospace}
-.controls{display:flex;gap:10px;flex-wrap:wrap;padding:1rem 2.5rem;background:white;border-bottom:1px solid var(--border);position:sticky;top:76px;z-index:99}
+.header{background:var(--green-deep);color:white;padding:1.5rem 2.5rem;position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:16px}
+.header-logo{height:28px;width:auto;flex-shrink:0}
+.header-text p{font-size:.75rem;color:rgba(255,255,255,.5);font-family:'Space Mono',monospace}
+.controls{display:flex;gap:10px;flex-wrap:wrap;padding:1rem 2.5rem;background:white;border-bottom:1px solid var(--border);position:sticky;top:70px;z-index:99}
 .controls select,.controls input{font-family:'DM Sans',sans-serif;font-size:.85rem;padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:white;color:var(--text);outline:none;min-width:130px}
-.controls select:focus,.controls input:focus{border-color:var(--accent)}
+.controls select:focus,.controls input:focus{border-color:var(--green-bright)}
 .view-toggle{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-left:auto}
 .view-toggle button{font-family:'DM Sans',sans-serif;font-size:.8rem;padding:8px 14px;border:none;background:white;cursor:pointer;color:var(--muted);font-weight:500;white-space:nowrap}
-.view-toggle button.active{background:var(--text);color:white}
+.view-toggle button.active{background:var(--green-deep);color:white}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;padding:1.5rem 2.5rem}
 .stat{background:white;border-radius:12px;padding:1rem 1.25rem;border:1px solid var(--border)}
 .stat .label{font-size:.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:4px}
-.stat .value{font-size:1.5rem;font-weight:700;letter-spacing:-1px}
+.stat .value{font-size:1.5rem;font-weight:700;letter-spacing:-1px;color:var(--green-deep)}
 .stat .sub{font-size:.72rem;color:var(--muted);margin-top:2px}
 .content{padding:1rem 2.5rem 3rem}
 .week-nav{display:flex;align-items:center;gap:12px;padding:1rem 2.5rem;background:white;border-bottom:1px solid var(--border)}
-.week-nav button{font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 14px;border:1px solid var(--border);border-radius:8px;background:white;cursor:pointer;font-weight:500}
+.week-nav button{font-family:'DM Sans',sans-serif;font-size:.85rem;padding:6px 14px;border:1px solid var(--border);border-radius:8px;background:white;cursor:pointer;font-weight:500;color:var(--text)}
 .week-nav button:hover{background:var(--accent-light)}
-.week-nav .current{font-family:'Space Mono',monospace;font-size:.85rem;font-weight:700}
-.this-week{background:var(--accent);color:white;font-size:.65rem;padding:2px 8px;border-radius:10px;font-weight:700;font-family:'Space Mono',monospace}
+.week-nav .current{font-family:'Space Mono',monospace;font-size:.85rem;font-weight:700;color:var(--green-deep)}
+.this-week{background:var(--green-bright);color:var(--green-deep);font-size:.65rem;padding:2px 8px;border-radius:10px;font-weight:700;font-family:'Space Mono',monospace}
 .city-section{margin-bottom:2rem}
-.city-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--text)}
-.city-header h2{font-size:1.1rem;font-weight:700;letter-spacing:-0.3px}
-.city-header .badge{font-family:'Space Mono',monospace;font-size:.7rem;background:var(--accent-light);color:var(--accent-dark);padding:3px 10px;border-radius:20px;font-weight:700}
+.city-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--green-deep)}
+.city-header h2{font-size:1.1rem;font-weight:700;letter-spacing:-0.3px;color:var(--green-deep)}
+.city-header .badge{font-family:'Space Mono',monospace;font-size:.7rem;background:var(--accent-light);color:var(--green-deep);padding:3px 10px;border-radius:20px;font-weight:700}
 .venue-group{margin-bottom:14px}
-.venue-name{font-size:.85rem;font-weight:700;color:var(--accent-dark);margin-bottom:6px}
+.venue-name{font-size:.85rem;font-weight:700;color:var(--green-deep);margin-bottom:6px}
 .schedule-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .day-header{font-size:.6rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-family:'Space Mono',monospace;text-align:center;padding:4px}
 .day-cell{min-height:24px;text-align:center}
-.mp{font-size:.68rem;padding:2px 5px;border-radius:5px;background:var(--accent-light);color:var(--accent-dark);font-family:'Space Mono',monospace;margin:1px 0;display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mp.past{background:#f0efeb;color:#aaa}
+.mp{font-size:.68rem;padding:2px 5px;border-radius:5px;background:var(--accent-light);color:var(--green-deep);font-family:'Space Mono',monospace;margin:1px 0;display:block;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp.past{background:#ebe8e0;color:#aaa}
 .compact-day{display:flex;flex-direction:column;gap:1px;align-items:center}
-.cm{font-size:.65rem;padding:2px 4px;border-radius:4px;font-family:'Space Mono',monospace;display:inline-block;white-space:nowrap;margin:1px 0}
-.cm .t{color:var(--accent-dark);font-weight:700}.cm .v{color:var(--muted);font-weight:400;margin-left:2px}
 .cm-row{background:var(--accent-light);border-radius:4px;padding:1px 5px;display:flex;gap:3px;align-items:center}
-.cm-row.past{background:#f0efeb}
+.cm-row .t{color:var(--green-deep);font-weight:700;font-size:.65rem;font-family:'Space Mono',monospace}
+.cm-row .v{color:var(--muted);font-weight:400;font-size:.65rem;font-family:'Space Mono',monospace;margin-left:2px}
+.cm-row.past{background:#ebe8e0}
 .cm-row.past .t{color:#aaa}.cm-row.past .v{color:#ccc}
-.list-row{display:grid;grid-template-columns:90px 180px 1fr 70px;gap:12px;padding:8px 12px;border-bottom:1px solid #f0efeb;align-items:center;font-size:.85rem}
-.list-row:hover{background:var(--accent-light)}
-.list-row .date{font-family:'Space Mono',monospace;color:var(--muted);font-size:.78rem}
-.list-row .venue{font-weight:500}
-.list-row .time{color:var(--muted)}
-.list-row .spots-badge{font-family:'Space Mono',monospace;font-size:.7rem;background:#f0efeb;padding:3px 8px;border-radius:12px;text-align:center}
-
 .changes-summary{display:flex;align-items:center;gap:10px;padding:12px 16px;margin-bottom:16px;background:white;border:1px solid var(--border);border-radius:10px;flex-wrap:wrap}
-.changes-summary-header{font-size:.8rem;font-weight:700;font-family:'Space Mono',monospace;color:var(--text);margin-right:4px}
+.changes-summary-header{font-size:.8rem;font-weight:700;font-family:'Space Mono',monospace;color:var(--green-deep);margin-right:4px}
 .cs-badge{font-size:.7rem;font-family:'Space Mono',monospace;padding:3px 10px;border-radius:20px;font-weight:700}
 .cs-badge.added{background:#d5f5e3;color:#1a7a42}
 .cs-badge.dropped{background:#fadbd8;color:#a93226}
@@ -74,17 +68,27 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);pad
 .cm-row.dropped-match .t{color:#a93226;text-decoration:line-through}.cm-row.dropped-match .v{color:#c0706a;text-decoration:line-through}
 .drop-x{color:#a93226;font-size:.6rem;margin-left:2px;font-weight:700}
 .no-matches{font-size:.85rem;color:var(--muted);font-style:italic;padding:12px}
+.list-row{display:grid;grid-template-columns:90px 180px 1fr 70px;gap:12px;padding:8px 12px;border-bottom:1px solid #ebe8e0;align-items:center;font-size:.85rem}
+.list-row:hover{background:var(--accent-light)}
+.list-row .date{font-family:'Space Mono',monospace;color:var(--muted);font-size:.78rem}
+.list-row .venue{font-weight:500}
+.list-row .time{color:var(--muted)}
+.list-row .spots-badge{font-family:'Space Mono',monospace;font-size:.7rem;background:#ebe8e0;padding:3px 8px;border-radius:12px;text-align:center}
+.today-btn{margin-left:auto;background:var(--green-bright);color:var(--green-deep);border-color:var(--green-bright);font-weight:700}
+.today-btn:hover{background:#24c278}
 @media(max-width:768px){
 .controls,.stats,.content,.week-nav{padding-left:1rem;padding-right:1rem}
-.header{padding:1.5rem 1rem 1rem}
+.header{padding:1.5rem 1rem}
 .list-row{grid-template-columns:70px 130px 1fr 50px;font-size:.75rem}
 }
 </style>
 </head>
 <body>
 <div class="header">
-<h1>MatchDay master schedule</h1>
+<img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDI0LjMuMCwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkNhcGFfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeD0iMHB4IiB5PSIwcHgiCgkgdmlld0JveD0iMCAwIDIwMDAgNDA3LjgyIiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCAyMDAwIDQwNy44MjsiIHhtbDpzcGFjZT0icHJlc2VydmUiPgo8c3R5bGUgdHlwZT0idGV4dC9jc3MiPgoJLnN0MHtmaWxsOiNGNEVFRTE7fQoJLnN0MXtmaWxsOiMwMjM0Mjc7fQo8L3N0eWxlPgo8Zz4KCTxnPgoJCTxnPgoJCQk8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMTMyNywzNzFoLTEwMC4zMmw4My44NS0zMzQuODJoNzQuODljMzkuNywwLDY2LjE1LDkuMTQsODAuODcsMjcuOTRjMTQuNzUsMTguODQsMTcuMTgsNDcuMTQsNy40NCw4Ni41MQoJCQkJbC0zMC45MSwxMjUuMDlDMTQyNy4wOCwzMzguOTIsMTQwNC44NSwzNzEsMTMyNywzNzF6IE0xMjQ0LjA0LDM1Ny40NUgxMzI3YzY5LjczLDAsODguMDMtMjYuMjIsMTAyLjY2LTg0Ljk5bDMwLjkxLTEyNS4wOAoJCQkJYzguNjctMzUuMDcsNy4wNS01OS41Ny00Ljk1LTc0LjkxYy0xMS45OC0xNS4zLTM0Ljk0LTIyLjc0LTcwLjItMjIuNzRoLTY0LjMyTDEyNDQuMDQsMzU3LjQ1eiIvPgoJCQk8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMTMxOC45LDM0Ni43MmgtNjAuMTRsNzEuNzEtMjg2LjI0aDM4LjAyYzQxLjM0LDAsNjQuMDEsNi40MSw3NS43NywyMS40NQoJCQkJYzEwLjE2LDEyLjk5LDExLjY3LDMyLjEsNC43Myw2MC4xNGwtMzAuOCwxMjMuMDNDMTQwNS44NSwzMTUuNjgsMTM5NC40NCwzNDYuNzIsMTMxOC45LDM0Ni43MnogTTEyNzYuMTMsMzMzLjE3aDQyLjc4CgkJCQljNjUuODEsMCw3NC4zOC0yMy4xNiw4Ni4xNC03MS4zM2wzMC44MS0xMjMuMDVjNS44NS0yMy42NSw1LjE0LTM5LjA3LTIuMjYtNDguNTFjLTguOC0xMS4yNC0yOC44Ny0xNi4yNS02NS4xLTE2LjI1aC0yNy40NAoJCQkJTDEyNzYuMTMsMzMzLjE3eiIvPgoJCQk8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMTMxMC45OSwzMjEuMDFoLTE5Ljc5bDU4LjgzLTIzNC44NWw4LjQ3LDAuMDNjMzAuNjQsMC4xMiw1MC44OCwwLjE5LDYwLjgxLDEzLjI4CgkJCQljNi45LDkuMDgsNy4yOSwyMi45MSwxLjI3LDQ0Ljg0bC0zMS4wNiwxMjEuNDdDMTM3OS4wNCwzMDcuODksMTM2Ni44NCwzMjEuMDEsMTMxMC45OSwzMjEuMDF6IE0xMzA4LjU2LDMwNy40NmgyLjQyCgkJCQljNDkuMiwwLDU2LjMyLTguNTIsNjUuNC00NC45OWwzMS4xLTEyMS42M2M0LjctMTcuMTEsNS4wMy0yNy45MiwxLjA0LTMzLjE3Yy01LjcyLTcuNTMtMjMuMzktNy44MS00Ny45My03LjkxTDEzMDguNTYsMzA3LjQ2eiIKCQkJCS8+CgkJPC9nPgoJPC9nPgoJPGc+CgkJPGc+CgkJCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik05MzIuOTIsNjAuNDNjLTQwLjYxLDAtNjMuMzYsMTkuOTItNzguNiw2OS4xMWwtMzUuODcsMTQyLjkzYy02LjI2LDI0LjQ4LTQuMzcsNDMuMiw1LjYsNTUuNjUKCQkJCWM5LjIzLDExLjUzLDI1LjA4LDE3LjM4LDQ3LjEsMTcuMzhjNjEuOTQsMCw3NC4xNy00My4yMSw4MS41MS02OS4ybDMuOC0xNS4wM2gtMTMuOTVsLTIuOTYsMTEuNjkKCQkJCWMtOS4xOCwzMi40NS0yMC42Niw1OS4zMi02OC40MSw1OS4zMmMtMTcuNjMsMC0yOS44OS00LjE0LTM2LjQyLTEyLjNjLTcuMjctOS4wOC04LjMyLTIzLjk4LTMuMTItNDQuMzNsMzUuNzgtMTQyLjYxCgkJCQljMTMuNDItNDMuMjgsMzEuMTktNTkuMzcsNjUuNTQtNTkuMzdjMTguOTgsMCwzMS45OCw0LjM0LDM4LjYzLDEyLjljNi45LDguODgsNy42MSwyMy4xNSwxLjk5LDQyLjc4bC0zLjMyLDE0LjY4aDEzLjg3CgkJCQlsMi41OS0xMS40OGM2LjgyLTIzLjgsNS40LTQxLjQ1LTQuMzQtNTMuOThDOTcyLjk5LDY2LjUzLDk1Ni4zNiw2MC40Myw5MzIuOTIsNjAuNDN6Ii8+CgkJCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik05NjkuMjYsMjYxLjI2bC0yLjQzLDkuMThsLTAuOTIsMy4yNmMtMTEuNjUsNDEuMzgtMjMuNzEsODQuMTctOTQuNzUsODQuMTdjLTI4LjAzLDAtNDcuODUtNy01OC45MS0yMC44MgoJCQkJYy0xMS40OC0xNC4zMy0xMy42My0zNS45My02LjQxLTY0LjJsMzQuNDktMTM2LjIxYzEzLjc4LTUzLjg2LDM0LjA0LTg3LjI0LDkyLjQ0LTg3LjI0YzI5LjY0LDAsNTAuMyw3LjI0LDYxLjQxLDIxLjUzCgkJCQljMTQuNzksMTkuMDIsOS44NCw0Ni44Myw1LjUyLDYxLjkxbC0yLjgzLDExLjE3aDEzLjk2bDEuOTctNy44MWM0Ljk0LTE3LjI1LDEwLjUtNDkuNy03LjgzLTczLjI2CgkJCQljLTEzLjgxLTE3Ljc2LTM4LjEtMjYuNzYtNzIuMi0yNi43NmMtNDEuOTIsMC04My43MywxMS43OC0xMDUuNTksOTcuMjhsLTM0LjQ5LDEzNi4yMWMtOC4yOCwzMi40MS01LjI5LDU3LjgyLDguODgsNzUuNTMKCQkJCWMxMy43NiwxNy4xOCwzNy4xNywyNS45LDY5LjU5LDI1LjljODEuMzgsMCw5Ni4wNC01Mi4wNiwxMDcuODItOTMuODlsNC4yOC0xNS45NUg5NjkuMjZ6Ii8+CgkJCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik05NTkuNTYsOTYuMzJjLTUuOC03LjQ2LTE1Ljg2LTExLjI1LTI5Ljg5LTExLjI1Yy0zMCwwLTQwLjM3LDIwLjQtNDYuNjUsNDAuNjdMODQ0LjcsMjc2Ljk4CgkJCQljLTMuNzIsMTQuNTQtMi40OSwyNS44LDMuNjYsMzMuNDhjNS43NCw3LjE2LDE1LjM1LDEwLjgsMjguNTgsMTAuOGMzNi43NSwwLDQ0LjIyLTI2LjM4LDQ4LjMtNDAuODJsNC41NS0xOS4xN2gtMTMuOTEKCQkJCWwtMy43OCwxNS45MmMtNC45NSwxNy40OC0xMC42NywzMC44NS0zNS4xNiwzMC44NWMtOC44NCwwLTE0Ljg2LTEuOTItMTcuOS01LjcxYy00LjI5LTUuMzYtMy4wMi0xNC45OS0xLjE5LTIyLjE1bDM4LjIyLTE1MC45MgoJCQkJYzctMjIuNTYsMTYuMS0zMC45NSwzMy41OS0zMC45NWM5LjU3LDAsMTUuOTksMi4wMywxOS4xLDYuMDJjMy4yNCw0LjE3LDMuNDcsMTEuMjUsMC42MiwyMS4xOGwtNC44OCwxOC41MmgxMy45OWwzLjk4LTE1LjEKCQkJCUM5NjYuNDgsMTE0LjkzLDk2NS41LDEwMy45Niw5NTkuNTYsOTYuMzJ6Ii8+CgkJPC9nPgoJPC9nPgoJPGc+CgkJPGc+CgkJCTxnPgoJCQkJPHBvbHlnb24gY2xhc3M9InN0MCIgcG9pbnRzPSIxOTIuNDUsMzIxLjM5IDE0Mi4xMywzNy42IDEyOC4zNywzNy42IDE4MS40MiwzMzYuODMgCQkJCSIvPgoJCQkJPHBhdGggY2xhc3M9InN0MCIgZD0iTTE3MS40NiwzNTAuNzdsLTExLjAzLDE1LjQzbC0zMC43OC0xNzMuNTdMOTkuODIsMzEwLjc2Yy0zLjExLTQuMjYtNi44OS04LjAxLTExLjE4LTExLjA5bDM1LjI2LTEzOS41NwoJCQkJCWwtNS4xMi0yOC43OUw3Ny45NSwyOTMuODNjLTQuMTMtMS42NC04LjU0LTIuNzQtMTMuMTQtMy4yM2w0OC4yMS0xOTEuODdsLTUuMS0yOC43MUw1Mi42MywyOTAuODIKCQkJCQljLTUuMzgsMC43NS0xMC40NywyLjM2LTE1LjE1LDQuNjlMMTAyLjA3LDM3LjZoMTMuODZMMTcxLjQ2LDM1MC43N3oiLz4KCQkJCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik0zMTcuMDgsMzcuNmwtMTE5LjcsMTY1LjI3TDE2OC4wOCwzNy42aC0xMy43NmwzMy45MywxOTEuNDRsNC44NSwyNC44OWwtMC4wNiwwLjA5bDAuMSwwLjA3bDEwLjA2LDUxLjYxCgkJCQkJbDczLjU2LTEwMS42MmwtNDEuMzgsMTY1LjI0aDEzLjk4TDMzMi40MywzNy42SDMxNy4wOHogTTI4NS42MSwxNjguNzZsLTc1LjA4LDEwMy43M2wtMy4wMS0xNS40M2w4Ni4xOC0xMjAuNjJMMjg1LjYxLDE2OC43NnoKCQkJCQkgTTMwMi41OSwxMDAuOTlsLTAuMTMtMC4wOWwtOTguNDksMTM3Ljg3bC0yLjM3LTEyLjJsLTAuOTEtNS4xNUwzMTAuMzQsNzBMMzAyLjU5LDEwMC45OXoiLz4KCQkJCTxwb2x5Z29uIGNsYXNzPSJzdDAiIHBvaW50cz0iMzQ0LjQ5LDM3LjYgMjYxLjM5LDM2OS4zNCAyNzUuMzYsMzY5LjM0IDM1OC40NiwzNy42IAkJCQkiLz4KCQkJCTxwb2x5Z29uIGNsYXNzPSJzdDAiIHBvaW50cz0iMzcwLjQ4LDM3LjYgMjg3LjM4LDM2OS4zNCAzMDEuMzUsMzY5LjM0IDM4NC40NSwzNy42IAkJCQkiLz4KCQkJCTxnPgoJCQkJCTxnPgoJCQkJCQk8Zz4KCQkJCQkJCTxnPgoJCQkJCQkJCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik05My45NSwzNDAuMTdjMCw3LjYyLTIuNDksMTQuNjYtNi43LDIwLjM3Yy0yLjU4LDMuNTEtNS44MSw2LjUtOS41Myw4LjgKCQkJCQkJCQkJYy01LjI2LDMuMjctMTEuNDksNS4xOC0xOC4xNCw1LjE4Yy05Ljk0LDAtMTguOTEtNC4yMy0yNS4xNi0xMC45OWMtNC45Ni01LjMyLTguMjMtMTIuMjEtOS4wMS0xOS44NXYtMC4wMQoJCQkJCQkJCQljLTAuMTItMS4xNS0wLjE4LTIuMzItMC4xOC0zLjVjMC03LjEyLDIuMTctMTMuNzEsNS44Ny0xOS4ydi0wLjAxYzQuMTMtNi4xMiwxMC4xOS0xMC44NCwxNy4zLTEzLjI3CgkJCQkJCQkJCWMzLjUtMS4yMiw3LjI3LTEuODcsMTEuMTgtMS44N2MwLjQ2LDAsMC45MywwLjAxLDEuMzksMC4wM2M0LjY5LDAuMTgsOS4xMywxLjMxLDEzLjE1LDMuMmMzLjg4LDEuOCw3LjM2LDQuMzIsMTAuMjksNy4zNwoJCQkJCQkJCQljNC44NSw1LjA3LDguMTcsMTEuNjQsOS4xOSwxOC45NUM5My44MywzMzYuOTIsOTMuOTUsMzM4LjUzLDkzLjk1LDM0MC4xN3oiLz4KCQkJCQkJCTwvZz4KCQkJCQkJPC9nPgoJCQkJCQk8Zz4KCQkJCQkJCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik05My45NSwzNDAuMTdjMCw3LjYyLTIuNDksMTQuNjYtNi43LDIwLjM3Yy0yLjU4LDMuNTEtNS44MSw2LjUtOS41Myw4LjgKCQkJCQkJCQljLTUuMjYsMy4yNy0xMS40OSw1LjE4LTE4LjE0LDUuMThjLTkuOTQsMC0xOC45MS00LjIzLTI1LjE2LTEwLjk5Yy00Ljk2LTUuMzItOC4yMy0xMi4yMS05LjAxLTE5Ljg1di0wLjAxCgkJCQkJCQkJYy0wLjEyLTEuMTUtMC4xOC0yLjMyLTAuMTgtMy41YzAtNy4xMiwyLjE3LTEzLjcxLDUuODctMTkuMnYtMC4wMWM0LjEzLTYuMTIsMTAuMTktMTAuODQsMTcuMy0xMy4yNwoJCQkJCQkJCWMzLjUtMS4yMiw3LjI3LTEuODcsMTEuMTgtMS44N2MwLjQ2LDAsMC45MywwLjAxLDEuMzksMC4wM2M0LjY5LDAuMTgsOS4xMywxLjMxLDEzLjE1LDMuMmMzLjg4LDEuOCw3LjM2LDQuMzIsMTAuMjksNy4zNwoJCQkJCQkJCWM0Ljg1LDUuMDcsOC4xNywxMS42NCw5LjE5LDE4Ljk1QzkzLjgzLDMzNi45Miw5My45NSwzMzguNTMsOTMuOTUsMzQwLjE3eiIvPgoJCQkJCQk8L2c+CgkJCQkJPC9nPgoJCQkJPC9nPgoJCQk8L2c+CgkJPC9nPgoJPC9nPgoJPGc+CgkJPGc+CgkJCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik00NzEuOTksMzcuNmwtNjguNjUsMTcwLjJoMTA0LjUzbC0xLjYzLDEyLjQ1SDM5OC4zMmwtNS40NywxMy41NWgxMTIuNGwtMS4yNiwxMi41MUgzODcuOGwtMjEuOTcsNTQuNDgKCQkJCWwtMjcuMzYsNjguNTVoMTQuNTlsNDMuNy0xMDkuNDhoMTEuOTFsLTQzLjcsMTA5LjQ4aDE0LjU5bDQzLjctMTA5LjQ4aDEyLjM0bC00My43LDEwOS40OGgxNC41OWw0My43LTEwOS40OGg1Mi40MwoJCQkJbC0xMS4wMiwxMDkuNDhoMTMuNjJMNTM4LjYyLDM3LjZoLTE0LjExbC02Mi44NCwxNTYuNjVoLTEyLjIzTDUxMi42MywzNy42aC0xNC42MWwtNjMuMTksMTU2LjY1aC0xMS44OUw0ODYuMTIsMzcuNkg0NzEuOTl6CgkJCQkgTTUyMC4yNyw4NC41NmwtMTEuMDQsMTA5LjdoLTMyLjk2TDUyMC4yNyw4NC41NnoiLz4KCQkJPHBvbHlnb24gY2xhc3M9InN0MCIgcG9pbnRzPSI1MzAuODEsMzY5LjM0IDU2NC4wMSwzNy42IDU1MC40LDM3LjYgNTE3LjE5LDM2OS4zNCAJCQkiLz4KCQkJPHBvbHlnb24gY2xhc3M9InN0MCIgcG9pbnRzPSI1NzYuMDYsMzcuNiA1NDIuODUsMzY5LjM0IDU1Ni40NywzNjkuMzQgNTg5LjY4LDM3LjYgCQkJIi8+CgkJPC9nPgoJPC9nPgoJPGc+CgkJPGc+CgkJCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik0xNTc3LjY4LDM3LjZsLTY4LjY1LDE3MC4yaDEwNC41M2wtMS42MywxMi40NWgtMTA3LjkybC01LjQ3LDEzLjU1aDExMi40bC0xLjI2LDEyLjUxaC0xMTYuMTlsLTIxLjk3LDU0LjQ4CgkJCQlsLTI3LjM2LDY4LjU1aDE0LjU5bDQzLjctMTA5LjQ4aDExLjkxbC00My43LDEwOS40OGgxNC41OWw0My43LTEwOS40OGgxMi4zNGwtNDMuNywxMDkuNDhoMTQuNTlsNDMuNy0xMDkuNDhoNTIuNDMKCQkJCWwtMTEuMDIsMTA5LjQ4aDEzLjYybDMzLjM5LTMzMS43M2gtMTQuMTFsLTYyLjg0LDE1Ni42NWgtMTIuMjNsNjMuMTktMTU2LjY1aC0xNC42MWwtNjMuMTksMTU2LjY1aC0xMS44OWw2My4xOS0xNTYuNjVIMTU3Ny42OHoKCQkJCSBNMTYyNS45Nyw4NC41NmwtMTEuMDQsMTA5LjdoLTMyLjk2TDE2MjUuOTcsODQuNTZ6Ii8+CgkJCTxwb2x5Z29uIGNsYXNzPSJzdDAiIHBvaW50cz0iMTYzNi41LDM2OS4zNCAxNjY5LjcxLDM3LjYgMTY1Ni4wOSwzNy42IDE2MjIuODgsMzY5LjM0IAkJCSIvPgoJCQk8cG9seWdvbiBjbGFzcz0ic3QwIiBwb2ludHM9IjE2ODEuNzUsMzcuNiAxNjQ4LjU0LDM2OS4zNCAxNjYyLjE2LDM2OS4zNCAxNjk1LjM3LDM3LjYgCQkJIi8+CgkJPC9nPgoJPC9nPgoJPGc+CgkJPGc+CgkJCTxwb2x5Z29uIGNsYXNzPSJzdDAiIHBvaW50cz0iODE1LjEzLDYzLjExIDYyNS4yOSw2My4xMSA2MjIuMDIsNzYuNjYgODExLjg2LDc2LjY2IAkJCSIvPgoJCQk8cG9seWdvbiBjbGFzcz0ic3QwIiBwb2ludHM9IjgwNS41OCwxMDIuNzIgODA4Ljg0LDg5LjE3IDYxOSw4OS4xNyA2MTYuNjYsOTguODYgNjE2LjY2LDEwMi43MiA2NzcuOTUsMTAyLjcyIDYxMi42NiwzNjcuODYgCgkJCQk2MjYuNjEsMzY3Ljg2IDY5MS45LDEwMi43MiA3MDMuOTQsMTAyLjcyIDYzOC42NSwzNjcuODYgNjUyLjYxLDM2Ny44NiA3MTcuOSwxMDIuNzIgNzI5Ljk0LDEwMi43MiA2NjQuNjUsMzY3Ljg2IDY3OC42LDM2Ny44NiAKCQkJCTc0My44OSwxMDIuNzIgCQkJIi8+CgkJCTxwb2x5Z29uIGNsYXNzPSJzdDAiIHBvaW50cz0iNjI4LjMxLDUwLjYgODE4LjE1LDUwLjYgODIxLjQyLDM3LjA1IDYzMS41OCwzNy4wNSAJCQkiLz4KCQk8L2c+Cgk8L2c+Cgk8Zz4KCQk8Zz4KCQkJPHBvbHlnb24gY2xhc3M9InN0MCIgcG9pbnRzPSIxMDM0Ljg3LDIwOC4wOCAxMTU1LjY1LDIwOC4wOCAxMTUyLjcyLDIyMC4yNCAxMDMxLjk0LDIyMC4yNCAxMDI4LjY3LDIzMy43OSAxMTQ5LjQ1LDIzMy43OSAKCQkJCTExNDYuMzYsMjQ2LjU5IDEwMjUuNTgsMjQ2LjU5IDk5Ni40NiwzNjkuMzQgMTAxMC40LDM2OS4zNCAxMDM2LjksMjYwLjE0IDEwNDguOTUsMjYwLjE0IDEwMjIuNDUsMzY5LjM0IDEwMzYuNCwzNjkuMzQgCgkJCQkxMDYyLjg5LDI2MC4xNCAxMDc0Ljk1LDI2MC4xNCAxMDQ4LjQ1LDM2OS4zNCAxMDYyLjM5LDM2OS4zNCAxMDg4Ljg5LDI2MC4xNCAxMTQzLjA5LDI2MC4xNCAxMTE2Ljc1LDM2OS4zNCAxMTMwLjY4LDM2OS4zNCAKCQkJCTEyMTAuNzIsMzcuNiAxMTk2Ljc4LDM3LjYgMTE1OC45MiwxOTQuNTMgMTEwNC4wNiwxOTQuNTMgMTE0Mi4zNCwzNy42IDExMjguNCwzNy42IDEwOTAuMTEsMTk0LjUzIDEwNzguMDcsMTk0LjUzIDExMTYuMzUsMzcuNiAKCQkJCTExMDIuNCwzNy42IDEwNjQuMTIsMTk0LjUzIDEwNTIuMDgsMTk0LjUzIDEwOTAuMzUsMzcuNiAxMDc2LjQxLDM3LjYgCQkJIi8+CgkJCTxwb2x5Z29uIGNsYXNzPSJzdDAiIHBvaW50cz0iMTI0OC43NywzNy42IDExNjguNzQsMzY5LjM0IDExODIuNjcsMzY5LjM0IDEyNjIuNywzNy42IAkJCSIvPgoJCQk8cG9seWdvbiBjbGFzcz0ic3QwIiBwb2ludHM9IjExNTYuNjgsMzY5LjM0IDEyMzYuNzEsMzcuNiAxMjIyLjc3LDM3LjYgMTE0Mi43NCwzNjkuMzQgCQkJIi8+CgkJPC9nPgoJPC9nPgoJPGc+CgkJPGc+CgkJCTxnPgoJCQkJPHBhdGggY2xhc3M9InN0MCIgZD0iTTE4OTkuODQsOTYuNjFsLTE1OC4yMiwyNzIuNzNoLTE1LjY2bDQxLjI2LTcwLjgxTDE3MjcuOTcsMzcuNmgxMy42OWwzNi41OSwyNDEuOTJsOS44OC0xNy4xMgoJCQkJCWwtMzQuMTUtMjI0LjhoMTMuN2wzMS4zOCwyMDUuOTdsMTAuNS0xOC4zMkwxNzc3Ljg5LDM3LjZoMTMuNzNsMjguNTgsMTY5LjMxbDcyLjQ4LTEyNC45NAoJCQkJCUMxODk0LjI2LDg3LjI3LDE4OTYuNyw5Mi4yLDE4OTkuODQsOTYuNjF6Ii8+CgkJCQk8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMTk0MC40LDExNy40N2MxLjUsMCwyLjk2LTAuMDYsNC40Mi0wLjE5bC0xNDcuMDEsMjUyLjA1aC0xNS42OWwxNDcuNTctMjUzLjAxaDAuMDEKCQkJCQlDMTkzMy4xNiwxMTcuMDcsMTkzNi43MywxMTcuNDcsMTk0MC40LDExNy40N3oiLz4KCQkJCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik0xOTA2LjcsMTA0LjM1YzMuMzMsMy4wNyw3LjA5LDUuNjgsMTEuMTgsNy43NmwtMTQ3LjczLDI1Ny4yM2gtMTUuNjNMMTkwNi43LDEwNC4zNXoiLz4KCQkJCTxnPgoJCQkJCTxnPgoJCQkJCQk8Zz4KCQkJCQkJCTxnPgoJCQkJCQkJCTxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik0xOTc0Ljc2LDY3LjY2YzAsMTMuNC03LjY4LDI1LjAzLTE4Ljg4LDMwLjY3Yy00LjY1LDIuMzYtOS45MSwzLjY5LTE1LjQ4LDMuNjkKCQkJCQkJCQkJYy0wLjc3LDAtMS41My0wLjAzLTIuMy0wLjA5Yy00LjQ1LTAuMjgtOC42Ny0xLjQzLTEyLjUxLTMuMjZjLTQuMTYtMS45OS03Ljg3LTQuODEtMTAuOS04LjIzCgkJCQkJCQkJCWMtMi40My0yLjc0LTQuNDItNS44Ny01Ljg4LTkuMjljLTEuNzctNC4xNC0yLjc2LTguNy0yLjc2LTEzLjQ5YzAtNC44MiwwLjk5LTkuMzksMi43OS0xMy41NWMxLjA4LTIuNTIsMi40Ni00LjksNC4wOC03LjA1CgkJCQkJCQkJCWMyLjkxLTMuODYsNi42MS03LjExLDEwLjg1LTkuNDVjNC45My0yLjczLDEwLjU5LTQuMjksMTYuNjItNC4yOWM2LjA1LDAsMTEuNzEsMS41NiwxNi42Myw0LjI5CgkJCQkJCQkJCWMwLjkzLDAuNSwxLjgxLDEuMDYsMi42OCwxLjY1YzMuNzIsMi41Miw2LjkyLDUuNzcsOS4zOCw5LjUzYzMuMyw1LDUuMzIsMTAuOSw1LjYyLDE3LjI1djAuMDEKCQkJCQkJCQkJQzE5NzQuNzQsNjYuNiwxOTc0Ljc2LDY3LjExLDE5NzQuNzYsNjcuNjZ6Ii8+CgkJCQkJCQk8L2c+CgkJCQkJCTwvZz4KCQkJCQkJPGc+CgkJCQkJCQk8cGF0aCBjbGFzcz0ic3QwIiBkPSJNMTk3NC43Niw2Ny42NmMwLDEzLjQtNy42OCwyNS4wMy0xOC44OCwzMC42N2MtNC42NSwyLjM2LTkuOTEsMy42OS0xNS40OCwzLjY5CgkJCQkJCQkJYy0wLjc3LDAtMS41My0wLjAzLTIuMy0wLjA5Yy00LjQ1LTAuMjgtOC42Ny0xLjQzLTEyLjUxLTMuMjZjLTQuMTYtMS45OS03Ljg3LTQuODEtMTAuOS04LjIzCgkJCQkJCQkJYy0yLjQzLTIuNzQtNC40Mi01Ljg3LTUuODgtOS4yOWMtMS43Ny00LjE0LTIuNzYtOC43LTIuNzYtMTMuNDljMC00LjgyLDAuOTktOS4zOSwyLjc5LTEzLjU1YzEuMDgtMi41MiwyLjQ2LTQuOSw0LjA4LTcuMDUKCQkJCQkJCQljMi45MS0zLjg2LDYuNjEtNy4xMSwxMC44NS05LjQ1YzQuOTMtMi43MywxMC41OS00LjI5LDE2LjYyLTQuMjljNi4wNSwwLDExLjcxLDEuNTYsMTYuNjMsNC4yOQoJCQkJCQkJCWMwLjkzLDAuNSwxLjgxLDEuMDYsMi42OCwxLjY1YzMuNzIsMi41Miw2LjkyLDUuNzcsOS4zOCw5LjUzYzMuMyw1LDUuMzIsMTAuOSw1LjYyLDE3LjI1djAuMDEKCQkJCQkJCQlDMTk3NC43NCw2Ni42LDE5NzQuNzYsNjcuMTEsMTk3NC43Niw2Ny42NnoiLz4KCQkJCQkJPC9nPgoJCQkJCTwvZz4KCQkJCTwvZz4KCQkJPC9nPgoJCTwvZz4KCTwvZz4KPC9nPgo8L3N2Zz4K" class="header-logo" alt="MatchDay">
+<div class="header-text">
 <p id="headerSub">Loading...</p>
+</div>
 </div>
 <div class="controls">
 <select id="cityFilter"><option value="">All cities</option></select>
@@ -102,7 +106,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);pad
 <button onclick="prevWeek()">&larr;</button>
 <span class="current" id="weekLabel"></span>
 <button onclick="nextWeek()">&rarr;</button>
-<button onclick="goToday()" style="margin-left:auto;background:var(--accent);color:white;border-color:var(--accent)">Today</button>
+<button class="today-btn" onclick="goToday()">Today</button>
 </div>
 <div class="content" id="content"></div>
 <script>
@@ -151,7 +155,7 @@ function getMonday(d){const dt=new Date(d+'T00:00:00');const day=dt.getDay();con
 function addDays(d,n){const dt=new Date(d+'T00:00:00');dt.setDate(dt.getDate()+n);return dt.toISOString().slice(0,10)}
 function fmtDate(d){const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'})}
 function fmtDateFull(d){const dt=new Date(d+'T00:00:00');return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}
-function fmtWeekRange(mon){return fmtDate(mon)+' – '+fmtDate(addDays(mon,6))}
+function fmtWeekRange(mon){return fmtDate(mon)+' \u2013 '+fmtDate(addDays(mon,6))}
 function isThisWeek(mon){return mon===getMonday(TODAY)}
 function fmtShortTime(t){return t.split(' - ')[0].replace(':00','').replace(' ','')}
 
@@ -183,15 +187,14 @@ venues.forEach(v=>{const o=document.createElement('option');o.value=v;o.textCont
 }
 
 function renderStats(){
-const d=getFiltered();
-const future=d.filter(s=>s.date>=TODAY);
-const cities=new Set(d.map(s=>s.city));
-const venues=new Set(d.map(s=>s.venue));
-const tw=getWeekData(getMonday(TODAY));
+const vw=getWeekData(currentWeekStart);
+const vwCities=new Set(vw.map(s=>s.city));
+const vwVenues=new Set(vw.map(s=>s.venue));
+const weekLabel=isThisWeek(currentWeekStart)?'This week':'Selected week';
 document.getElementById('stats').innerHTML=`
-<div class="stat"><div class="label">This week</div><div class="value">${tw.length}</div><div class="sub">${fmtWeekRange(getMonday(TODAY))}</div></div>
-<div class="stat"><div class="label">Cities</div><div class="value">${cities.size}</div></div>
-<div class="stat"><div class="label">Field partners</div><div class="value">${venues.size}</div></div>`;
+<div class="stat"><div class="label">${weekLabel}</div><div class="value">${vw.length}</div><div class="sub">${fmtWeekRange(currentWeekStart)}</div></div>
+<div class="stat"><div class="label">Cities</div><div class="value">${vwCities.size}</div></div>
+<div class="stat"><div class="label">Field partners</div><div class="value">${vwVenues.size}</div></div>`;
 }
 
 const CITY_ORDER=['Austin','Houston','San Antonio','Dallas','Atlanta','St. Louis','OKC','El Paso'];
@@ -243,7 +246,7 @@ if(cityAdded.length===0&&cityDropped.length===0&&cityChanged.length===0)return''
 let html='<div class="changes-banner">';
 cityAdded.forEach(c=>{html+=`<div class="change-item added">+ ${c.day} ${c.time} ${c.abbr}</div>`});
 cityDropped.forEach(c=>{html+=`<div class="change-item dropped">- ${c.day} ${c.time} ${c.abbr}</div>`});
-cityChanged.forEach(c=>{html+=`<div class="change-item changed">${c.day} ${c.abbr}: ${c.oldTime} → ${c.time}</div>`});
+cityChanged.forEach(c=>{html+=`<div class="change-item changed">${c.day} ${c.abbr}: ${c.oldTime} \u2192 ${c.time}</div>`});
 html+='</div>';
 return html;
 }
@@ -262,8 +265,7 @@ const allCitiesWithDrops=[...new Set([...Object.keys(byCity),...changes.dropped.
 const sortedCities=allCitiesWithDrops.sort(citySort);
 let html='';
 if(hasAnyChanges){
-html+=`<div class="changes-summary">`;
-html+=`<div class="changes-summary-header">Changes vs last week</div>`;
+html+=`<div class="changes-summary"><div class="changes-summary-header">Changes vs last week</div>`;
 if(changes.added.length)html+=`<span class="cs-badge added">${changes.added.length} added</span>`;
 if(changes.dropped.length)html+=`<span class="cs-badge dropped">${changes.dropped.length} dropped</span>`;
 if(changes.timeChanged.length)html+=`<span class="cs-badge changed">${changes.timeChanged.length} time changed</span>`;
@@ -293,7 +295,7 @@ const isNew=dayAdded.some(a=>a.time===t&&a.abbr===abbr);
 html+=`<div class="cm-row ${past} ${isNew?'new':''}" title="${m.detail} | ${m.time} | ${m.spots} spots"><span class="t">${t}</span><span class="v">${abbr}</span>${isNew?'<span class="new-dot"></span>':''}</div>`;
 });
 dayDropped.forEach(d=>{
-html+=`<div class="cm-row dropped-match" title="Dropped from last week"><span class="t">${d.time}</span><span class="v">${d.abbr}</span><span class="drop-x">✕</span></div>`;
+html+=`<div class="cm-row dropped-match" title="Dropped from last week"><span class="t">${d.time}</span><span class="v">${d.abbr}</span><span class="drop-x">\u2715</span></div>`;
 });
 }
 html+=`</div></div>`;
@@ -347,7 +349,7 @@ document.getElementById('content').innerHTML=html;
 function renderListView(){
 document.getElementById('weekNav').style.display='none';
 const d=getFiltered().filter(s=>s.date>=TODAY).sort((a,b)=>a.date.localeCompare(b.date)||parseTime(a.time)-parseTime(b.time));
-let html='<div class="list-row" style="font-weight:700;border-bottom:2px solid var(--text);font-size:.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-family:Space Mono,monospace"><div>Date</div><div>Venue</div><div>Time</div><div>Spots</div></div>';
+let html='<div class="list-row" style="font-weight:700;border-bottom:2px solid var(--green-deep);font-size:.65rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-family:Space Mono,monospace"><div>Date</div><div>Venue</div><div>Time</div><div>Spots</div></div>';
 d.slice(0,300).forEach(s=>{
 html+=`<div class="list-row"><div class="date">${s.day} ${fmtDate(s.date)}</div><div class="venue">${s.venue}<br><span style="font-size:.7rem;color:var(--muted)">${s.city}</span></div><div class="time">${s.time}</div><div class="spots-badge">${s.spots}</div></div>`;
 });
@@ -373,7 +375,7 @@ else renderListView();
 
 function init(){
 const dates=ALL.map(s=>s.date).sort();
-document.getElementById('headerSub').textContent=`${ALL.length} sessions · ${new Set(ALL.map(s=>s.venue)).size} field partners · ${new Set(ALL.map(s=>s.city)).size} cities · ${fmtDateFull(dates[0])} – ${fmtDateFull(dates[dates.length-1])}`;
+document.getElementById('headerSub').textContent=`${new Set(ALL.map(s=>s.venue)).size} field partners \u00B7 ${new Set(ALL.map(s=>s.city)).size} cities \u00B7 ${fmtDateFull(dates[0])} \u2013 ${fmtDateFull(dates[dates.length-1])}`;
 initFilters();render();
 }
 init();
