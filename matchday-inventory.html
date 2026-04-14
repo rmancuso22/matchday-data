@@ -124,9 +124,22 @@ const COLORS = {
 
 let managers = [];
 
+function parseCSVLine(line) {
+  const result = [];
+  let cur = '', inQuote = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') { inQuote = !inQuote; }
+    else if (ch === ',' && !inQuote) { result.push(cur.trim()); cur = ''; }
+    else { cur += ch; }
+  }
+  result.push(cur.trim());
+  return result;
+}
+
 function parseCSV(text) {
-  const lines = text.trim().split('\n').map(l => l.split(',').map(c => c.trim().replace(/^"|"$/g, '')));
-  const headers = lines[0].map(h => h.toLowerCase());
+  const lines = text.trim().split('\n').map(l => parseCSVLine(l));
+  const headers = lines[0].map(h => h.toLowerCase().trim());
   return lines.slice(1).filter(r => r.some(c => c)).map((row, i) => {
     const obj = { id: i+1 };
     headers.forEach((h, j) => obj[h] = row[j] || '');
@@ -141,6 +154,7 @@ function parseCSV(text) {
       green: parseInt(obj.green) || 0,
       blue: parseInt(obj.blue) || 0,
       max: parseInt(obj.max) || 0,
+      notes: obj.notes || '',
     };
   }).filter(m => m.name);
 }
@@ -290,6 +304,11 @@ function renderAll() {
                   </div>`).join('')}
               ${leftover.length > 0 ? `<div class="leftover">Leftover: ${leftover.map(l=>`${l.n} ${COLORS[l.color].label}`).join(', ')}${leftoverGames > 0 ? ` — ${fmt(leftoverGames)} more possible` : ' (no pair available)'}</div>` : ''}
             </div>
+
+            ${mm.notes ? `<div style="margin-top:10px;padding:9px 12px;background:#FFFBEB;border:1px solid rgba(234,179,8,0.25);border-radius:var(--radius-sm);font-size:13px;color:#92400E;">
+              <span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#B45309;display:block;margin-bottom:3px;">Note</span>
+              ${mm.notes}
+            </div>` : ''}
           </div>`;
         }).join('')}
       </div>
