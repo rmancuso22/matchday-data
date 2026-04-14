@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MatchDay — Bib Inventory</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #F7F6F2;
+    --card: #FFFFFF;
+    --border: rgba(0,0,0,0.08);
+    --border-strong: rgba(0,0,0,0.15);
+    --text: #1A1A1A;
+    --muted: #6B6B6B;
+    --hint: #A0A0A0;
+    --green: #1D9E75;
+    --green-bg: #E1F5EE;
+    --red: #C8332A;
+    --red-bg: #FCEBEB;
+    --blue-accent: #2563EB;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  header { padding: 24px 32px 0; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .logo { font-size: 13px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  header h1 { font-size: 22px; font-weight: 600; flex: 1; }
+  .header-right { display: flex; align-items: center; gap: 10px; }
+  select { font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 7px 12px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--card); color: var(--text); cursor: pointer; }
+  .refresh-btn { font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 7px 14px; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--card); color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  .refresh-btn:hover { background: var(--bg); }
+  .sync-time { font-size: 12px; color: var(--hint); font-family: 'DM Mono', monospace; }
+
+  .summary { display: flex; gap: 10px; padding: 20px 32px; flex-wrap: wrap; }
+  .sum-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 18px; flex: 1; min-width: 100px; }
+  .sum-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .sum-val { font-size: 24px; font-weight: 600; }
+
+  .main { padding: 0 32px 40px; }
+  .city-section { margin-bottom: 32px; }
+  .city-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+
+  .mm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }
+  .mm-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+
+  .mm-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .avatar { width: 38px; height: 38px; border-radius: 50%; background: #EEF2FF; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: var(--blue-accent); flex-shrink: 0; }
+  .mm-info { flex: 1; min-width: 0; }
+  .mm-name { font-size: 15px; font-weight: 600; }
+  .mm-venue { font-size: 12px; color: var(--muted); }
+  .badges { display: flex; gap: 6px; flex-wrap: wrap; }
+  .badge { font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 20px; }
+  .badge-neutral { background: #F1F0EB; color: var(--muted); }
+  .badge-good { background: var(--green-bg); color: var(--green); }
+  .badge-bad { background: var(--red-bg); color: var(--red); }
+
+  .max-row { display: flex; align-items: center; gap: 10px; background: var(--bg); border-radius: var(--radius-sm); padding: 9px 12px; margin-bottom: 8px; }
+  .max-label { font-size: 12px; color: var(--muted); flex: 1; }
+  .max-val { font-size: 15px; font-weight: 600; font-family: 'DM Mono', monospace; }
+
+  .possible-row { display: flex; align-items: center; gap: 10px; border-radius: var(--radius-sm); padding: 9px 12px; margin-bottom: 12px; border: 1px solid var(--border); }
+  .possible-label { font-size: 12px; color: var(--muted); flex: 1; }
+  .possible-val { font-size: 15px; font-weight: 600; font-family: 'DM Mono', monospace; }
+
+  .inv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+  .team-box { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; }
+  .team-heading { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--hint); margin-bottom: 8px; }
+  .color-row { display: flex; align-items: center; gap: 7px; margin-bottom: 7px; }
+  .color-row:last-child { margin-bottom: 0; }
+  .cdot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .clabel { font-size: 13px; color: var(--muted); flex: 1; }
+  .cval { font-size: 14px; font-weight: 600; font-family: 'DM Mono', monospace; }
+
+  .pairings-box { background: var(--bg); border-radius: var(--radius-sm); padding: 10px 12px; }
+  .pairings-heading { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--hint); margin-bottom: 7px; }
+  .pairing-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; font-size: 13px; }
+  .pairing-row:last-child { margin-bottom: 0; }
+  .cdot-sm { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .leftover { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border); font-size: 11px; color: var(--hint); }
+
+  .loading { text-align: center; padding: 80px 32px; color: var(--muted); font-size: 15px; }
+  .error-box { margin: 20px 32px; background: var(--red-bg); border: 1px solid rgba(200,51,42,0.2); border-radius: var(--radius); padding: 16px 20px; color: var(--red); font-size: 14px; }
+
+  @media (max-width: 600px) {
+    header, .summary, .main { padding-left: 16px; padding-right: 16px; }
+    .mm-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">MatchDay</div>
+    <h1>Bib inventory</h1>
+  </div>
+  <div class="header-right">
+    <select id="city-filter" onchange="renderAll()">
+      <option value="all">All cities</option>
+    </select>
+    <button class="refresh-btn" onclick="loadData()">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M13.5 8A5.5 5.5 0 1 1 10 3.07"/><path d="M10 1v3h3"/></svg>
+      Refresh
+    </button>
+  </div>
+</header>
+<div style="padding: 6px 32px 0;"><span class="sync-time" id="sync-time"></span></div>
+
+<div class="summary" id="summary"></div>
+<div class="main" id="main"><div class="loading">Loading inventory from Google Sheets...</div></div>
+
+<script>
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtRDFxi2ICSsdLe51JlXVHcU9vx6Knq6-qO19iwWITJLpD5njt6DQjrKljX6aow7aX7KNNlv-38Gy0/pub?output=csv';
+
+const COLORS = {
+  white:  { label: 'White',  bg: '#D3D1C7', border: '1px solid #aaa' },
+  orange: { label: 'Orange', bg: '#EF9F27', border: 'none' },
+  green:  { label: 'Green',  bg: '#4D9E22', border: 'none' },
+  blue:   { label: 'Blue',   bg: '#378ADD', border: 'none' },
+};
+
+let managers = [];
+
+function parseCSV(text) {
+  const lines = text.trim().split('\n').map(l => l.split(',').map(c => c.trim().replace(/^"|"$/g, '')));
+  const headers = lines[0].map(h => h.toLowerCase());
+  return lines.slice(1).filter(r => r.some(c => c)).map((row, i) => {
+    const obj = { id: i+1 };
+    headers.forEach((h, j) => obj[h] = row[j] || '');
+    return {
+      id: obj.id,
+      name: obj.name || '',
+      city: obj.city || '',
+      venue: obj.venue || '',
+      balls: parseInt(obj.balls) || 0,
+      white: parseInt(obj.white) || 0,
+      orange: parseInt(obj.orange) || 0,
+      green: parseInt(obj.green) || 0,
+      blue: parseInt(obj.blue) || 0,
+      max: parseInt(obj.max) || 0,
+    };
+  }).filter(m => m.name);
+}
+
+async function loadData() {
+  document.getElementById('main').innerHTML = '<div class="loading">Syncing with Google Sheets...</div>';
+  try {
+    const res = await fetch(CSV_URL + '&t=' + Date.now());
+    if (!res.ok) throw new Error('Fetch failed');
+    const text = await res.text();
+    managers = parseCSV(text);
+    populateCityFilter();
+    renderAll();
+    document.getElementById('sync-time').textContent = 'Last synced ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  } catch(e) {
+    document.getElementById('main').innerHTML = `<div class="error-box">Could not load data from Google Sheets. Make sure the sheet is published (File → Share → Publish to web → CSV) and try refreshing.<br><br><small>${e.message}</small></div>`;
+  }
+}
+
+function populateCityFilter() {
+  const sel = document.getElementById('city-filter');
+  const cities = [...new Set(managers.map(m => m.city).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="all">All cities</option>' + cities.map(c => `<option>${c}</option>`).join('');
+}
+
+function calcCoverage(mm) {
+  const inv = { white: mm.white, orange: mm.orange, green: mm.green, blue: mm.blue };
+  const opts = [
+    [['white','orange'],['green','blue']],
+    [['white','green'],['orange','blue']],
+    [['white','blue'],['orange','green']],
+  ];
+  let bestTotal = 0, bestPairings = [], bestLeftover = [];
+  for (const opt of opts) {
+    const rem = {...inv};
+    const pairings = [];
+    for (const [a,b] of opt) {
+      const n = Math.min(rem[a], rem[b]);
+      rem[a] -= n; rem[b] -= n;
+      if (n > 0) pairings.push({a,b,n});
+    }
+    const total = pairings.reduce((s,p) => s+p.n, 0);
+    if (total > bestTotal) {
+      bestTotal = total;
+      bestPairings = pairings;
+      bestLeftover = Object.entries(rem).filter(([,v]) => v > 0).map(([k,v]) => ({color:k,n:v}));
+    }
+  }
+  let leftoverGames = 0;
+  if (bestLeftover.length >= 2) {
+    const lrem = {};
+    bestLeftover.forEach(l => lrem[l.color] = l.n);
+    const lc = Object.keys(lrem);
+    for (let i = 0; i < lc.length-1; i+=2) leftoverGames += Math.min(lrem[lc[i]], lrem[lc[i+1]]);
+    leftoverGames /= 2;
+  }
+  const maxPossible = bestTotal + leftoverGames;
+  const short = mm.max > 0 ? Math.max(0, mm.max - bestTotal) : 0;
+  return { pairings: bestPairings, total: bestTotal, leftover: bestLeftover, leftoverGames, maxPossible, short };
+}
+
+function initials(name) { return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
+function fmt(n) { return n % 1 === 0 ? n.toString() : n.toFixed(1); }
+function ds(c) { return `background:${COLORS[c].bg};${COLORS[c].border !== 'none' ? 'border:'+COLORS[c].border : ''}`; }
+
+function renderAll() {
+  const city = document.getElementById('city-filter').value;
+  const filtered = city === 'all' ? managers : managers.filter(m => m.city === city);
+
+  const totalBalls = filtered.reduce((s,m) => s+m.balls, 0);
+  const shortCount = filtered.filter(m => { const c=calcCoverage(m); return m.max>0 && c.short>0; }).length;
+  const okCount = filtered.filter(m => { const c=calcCoverage(m); return m.max>0 && c.short===0; }).length;
+
+  document.getElementById('summary').innerHTML = `
+    <div class="sum-card"><div class="sum-label">Managers</div><div class="sum-val">${filtered.length}</div></div>
+    <div class="sum-card"><div class="sum-label">Total balls</div><div class="sum-val">${totalBalls}</div></div>
+    <div class="sum-card"><div class="sum-label">Need bibs</div><div class="sum-val" style="color:var(--red)">${shortCount}</div></div>
+    <div class="sum-card"><div class="sum-label">Covered</div><div class="sum-val" style="color:var(--green)">${okCount}</div></div>
+  `;
+
+  if (filtered.length === 0) {
+    document.getElementById('main').innerHTML = '<div class="loading">No managers found. Add rows to your Google Sheet.</div>';
+    return;
+  }
+
+  const cities = [...new Set(filtered.map(m => m.city))];
+  document.getElementById('main').innerHTML = cities.map(c => {
+    const mms = filtered.filter(m => m.city === c);
+    return `<div class="city-section">
+      <div class="city-label">${c}</div>
+      <div class="mm-grid">
+        ${mms.map(mm => {
+          const { pairings, total, leftover, leftoverGames, maxPossible, short } = calcCoverage(mm);
+          const covered = mm.max > 0 && short === 0;
+          const noMax = mm.max === 0;
+          const pillCls = noMax ? 'badge-neutral' : covered ? 'badge-good' : 'badge-bad';
+          const pillTxt = noMax ? 'No max set' : covered ? 'Covered' : `Short ${short} game${short!==1?'s':''}`;
+          const possColor = noMax ? 'var(--text)' : covered ? 'var(--green)' : 'var(--red)';
+          const possBorder = noMax ? 'var(--border)' : covered ? 'rgba(29,158,117,0.3)' : 'rgba(200,51,42,0.3)';
+          return `<div class="mm-card">
+            <div class="mm-head">
+              <div class="avatar">${initials(mm.name)}</div>
+              <div class="mm-info">
+                <div class="mm-name">${mm.name}</div>
+                <div class="mm-venue">${mm.venue}</div>
+              </div>
+              <div class="badges">
+                <span class="badge badge-neutral">${mm.balls} ball${mm.balls!==1?'s':''}</span>
+                <span class="badge ${pillCls}">${pillTxt}</span>
+              </div>
+            </div>
+
+            <div class="max-row">
+              <span class="max-label">Max games needed (peak day)</span>
+              <span class="max-val">${mm.max || '—'}</span>
+            </div>
+
+            <div class="possible-row" style="border-color:${possBorder}">
+              <span class="possible-label">Max games possible with current sets</span>
+              <span class="possible-val" style="color:${possColor}">${fmt(maxPossible)}</span>
+            </div>
+
+            <div class="inv-grid">
+              <div class="team-box">
+                <div class="team-heading">Team 1</div>
+                <div class="color-row"><div class="cdot" style="${ds('white')}"></div><span class="clabel">White</span><span class="cval">${mm.white}</span></div>
+                <div class="color-row"><div class="cdot" style="${ds('orange')}"></div><span class="clabel">Orange</span><span class="cval">${mm.orange}</span></div>
+              </div>
+              <div class="team-box">
+                <div class="team-heading">Team 2</div>
+                <div class="color-row"><div class="cdot" style="${ds('green')}"></div><span class="clabel">Green</span><span class="cval">${mm.green}</span></div>
+                <div class="color-row"><div class="cdot" style="${ds('blue')}"></div><span class="clabel">Blue</span><span class="cval">${mm.blue}</span></div>
+              </div>
+            </div>
+
+            <div class="pairings-box">
+              <div class="pairings-heading">Optimal pairing</div>
+              ${pairings.length === 0
+                ? `<span style="font-size:13px;color:var(--red)">No complete sets available</span>`
+                : pairings.map(p => `<div class="pairing-row">
+                    <div class="cdot-sm" style="${ds(p.a)}"></div>
+                    <span>${COLORS[p.a].label}</span>
+                    <span style="color:var(--hint);font-size:11px">vs</span>
+                    <div class="cdot-sm" style="${ds(p.b)}"></div>
+                    <span>${COLORS[p.b].label}</span>
+                    <span style="font-weight:600;margin-left:6px;font-family:'DM Mono',monospace;font-size:13px">${p.n} game${p.n!==1?'s':''}</span>
+                  </div>`).join('')}
+              ${leftover.length > 0 ? `<div class="leftover">Leftover: ${leftover.map(l=>`${l.n} ${COLORS[l.color].label}`).join(', ')}${leftoverGames > 0 ? ` — ${fmt(leftoverGames)} more possible` : ' (no pair available)'}</div>` : ''}
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+loadData();
+</script>
+</body>
+</html>
