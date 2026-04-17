@@ -359,8 +359,9 @@
 
   .status-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
     gap: 16px;
+    align-items: start;
   }
   .status-card {
     background: var(--bg-panel);
@@ -934,6 +935,9 @@ function renderStatusCard({ manager, entry, submitted }, idx) {
   const matchMgr = get(idx.matchMgr);
   const fieldProgress = get(idx.fieldProgress);
   const marketingResults = get(idx.marketingResults);
+  const fieldsContacted = get(idx.fieldsContacted);
+  const fieldsList = get(idx.fieldsList);
+  const marketingEfforts = get(idx.marketingEfforts);
 
   return `
     <div class="status-card">
@@ -956,9 +960,11 @@ function renderStatusCard({ manager, entry, submitted }, idx) {
       ${win ? `<div class="status-section"><div class="label">🏆 Biggest win</div><div class="val quote">${escape(win)}</div></div>` : ''}
       ${challenge ? `<div class="status-section"><div class="label">⚠ Biggest challenge</div><div class="val quote">${escape(challenge)}</div></div>` : ''}
       ${focus ? `<div class="status-section"><div class="label">🎯 Next month focus</div><div class="val">${escape(focus)}</div></div>` : ''}
-      ${fieldProgress ? `<div class="status-section"><div class="label">Field progress</div><div class="val">${escape(truncate(fieldProgress, 180))}</div></div>` : ''}
-      ${matchMgr ? `<div class="status-section"><div class="label">Match manager team</div><div class="val">${escape(truncate(matchMgr, 160))}</div></div>` : ''}
-      ${marketingResults ? `<div class="status-section"><div class="label">Marketing results</div><div class="val">${escape(truncate(marketingResults, 160))}</div></div>` : ''}
+      ${(fieldsContacted || fieldsList) ? `<div class="status-section"><div class="label">New fields contacted${fieldsContacted ? ` (${escape(fieldsContacted)})` : ''}</div>${fieldsList ? `<div class="val">${escape(fieldsList)}</div>` : ''}</div>` : ''}
+      ${fieldProgress ? `<div class="status-section"><div class="label">Field progress</div><div class="val">${escape(fieldProgress)}</div></div>` : ''}
+      ${matchMgr ? `<div class="status-section"><div class="label">Match manager team</div><div class="val">${escape(matchMgr)}</div></div>` : ''}
+      ${marketingEfforts ? `<div class="status-section"><div class="label">Marketing channels</div><div class="val" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-dim);text-transform:uppercase;letter-spacing:.06em;">${escape(marketingEfforts)}</div></div>` : ''}
+      ${marketingResults ? `<div class="status-section"><div class="label">Marketing results</div><div class="val">${escape(marketingResults)}</div></div>` : ''}
 
       <div class="status-submitted">Submitted ${tsStr}</div>
     </div>
