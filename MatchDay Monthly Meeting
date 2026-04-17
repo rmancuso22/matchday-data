@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MatchDay Monthly All-Hands</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* MatchDay brand palette (pulled from site) */
+    --md-forest: #0D1F17;      /* deepest forest — backgrounds */
+    --md-forest-2: #002a1f;    /* near-black forest */
+    --md-forest-3: #003326;    /* card bg on dark */
+    --md-green: #0B4D3B;       /* mid green — primary text/button */
+    --md-green-2: #0f5f49;     /* slightly lighter */
+    --md-mint: #2CDB87;        /* signature mint accent */
+    --md-mint-soft: #C8E8D4;   /* light mint tint */
+    --md-sage: #9BBFAA;        /* muted sage */
+    --md-gold: #D9BC63;        /* gold highlight */
+    --md-cream: #F4EEE1;       /* warm paper bg */
+    --md-cream-2: #FAF6EC;     /* lighter cream */
+
+    /* Utility */
+    --ink: #0D1F17;
+    --ink-2: #2a3d33;
+    --ink-3: #5b6e64;
+    --ink-4: #8a9a91;
+    --line: rgba(13, 31, 23, 0.1);
+    --line-strong: rgba(13, 31, 23, 0.18);
+    --bg: var(--md-cream);
+    --bg-card: #ffffff;
+    --red: #B53228;
+    --amber: #A87729;
+    --amber-bg: #FAF1DC;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--ink); font-family: 'Titillium Web', sans-serif; -webkit-font-smoothing: antialiased; }
+
+  /* ===== Banner ===== */
+  .banner {
+    background: var(--md-forest);
+    color: var(--md-mint);
+    padding: 10px 32px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  /* ===== Header ===== */
+  header {
+    padding: 28px 32px 24px;
+    border-bottom: 1px solid rgba(44, 219, 135, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    background: var(--md-forest);
+  }
+  .brand {
+    display: flex; align-items: center; gap: 20px;
+  }
+  .logo-img {
+    height: 38px; width: auto;
+  }
+  .brand-text {
+  }
+  .brand-text .top-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.2em; color: var(--md-mint);
+    text-transform: uppercase;
+  }
+  .brand-text .title {
+    font-size: 20px; font-weight: 700; letter-spacing: -0.01em; color: var(--md-cream);
+    margin-top: 2px;
+  }
+  .meeting-tag {
+    display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+  }
+  .month-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--md-mint);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  .file-loader {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .file-btn {
+    background: transparent;
+    border: 1px dashed rgba(44, 219, 135, 0.3);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    cursor: pointer;
+    color: var(--md-sage);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    transition: all 0.15s ease;
+  }
+  .file-btn:hover { background: rgba(44, 219, 135, 0.1); color: var(--md-mint); border-color: var(--md-mint); }
+  input[type=file] { display: none; }
+
+  /* ===== Hero ===== */
+  .hero {
+    padding: 56px 32px 56px;
+    background: var(--md-forest);
+    color: var(--md-cream);
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, var(--md-mint) 0%, transparent 70%);
+    opacity: 0.08;
+    border-radius: 50%;
+  }
+  .hero h1 {
+    font-size: 68px;
+    font-weight: 900;
+    letter-spacing: -0.035em;
+    line-height: 0.95;
+    margin-bottom: 14px;
+    color: var(--md-cream);
+    position: relative;
+  }
+  .hero h1 .accent { color: var(--md-mint); font-style: italic; }
+  .hero-sub {
+    font-size: 17px;
+    color: var(--md-sage);
+    max-width: 700px;
+    margin-bottom: 40px;
+    line-height: 1.5;
+    position: relative;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    position: relative;
+  }
+  .stat {
+    background: var(--md-forest-3);
+    border: 1px solid rgba(44, 219, 135, 0.12);
+    border-radius: 14px;
+    padding: 22px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+  }
+  .stat:hover {
+    border-color: rgba(44, 219, 135, 0.4);
+  }
+  .stat-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--md-sage);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 14px;
+  }
+  .stat-value {
+    font-size: 44px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: var(--md-cream);
+    line-height: 1;
+  }
+  .stat-change {
+    margin-top: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .stat-change.up { color: var(--md-mint); }
+  .stat-change.down { color: #ff7a6b; }
+  .stat-change.flat { color: var(--md-sage); }
+  .stat-change .arrow { font-size: 14px; }
+  .stat-sub {
+    font-size: 11px;
+    color: var(--md-sage);
+    margin-top: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ===== Section ===== */
+  section { padding: 56px 32px; border-bottom: 1px solid var(--line); background: var(--bg-card); }
+  section:nth-of-type(even) { background: var(--md-cream-2); }
+  .section-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .section-head h2 {
+    font-size: 40px;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--md-forest);
+  }
+  .section-head .kicker {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--md-mint);
+    background: var(--md-forest);
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 12px;
+  }
+  .section-head .meta {
+    font-size: 12px;
+    color: var(--ink-3);
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ===== Agenda ===== */
+  .agenda {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--bg-card);
+  }
+  .agenda-step {
+    padding: 22px 20px;
+    border-right: 1px solid var(--line);
+    position: relative;
+    transition: background 0.15s ease;
+  }
+  .agenda-step:hover { background: var(--md-cream); }
+  .agenda-step:last-child { border-right: none; }
+  .agenda-step .time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--md-green);
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: 0.08em;
+  }
+  .agenda-step .title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
+    color: var(--md-forest);
+  }
+  .agenda-step .desc {
+    font-size: 12px;
+    color: var(--ink-3);
+    line-height: 1.5;
+  }
+
+  /* ===== City table ===== */
+  .city-table {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--bg-card);
+  }
+  .city-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
+    align-items: center;
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--line);
+    transition: background 0.15s ease;
+  }
+  .city-row:last-child { border-bottom: none; }
+  .city-row.header {
+    background: var(--md-cream);
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--md-green);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .city-row.data:hover { background: var(--md-mint-soft); }
+  .city-row .city-name {
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--md-forest);
+  }
+  .city-row .city-name .bar-mini {
+    width: 4px;
+    height: 26px;
+    background: var(--md-mint);
+    border-radius: 2px;
+  }
+  .city-row .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--md-forest);
+  }
+  .city-row .num-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-4);
+    display: block;
+    margin-top: 2px;
+    font-weight: 500;
+  }
+  .city-row.total {
+    background: var(--md-forest);
+    color: var(--md-cream);
+    font-weight: 800;
+  }
+  .city-row.total .city-name, .city-row.total .num { color: var(--md-cream); }
+  .city-row.total .bar-mini { background: var(--md-gold); }
+
+  /* Flag callouts */
+  .callouts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin-top: 28px;
+  }
+  .callout {
+    padding: 20px 22px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--bg-card);
+  }
+  .callout.watch { border-left: 4px solid var(--md-gold); background: var(--amber-bg); }
+  .callout.win { border-left: 4px solid var(--md-mint); background: var(--md-mint-soft); }
+  .callout .tag {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .callout.watch .tag { color: var(--amber); }
+  .callout.win .tag { color: var(--md-green); }
+  .callout .headline { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: var(--md-forest); }
+  .callout .body { font-size: 13px; color: var(--ink-2); line-height: 1.5; }
+
+  /* ===== Check-ins section ===== */
+  .checkin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 14px;
+    align-items: start;
+  }
+  .checkin-card {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px;
+    position: relative;
+  }
+  .checkin-card.pending {
+    border-style: dashed;
+    border-color: var(--line-strong);
+    opacity: 0.6;
+  }
+  .checkin-card .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 14px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .checkin-card .name {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  .checkin-card .city-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 2px;
+  }
+  .pill {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 9px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+  .pill.submitted { background: var(--md-green-bg); color: var(--md-green); }
+  .pill.pending { background: #f3f4f6; color: var(--ink-3); }
+  .rating-bar {
+    display: flex; align-items: baseline; gap: 10px;
+    margin: 10px 0 14px;
+  }
+  .rating-num { font-size: 36px; font-weight: 900; color: var(--md-green); letter-spacing: -0.03em; line-height: 1; }
+  .rating-bar-track { flex: 1; height: 5px; background: #f3f4f6; border-radius: 3px; overflow: hidden; }
+  .rating-bar-fill { height: 100%; background: linear-gradient(90deg, var(--md-green-light), var(--md-green)); border-radius: 3px; }
+  .rating-bar-label { font-size: 9px; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.08em; font-family: 'JetBrains Mono', monospace; }
+
+  .checkin-section { margin-top: 12px; }
+  .checkin-section .label {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .checkin-section .val {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  .checkin-card .submitted-line {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-4);
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  /* ===== Deep dive / footer ===== */
+  .deep-dive {
+    background: var(--md-forest);
+    color: var(--md-cream);
+    padding: 56px 36px;
+    border-radius: 18px;
+    margin: 56px 32px;
+    border: none;
+    position: relative;
+    overflow: hidden;
+  }
+  .deep-dive::before {
+    content: '';
+    position: absolute;
+    bottom: -100px; left: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, var(--md-mint) 0%, transparent 70%);
+    opacity: 0.06;
+    border-radius: 50%;
+  }
+  .deep-dive h3 {
+    font-size: 52px;
+    font-weight: 900;
+    letter-spacing: -0.035em;
+    margin-bottom: 16px;
+    line-height: 0.95;
+    position: relative;
+  }
+  .deep-dive h3 .accent { color: var(--md-mint); font-style: italic; }
+  .deep-dive .theme-kicker {
+    font-size: 11px;
+    color: var(--md-forest);
+    background: var(--md-mint);
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-weight: 700;
+    margin-bottom: 14px;
+    position: relative;
+  }
+  .deep-dive .body {
+    font-size: 16px;
+    color: var(--md-sage);
+    line-height: 1.6;
+    max-width: 780px;
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .deep-dive .questions {
+    display: grid;
+    gap: 10px;
+    max-width: 780px;
+    position: relative;
+  }
+  .deep-dive .q {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 16px 20px;
+    background: rgba(44, 219, 135, 0.06);
+    border-radius: 10px;
+    border: 1px solid rgba(44, 219, 135, 0.14);
+    color: var(--md-cream);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .deep-dive .q-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--md-mint);
+    font-weight: 700;
+    flex-shrink: 0;
+    letter-spacing: 0.06em;
+    padding-top: 2px;
+  }
+
+  .empty-state {
+    padding: 60px 32px;
+    text-align: center;
+    color: var(--ink-3);
+  }
+  .empty-state h3 { font-size: 20px; color: var(--ink); margin-bottom: 8px; }
+
+  footer {
+    padding: 32px;
+    background: var(--md-forest-2);
+    color: var(--md-sage);
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  footer .brand-ft { color: var(--md-mint); font-weight: 700; }
+
+  @media (max-width: 900px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .agenda { grid-template-columns: 1fr 1fr; }
+    .agenda-step { border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .hero h1 { font-size: 44px; }
+    .section-head h2 { font-size: 28px; }
+    .deep-dive h3 { font-size: 32px; }
+    .city-row { grid-template-columns: 1.5fr 1fr 1fr; font-size: 12px; }
+    .city-row .hide-sm { display: none; }
+    section { padding: 32px 20px; }
+    .hero { padding: 32px 20px; }
+    header { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-text">
+      <div class="top-label">Operations</div>
+      <div class="title">MatchDay Monthly All-Hands</div>
+    </div>
+  </div>
+  <div class="meeting-tag">
+    <div class="month-tag" id="month-tag">— LOADING —</div>
+    <div class="file-loader">
+      <label class="file-btn" for="csv-upload">↑ Load new CSV</label>
+      <input type="file" id="csv-upload" accept=".csv" onchange="handleFileUpload(event)">
+    </div>
+  </div>
+</header>
+
+<!-- ===== HERO ===== -->
+<div class="hero">
+  <h1>The State of <span class="accent">Play.</span></h1>
+  <p class="hero-sub" id="hero-sub">Loading the latest numbers from across all MatchDay cities…</p>
+
+  <div class="stats" id="stats-grid"></div>
+</div>
+
+<!-- ===== AGENDA ===== -->
+<section>
+  <div class="section-head">
+    <div>
+      <div class="kicker">01 · Running order</div>
+      <h2>Today's Agenda</h2>
+    </div>
+    <div class="meta">45 min · 7 city managers</div>
+  </div>
+
+  <div class="agenda">
+    <div class="agenda-step">
+      <div class="time">0:00 — 0:03</div>
+      <div class="title">Open</div>
+      <div class="desc">Context + call-out of the month's biggest team win.</div>
+    </div>
+    <div class="agenda-step">
+      <div class="time">0:03 — 0:10</div>
+      <div class="title">Metrics</div>
+      <div class="desc">Cross-city numbers pulse. Right on this page.</div>
+    </div>
+    <div class="agenda-step">
+      <div class="time">0:10 — 0:25</div>
+      <div class="title">Round Robin</div>
+      <div class="desc">2 min each — win, challenge, focus. From your check-in.</div>
+    </div>
+    <div class="agenda-step">
+      <div class="time">0:25 — 0:37</div>
+      <div class="title">Deep Dive</div>
+      <div class="desc">Rotating theme. Peer teaching.</div>
+    </div>
+    <div class="agenda-step">
+      <div class="time">0:37 — 0:43</div>
+      <div class="title">Open Floor</div>
+      <div class="desc">"Anyone else hitting the same problem?"</div>
+    </div>
+    <div class="agenda-step">
+      <div class="time">0:43 — 0:45</div>
+      <div class="title">Close</div>
+      <div class="desc">Action items. Next call date. Thanks.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CITY TABLE ===== -->
+<section>
+  <div class="section-head">
+    <div>
+      <div class="kicker">02 · City-by-city</div>
+      <h2>The Network</h2>
+    </div>
+    <div class="meta" id="city-meta">— calculating —</div>
+  </div>
+
+  <div class="city-table" id="city-table"></div>
+
+  <div class="callouts" id="callouts"></div>
+</section>
+
+<!-- ===== DEEP DIVE ===== -->
+<div class="deep-dive">
+  <div class="theme-kicker" id="deep-kicker">03 · Deep dive · This month</div>
+  <h3 id="deep-title">Theme <span class="accent">TBD</span></h3>
+  <p class="body" id="deep-body">
+    This month's rotating theme will surface here. Pick 1-2 managers to present for 5 min on what's working in their city.
+  </p>
+  <div class="questions" id="deep-questions"></div>
+</div>
+
+<footer>
+  <div class="brand-ft">MatchDay · Pickup Soccer. Organized. Filmed. Competitive.</div>
+  <div>Internal ops page · Not for distribution</div>
+</footer>
+
+<script>
+/* =====================================================
+   CONFIG
+   ===================================================== */
+const CHECKIN_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmzasZGvZavVJan2QFpMxWuhc7HNzWIxRKcx1VsQS7jUZej13C9ODkhN1bw1NFOSUa2fgHKYfySrIE/pub?output=csv';
+
+// Default CSV path (committed to the repo) — falls back to embedded if missing
+const DEFAULT_DATA_CSV = 'user_analysis.csv';
+
+// Rotating deep-dive themes by month (1-12)
+const DEEP_DIVE_THEMES = {
+  1:  { title: 'Fields & Partnerships', accent: 'Fields.', body: "Who is closing new field deals, how are they approaching it, and where are current partnerships stuck? Field supply is the foundation — without it, we have nothing to offer players.", questions: ["Who has talked to a new field this month?", "What is the objection we keep hitting?", "Which existing field needs our attention most?"] },
+  2:  { title: 'Match Managers', accent: 'The Team.', body: "Our Match Managers are the face of MatchDay on the ground. This month we focus on how we are recruiting, training, and retaining them.", questions: ["Who has a waitlist of MMs ready?", "Where are we bleeding MMs?", "What training is missing?"] },
+  3:  { title: 'Marketing & Grassroots', accent: 'Growth.', body: "What is working city by city? Flyers, Nando's activations, local clubs, or influencers — share what drove players through the door this month.", questions: ["What marketing channel worked best for you?", "What completely flopped?", "What would you try with a bigger budget?"] },
+  4:  { title: 'Fields & Partnerships', accent: 'Fields.', body: "Q2 kick-off: which fields are our anchors, which are at risk, and where should our next acquisition push land? Let us map out the quarter's field priorities city by city.", questions: ["What field partnership are you proudest of?", "Which field is under threat and why?", "What new field would change your city if we landed it?"] },
+  5:  { title: 'Match Managers', accent: 'The Team.', body: "Mid-year team health check. How is your MM bench looking heading into summer peak demand?", questions: ["Who has a waitlist of MMs ready?", "Where are we bleeding MMs?", "What training is missing?"] },
+  6:  { title: 'Marketing & Grassroots', accent: 'Growth.', body: "What is working city by city? Flyers, Nando's activations, local clubs, or influencers — share what drove players through the door this month.", questions: ["What marketing channel worked best for you?", "What completely flopped?", "What would you try with a bigger budget?"] },
+  7:  { title: 'Fields & Partnerships', accent: 'Fields.', body: "Mid-year field audit. Who owns each partnership? Are we deepening or just maintaining? Where do we need to renegotiate terms?", questions: ["Which partnership needs a renegotiation?", "Who are we over-reliant on?", "What field partner deserves a thank-you call?"] },
+  8:  { title: 'Match Managers', accent: 'The Team.', body: "Summer staffing check. How did peak summer demand hit our MM team? What broke, what held up? Prep for fall.", questions: ["Who is a star MM we should promote?", "Did peak summer break any cities?", "Who needs a break?"] },
+  9:  { title: 'Marketing & Grassroots', accent: 'Growth.', body: "Fall is prime player acquisition season. Schools back in session, leagues restarting. How are we positioning MatchDay?", questions: ["What fall activation are you planning?", "Is there a local league we should partner with?", "What social moment could go viral?"] },
+  10: { title: 'Fields & Partnerships', accent: 'Fields.', body: "Q4 push. Which field deals can we close before year-end? Which winter/indoor conversions are we missing?", questions: ["What indoor field would save us in January?", "Which partner should get a formal contract?", "What is the boldest field we could chase?"] },
+  11: { title: 'Match Managers', accent: 'The Team.', body: "Year-end MM recognition and retention. Who made MatchDay what it is this year? How are we showing appreciation?", questions: ["Who deserves MM of the year?", "What retention bonus structure would work?", "What should we ditch?"] },
+  12: { title: 'Year in Review', accent: 'The Year.', body: "Full team retrospective. What worked. What did not. What we are carrying into next year.", questions: ["What is the one thing that worked best this year?", "What do we need to stop doing?", "What should every city try in Q1?"] },
+};
+
+/* =====================================================
+   CSV PARSING
+   ===================================================== */
+function parseCSV(text) {
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"' && text[i+1] === '"') { field += '"'; i++; }
+      else if (c === '"') inQuotes = false;
+      else field += c;
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else if (c === '\r') {}
+      else field += c;
+    }
+  }
+  if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
+  return rows;
+}
+
+function rowsToObjects(rows) {
+  if (!rows.length) return [];
+  const headers = rows[0].map(h => h.trim());
+  return rows.slice(1)
+    .filter(r => r.some(c => c && c.trim()))
+    .map(r => {
+      const obj = {};
+      headers.forEach((h, i) => obj[h] = (r[i] || '').trim());
+      return obj;
+    });
+}
+
+function findCol(headers, keywords) {
+  const lower = headers.map(h => (h || '').toLowerCase());
+  for (const kw of keywords) {
+    const idx = lower.findIndex(h => h.includes(kw.toLowerCase()));
+    if (idx !== -1) return idx;
+  }
+  return -1;
+}
+
+/* =====================================================
+   STATS COMPUTATION FROM REGISTRATION CSV
+   ===================================================== */
+function computeStats(records) {
+  // Build first-ever-match map per user
+  const firstMatch = {};
+  for (const r of records) {
+    const ts = new Date(r['Date Of Match Registration']);
+    if (isNaN(ts)) continue;
+    const uid = r['User ID'];
+    if (!uid) continue;
+    if (!firstMatch[uid] || ts < firstMatch[uid]) firstMatch[uid] = ts;
+  }
+
+  const byMonth = {};  // key: "2026-03" -> stats
+  for (const r of records) {
+    const ts = new Date(r['Date Of Match Registration']);
+    if (isNaN(ts)) continue;
+    if (r['Match Canceled'] === 'true') continue;
+
+    const key = `${ts.getFullYear()}-${String(ts.getMonth()+1).padStart(2,'0')}`;
+    if (!byMonth[key]) byMonth[key] = { cities: {}, allPlayers: new Set(), newPlayers: new Set(), allMatches: new Set(), regs: 0, memberRegs: 0, revenue: 0 };
+    const M = byMonth[key];
+
+    const city = r['City'] || 'Unknown';
+    if (!M.cities[city]) M.cities[city] = { matches: new Set(), regs: 0, players: new Set(), newPlayers: new Set(), memberRegs: 0, revenue: 0 };
+    const C = M.cities[city];
+
+    const matchKey = `${r['Field']}|${r['Match Start']}`;
+    C.matches.add(matchKey);
+    M.allMatches.add(`${city}|${matchKey}`);
+    C.regs++; M.regs++;
+    const uid = r['User ID'];
+    if (uid) {
+      C.players.add(uid);
+      M.allPlayers.add(uid);
+      if (firstMatch[uid] && firstMatch[uid].getFullYear() === ts.getFullYear() && firstMatch[uid].getMonth() === ts.getMonth()) {
+        C.newPlayers.add(uid);
+        M.newPlayers.add(uid);
+      }
+    }
+    if (r['Type Of Payment'] === 'MEMBER') { C.memberRegs++; M.memberRegs++; }
+    const price = parseFloat(r['Match price paid']);
+    if (!isNaN(price)) { C.revenue += price; M.revenue += price; }
+  }
+
+  // Collapse sets to counts
+  for (const key of Object.keys(byMonth)) {
+    const M = byMonth[key];
+    M.matches = M.allMatches.size;
+    M.players = M.allPlayers.size;
+    M.newPlayersCount = M.newPlayers.size;
+    for (const cname of Object.keys(M.cities)) {
+      const C = M.cities[cname];
+      C.matchesCount = C.matches.size;
+      C.playersCount = C.players.size;
+      C.newPlayersCount = C.newPlayers.size;
+    }
+  }
+
+  // Cumulative
+  const totalRegistrations = records.filter(r => r['Match Canceled'] !== 'true').length;
+  const uniquePlayersEver = new Set(records.map(r => r['User ID']).filter(Boolean)).size;
+
+  return { byMonth, totalRegistrations, uniquePlayersEver };
+}
+
+/* =====================================================
+   RENDER
+   ===================================================== */
+function renderAll(stats, meetingMonth, prevMonth) {
+  const M = stats.byMonth[meetingMonth];
+  const P = stats.byMonth[prevMonth];
+
+  if (!M) {
+    document.getElementById('hero-sub').textContent = 'No data available for the selected month.';
+    return;
+  }
+
+  // ----- Month tag -----
+  const [year, monthNum] = meetingMonth.split('-').map(Number);
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const monthDisplay = `${monthNames[monthNum-1].toUpperCase()} ${year}`;
+  document.getElementById('month-tag').textContent = monthDisplay;
+
+  // ----- Hero sub -----
+  document.getElementById('hero-sub').textContent = `What happened across the network in ${monthNames[monthNum-1]} ${year}. Numbers pulled from the latest match registration export.`;
+
+  // ----- Stats -----
+  const statCards = [
+    { label: 'Matches played', value: M.matches, prev: P ? P.matches : null, sub: `across ${Object.keys(M.cities).length} cities` },
+    { label: 'Total registrations', value: M.regs, prev: P ? P.regs : null, sub: `${Math.round(M.regs / M.matches)} avg per match` },
+    { label: 'Unique players', value: M.players, prev: P ? P.players : null, sub: 'played at least once' },
+    { label: 'New players', value: M.newPlayersCount, prev: P ? P.newPlayersCount : null, sub: 'first-ever match' },
+    { label: 'Member regs', value: M.memberRegs, prev: P ? P.memberRegs : null, sub: `${Math.round(100*M.memberRegs/M.regs)}% of all regs` },
+  ];
+  document.getElementById('stats-grid').innerHTML = statCards.map(s => {
+    let change = '';
+    if (s.prev !== null && s.prev > 0) {
+      const pct = Math.round(((s.value - s.prev) / s.prev) * 100);
+      const cls = pct > 0 ? 'up' : pct < 0 ? 'down' : 'flat';
+      const arrow = pct > 0 ? '↑' : pct < 0 ? '↓' : '→';
+      change = `<div class="stat-change ${cls}"><span class="arrow">${arrow}</span>${pct > 0 ? '+' : ''}${pct}% vs prev month</div>`;
+    }
+    return `
+      <div class="stat">
+        <div class="stat-label">${s.label}</div>
+        <div class="stat-value">${s.value.toLocaleString()}</div>
+        ${change}
+        <div class="stat-sub">${s.sub}</div>
+      </div>`;
+  }).join('');
+
+  // ----- City table -----
+  const CITY_ORDER = ['Austin', 'Houston', 'San Antonio', 'Dallas / Fort Worth', 'Atlanta', 'St. Louis', 'Oklahoma City', 'El Paso'];
+  const cityKeys = Object.keys(M.cities).sort((a,b) => {
+    const ai = CITY_ORDER.indexOf(a); const bi = CITY_ORDER.indexOf(b);
+    if (ai >= 0 && bi >= 0) return ai - bi;
+    if (ai >= 0) return -1;
+    if (bi >= 0) return 1;
+    return a.localeCompare(b);
+  });
+
+  let tableHtml = `
+    <div class="city-row header">
+      <div>City</div>
+      <div class="num">Matches</div>
+      <div class="num hide-sm">Registrations</div>
+      <div class="num">Unique Players</div>
+      <div class="num hide-sm">New Players</div>
+      <div class="num hide-sm">Member %</div>
+    </div>`;
+  cityKeys.forEach(c => {
+    const C = M.cities[c];
+    const prevC = P && P.cities[c];
+    const memberPct = C.regs > 0 ? Math.round(100 * C.memberRegs / C.regs) : 0;
+    const matchDelta = prevC ? ((C.matchesCount - prevC.matchesCount) / (prevC.matchesCount || 1) * 100).toFixed(0) : null;
+    const regsDelta = prevC ? ((C.regs - prevC.regs) / (prevC.regs || 1) * 100).toFixed(0) : null;
+    const playerDelta = prevC ? ((C.playersCount - prevC.playersCount) / (prevC.playersCount || 1) * 100).toFixed(0) : null;
+    const newDelta = prevC ? ((C.newPlayersCount - prevC.newPlayersCount) / (prevC.newPlayersCount || 1) * 100).toFixed(0) : null;
+    tableHtml += `
+      <div class="city-row data">
+        <div class="city-name"><div class="bar-mini"></div>${c}</div>
+        <div class="num">${C.matchesCount}${matchDelta !== null ? `<span class="num-sub">${matchDelta > 0 ? '+' : ''}${matchDelta}%</span>` : ''}</div>
+        <div class="num hide-sm">${C.regs.toLocaleString()}${regsDelta !== null ? `<span class="num-sub">${regsDelta > 0 ? '+' : ''}${regsDelta}%</span>` : ''}</div>
+        <div class="num">${C.playersCount}${playerDelta !== null ? `<span class="num-sub">${playerDelta > 0 ? '+' : ''}${playerDelta}%</span>` : ''}</div>
+        <div class="num hide-sm">${C.newPlayersCount}${newDelta !== null ? `<span class="num-sub">${newDelta > 0 ? '+' : ''}${newDelta}%</span>` : ''}</div>
+        <div class="num hide-sm">${memberPct}%</div>
+      </div>`;
+  });
+  const overallMemberPct = M.regs > 0 ? Math.round(100 * M.memberRegs / M.regs) : 0;
+  tableHtml += `
+    <div class="city-row total">
+      <div class="city-name"><div class="bar-mini"></div>All Cities</div>
+      <div class="num">${M.matches}</div>
+      <div class="num hide-sm">${M.regs.toLocaleString()}</div>
+      <div class="num">${M.players.toLocaleString()}</div>
+      <div class="num hide-sm">${M.newPlayersCount}</div>
+      <div class="num hide-sm">${overallMemberPct}%</div>
+    </div>`;
+  document.getElementById('city-table').innerHTML = tableHtml;
+  document.getElementById('city-meta').textContent = `${cityKeys.length} active cities · ${monthDisplay}`;
+
+  // ----- Callouts: auto-detect biggest mover, most at-risk, standout -----
+  const callouts = [];
+  if (P) {
+    let biggestGain = null, biggestLoss = null;
+    cityKeys.forEach(c => {
+      const C = M.cities[c];
+      const prevC = P.cities[c];
+      if (!prevC || prevC.matchesCount === 0) return;
+      const delta = (C.matchesCount - prevC.matchesCount) / prevC.matchesCount;
+      if (!biggestGain || delta > biggestGain.delta) biggestGain = { city: c, delta, abs: C.matchesCount - prevC.matchesCount };
+      if (!biggestLoss || delta < biggestLoss.delta) biggestLoss = { city: c, delta, abs: C.matchesCount - prevC.matchesCount };
+    });
+    if (biggestGain && biggestGain.delta > 0.1) {
+      callouts.push({
+        type: 'win', tag: '📈 Biggest mover',
+        headline: `${biggestGain.city} grew ${Math.round(biggestGain.delta*100)}%`,
+        body: `${biggestGain.abs > 0 ? '+' : ''}${biggestGain.abs} matches vs previous month. What is working there?`
+      });
+    }
+    if (biggestLoss && biggestLoss.delta < -0.1) {
+      callouts.push({
+        type: 'watch', tag: '⚠ Needs attention',
+        headline: `${biggestLoss.city} fell ${Math.round(biggestLoss.delta*100)}%`,
+        body: `${biggestLoss.abs} matches vs previous month. Dig into the why during this manager's turn.`
+      });
+    }
+  }
+  // Cities with zero matches flag
+  const quietCities = cityKeys.filter(c => M.cities[c].matchesCount <= 5);
+  if (quietCities.length > 0) {
+    callouts.push({
+      type: 'watch', tag: '🚨 Cold start',
+      headline: `${quietCities.join(', ')} ran ≤5 matches`,
+      body: `These markets need focused operational support. Check in with these managers individually.`
+    });
+  }
+  document.getElementById('callouts').innerHTML = callouts.map(c => `
+    <div class="callout ${c.type}">
+      <div class="tag">${c.tag}</div>
+      <div class="headline">${c.headline}</div>
+      <div class="body">${c.body}</div>
+    </div>`).join('');
+
+  // ----- Deep dive theme -----
+  const theme = DEEP_DIVE_THEMES[monthNum] || DEEP_DIVE_THEMES[1];
+  document.getElementById('deep-kicker').textContent = `03 · Deep dive · ${monthNames[monthNum-1]}`;
+  document.getElementById('deep-title').innerHTML = `${theme.title.split(' ').slice(0,-1).join(' ')} <span class="accent">${theme.accent}</span>`;
+  document.getElementById('deep-body').textContent = theme.body;
+  document.getElementById('deep-questions').innerHTML = theme.questions.map((q, i) =>
+    `<div class="q"><div class="q-num">Q${i+1}</div><div>${q}</div></div>`
+  ).join('');
+}
+
+/* =====================================================
+   CHECKIN RENDERING
+   ===================================================== */
+function renderCheckins(rows, meetingMonth) {
+  const MANAGERS = [
+    { name: "Yarra",     city: "Houston",      cityKeywords: ["houston"] },
+    { name: "Abraham",   city: "San Antonio",  cityKeywords: ["san antonio"] },
+    { name: "Gabe",      city: "North Austin", cityKeywords: ["austin"] },
+    { name: "Willfried", city: "St Louis",     cityKeywords: ["st louis", "st. louis"] },
+    { name: "Anton",     city: "El Paso",      cityKeywords: ["el paso"] },
+    { name: "Chris",     city: "DFW",          cityKeywords: ["dfw", "dallas", "fort worth"] },
+    { name: "Rodrigo",   city: "OKC",          cityKeywords: ["okc", "oklahoma"] },
+  ];
+
+  if (!rows || rows.length < 2) {
+    document.getElementById('checkin-grid').innerHTML = `<div class="empty-state"><h3>No check-ins loaded yet</h3><p>Once managers submit their monthly check-ins, they'll appear here.</p></div>`;
+    return;
+  }
+  const headers = rows[0];
+  const data = rows.slice(1).filter(r => r.some(c => c && c.trim()));
+
+  const idx = {
+    timestamp: findCol(headers, ['timestamp']),
+    city: findCol(headers, ['city']),
+    rating: findCol(headers, ['rating', 'overall']),
+    win: findCol(headers, ['biggest win']),
+    challenge: findCol(headers, ['biggest challenge']),
+    focus: findCol(headers, ['primary focus', 'focus for next']),
+    fieldProgress: findCol(headers, ['progress update', 'field relationships']),
+    matchMgr: findCol(headers, ['match manager']),
+    marketingResults: findCol(headers, ['results from', 'marketing results']),
+  };
+
+  // Latest per city
+  const latestByCity = {};
+  data.forEach(r => {
+    const city = idx.city >= 0 ? r[idx.city] : 'Unknown';
+    const ts = idx.timestamp >= 0 ? new Date(r[idx.timestamp]) : new Date(0);
+    if (!latestByCity[city] || ts > latestByCity[city]._ts) latestByCity[city] = { _ts: ts, row: r };
+  });
+
+  const [year, monthNum] = meetingMonth.split('-').map(Number);
+  const monthStart = new Date(year, monthNum-1, 1);
+  const monthEnd = new Date(year, monthNum, 1);
+  let submittedCount = 0;
+
+  const html = MANAGERS.map(m => {
+    const key = Object.keys(latestByCity).find(c => {
+      const cl = c.toLowerCase();
+      return m.cityKeywords.some(kw => cl.includes(kw));
+    });
+    const entry = key ? latestByCity[key] : null;
+    const submittedThisMonth = entry && entry._ts >= monthStart && entry._ts < new Date(monthEnd.getTime() + 14*24*3600*1000);
+    if (submittedThisMonth) submittedCount++;
+
+    if (!entry || !submittedThisMonth) {
+      return `
+        <div class="checkin-card pending">
+          <div class="head">
+            <div>
+              <div class="name">${m.name}</div>
+              <div class="city-tag">${m.city}</div>
+            </div>
+            <div class="pill pending">Awaiting</div>
+          </div>
+          <div class="val" style="color:var(--ink-4);font-style:italic;font-size:13px;">No check-in submitted for this month yet.</div>
+        </div>`;
+    }
+
+    const r = entry.row;
+    const get = i => i >= 0 ? (r[i] || '').trim() : '';
+    const rating = parseFloat(get(idx.rating)) || 0;
+    const tsStr = entry._ts.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+
+    return `
+      <div class="checkin-card">
+        <div class="head">
+          <div>
+            <div class="name">${m.name}</div>
+            <div class="city-tag">${m.city}</div>
+          </div>
+          <div class="pill submitted">Submitted</div>
+        </div>
+        ${rating ? `
+          <div class="rating-bar-label">Overall rating</div>
+          <div class="rating-bar">
+            <div class="rating-num">${rating.toFixed(1)}</div>
+            <div class="rating-bar-track"><div class="rating-bar-fill" style="width:${rating/5*100}%"></div></div>
+          </div>` : ''}
+        ${get(idx.win) ? `<div class="checkin-section"><div class="label">🏆 Biggest win</div><div class="val">${esc(get(idx.win))}</div></div>` : ''}
+        ${get(idx.challenge) ? `<div class="checkin-section"><div class="label">⚠ Biggest challenge</div><div class="val">${esc(get(idx.challenge))}</div></div>` : ''}
+        ${get(idx.focus) ? `<div class="checkin-section"><div class="label">🎯 Next month focus</div><div class="val">${esc(get(idx.focus))}</div></div>` : ''}
+        <div class="submitted-line">Submitted ${tsStr}</div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('checkin-grid').innerHTML = html;
+  document.getElementById('checkin-meta').textContent = `${submittedCount}/${MANAGERS.length} submitted`;
+}
+
+function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* =====================================================
+   LOAD FLOW
+   ===================================================== */
+let latestStats = null;
+
+async function loadDefaultData() {
+  try {
+    const res = await fetch(DEFAULT_DATA_CSV);
+    if (!res.ok) throw new Error('No default CSV at ' + DEFAULT_DATA_CSV);
+    const text = await res.text();
+    processCSV(text);
+  } catch (e) {
+    document.getElementById('hero-sub').innerHTML = `No data file loaded. Click <strong>↑ Load new CSV</strong> above to load your monthly export.`;
+    document.getElementById('stats-grid').innerHTML = '';
+  }
+}
+
+function processCSV(text) {
+  const rows = parseCSV(text);
+  const records = rowsToObjects(rows);
+  const stats = computeStats(records);
+  latestStats = stats;
+
+  // Find latest complete month (the month with the most recent data)
+  const months = Object.keys(stats.byMonth).sort();
+  const meetingMonth = months[months.length - 1];
+  const prevMonth = months[months.length - 2];
+  renderAll(stats, meetingMonth, prevMonth);
+}
+
+function handleFileUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => processCSV(e.target.result);
+  reader.readAsText(file);
+}
+
+loadDefaultData();
+</script>
+</body>
+</html>
