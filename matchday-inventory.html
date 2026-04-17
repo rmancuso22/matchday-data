@@ -18,6 +18,8 @@
     --green-bg: #E1F5EE;
     --red: #C8332A;
     --red-bg: #FCEBEB;
+    --amber: #B45309;
+    --amber-bg: #FFFBEB;
     --blue-accent: #2563EB;
     --radius: 12px;
     --radius-sm: 8px;
@@ -35,35 +37,35 @@
   .sync-time { font-size: 12px; color: var(--hint); font-family: 'DM Mono', monospace; }
 
   .summary { display: flex; gap: 10px; padding: 20px 32px; flex-wrap: wrap; }
-  .sum-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 18px; flex: 1; min-width: 100px; }
+  .sum-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 18px; flex: 1; min-width: 120px; }
   .sum-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
   .sum-val { font-size: 24px; font-weight: 600; }
 
   .main { padding: 0 32px 40px; }
   .city-section { margin-bottom: 32px; }
-  .city-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .city-header { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+  .city-label { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text); }
+  .city-summary { display: flex; gap: 12px; align-items: center; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+  .city-stat { display: flex; align-items: center; gap: 5px; }
+  .city-stat .cdot { width: 9px; height: 9px; border-radius: 50%; }
+  .city-stat .val { font-weight: 600; font-family: 'DM Mono', monospace; color: var(--text); }
 
   .mm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; }
-  .mm-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
+  .mm-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; position: relative; }
+  .mm-card.stale { border-color: rgba(200,51,42,0.35); }
+  .mm-card.stale::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--red); border-radius: var(--radius) var(--radius) 0 0; }
 
   .mm-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
   .avatar { width: 38px; height: 38px; border-radius: 50%; background: #EEF2FF; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: var(--blue-accent); flex-shrink: 0; }
   .mm-info { flex: 1; min-width: 0; }
   .mm-name { font-size: 15px; font-weight: 600; }
-  .mm-venue { font-size: 12px; color: var(--muted); }
-  .badges { display: flex; gap: 6px; flex-wrap: wrap; }
-  .badge { font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 20px; }
+  .mm-sub { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; }
+  .badges { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .badge { font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
   .badge-neutral { background: #F1F0EB; color: var(--muted); }
   .badge-good { background: var(--green-bg); color: var(--green); }
   .badge-bad { background: var(--red-bg); color: var(--red); }
-
-  .max-row { display: flex; align-items: center; gap: 10px; background: var(--bg); border-radius: var(--radius-sm); padding: 9px 12px; margin-bottom: 8px; }
-  .max-label { font-size: 12px; color: var(--muted); flex: 1; }
-  .max-val { font-size: 15px; font-weight: 600; font-family: 'DM Mono', monospace; }
-
-  .possible-row { display: flex; align-items: center; gap: 10px; border-radius: var(--radius-sm); padding: 9px 12px; margin-bottom: 12px; border: 1px solid var(--border); }
-  .possible-label { font-size: 12px; color: var(--muted); flex: 1; }
-  .possible-val { font-size: 15px; font-weight: 600; font-family: 'DM Mono', monospace; }
+  .badge-amber { background: var(--amber-bg); color: var(--amber); }
 
   .inv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
   .team-box { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; }
@@ -80,6 +82,13 @@
   .pairing-row:last-child { margin-bottom: 0; }
   .cdot-sm { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .leftover { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border); font-size: 11px; color: var(--hint); }
+
+  .need-box { margin-top: 10px; padding: 9px 12px; background: var(--amber-bg); border: 1px solid rgba(234,179,8,0.25); border-radius: var(--radius-sm); font-size: 13px; color: var(--amber); }
+  .need-box .need-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #B45309; display: block; margin-bottom: 3px; }
+
+  .balls-row { display: flex; align-items: center; gap: 10px; background: var(--bg); border-radius: var(--radius-sm); padding: 9px 12px; margin-bottom: 10px; }
+  .balls-label { font-size: 12px; color: var(--muted); flex: 1; }
+  .balls-val { font-size: 15px; font-weight: 600; font-family: 'DM Mono', monospace; }
 
   .loading { text-align: center; padding: 80px 32px; color: var(--muted); font-size: 15px; }
   .error-box { margin: 20px 32px; background: var(--red-bg); border: 1px solid rgba(200,51,42,0.2); border-radius: var(--radius); padding: 16px 20px; color: var(--red); font-size: 14px; }
@@ -110,10 +119,19 @@
 <div style="padding: 6px 32px 0;"><span class="sync-time" id="sync-time"></span></div>
 
 <div class="summary" id="summary"></div>
-<div class="main" id="main"><div class="loading">Loading inventory from Google Sheets...</div></div>
+<div class="main" id="main"><div class="loading">Loading inventory from form responses…</div></div>
 
 <script>
-const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTtRDFxi2ICSsdLe51JlXVHcU9vx6Knq6-qO19iwWITJLpD5njt6DQjrKljX6aow7aX7KNNlv-38Gy0/pub?output=csv';
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTJYcNn-C2e-jR-n61hW7_v4tWXNmbdU61pEj3BSNMhAtutV0QpXqU9IY1xaGMA6yxIOfbfaFRmdrtN/pub?output=csv';
+const REFRESH_INTERVAL_MS = 60000;
+const STALE_THRESHOLD_DAYS = 45;
+
+const CITY_MAP = {
+  'ATX': 'Austin', 'HTX': 'Houston', 'SATX': 'San Antonio',
+  'ATL': 'Atlanta', 'DFW': 'Dallas / Fort Worth', 'STL': 'St Louis',
+  'El Paso': 'El Paso', 'OKC': 'Oklahoma City',
+};
+const CITY_ORDER = ['Austin', 'Houston', 'San Antonio', 'Dallas / Fort Worth', 'Atlanta', 'St Louis', 'Oklahoma City', 'El Paso'];
 
 const COLORS = {
   white:  { label: 'White',  bg: '#D3D1C7', border: '1px solid #aaa' },
@@ -124,62 +142,124 @@ const COLORS = {
 
 let managers = [];
 
-function parseCSVLine(line) {
-  const result = [];
-  let cur = '', inQuote = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') { inQuote = !inQuote; }
-    else if (ch === ',' && !inQuote) { result.push(cur.trim()); cur = ''; }
-    else { cur += ch; }
-  }
-  result.push(cur.trim());
-  return result;
-}
-
+/* ---------- CSV parsing ---------- */
 function parseCSV(text) {
-  const lines = text.trim().split('\n').map(l => parseCSVLine(l));
-  const headers = lines[0].map(h => h.toLowerCase().trim());
-  return lines.slice(1).filter(r => r.some(c => c)).map((row, i) => {
-    const obj = { id: i+1 };
-    headers.forEach((h, j) => obj[h] = row[j] || '');
-    return {
-      id: obj.id,
-      name: obj.name || '',
-      city: obj.city || '',
-      venue: obj.venue || '',
-      balls: parseInt(obj.balls) || 0,
-      white: parseInt(obj.white) || 0,
-      orange: parseInt(obj.orange) || 0,
-      green: parseInt(obj.green) || 0,
-      blue: parseInt(obj.blue) || 0,
-      max: parseInt(obj.max) || 0,
-      notes: obj.notes || '',
-    };
-  }).filter(m => m.name);
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"' && text[i+1] === '"') { field += '"'; i++; }
+      else if (c === '"') inQuotes = false;
+      else field += c;
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else if (c === '\r') {}
+      else field += c;
+    }
+  }
+  if (field.length > 0 || row.length > 0) { row.push(field); rows.push(row); }
+  return rows;
 }
 
+function findCol(headers, keywords) {
+  const lower = headers.map(h => (h || '').toLowerCase());
+  for (const kw of keywords) {
+    const idx = lower.findIndex(h => h.includes(kw.toLowerCase()));
+    if (idx !== -1) return idx;
+  }
+  return -1;
+}
+
+/* ---------- Data load ---------- */
 async function loadData() {
-  document.getElementById('main').innerHTML = '<div class="loading">Syncing with Google Sheets...</div>';
+  document.getElementById('main').innerHTML = '<div class="loading">Syncing with Google Sheets…</div>';
   try {
     const res = await fetch(CSV_URL + '&t=' + Date.now());
-    if (!res.ok) throw new Error('Fetch failed');
+    if (!res.ok) throw new Error('Fetch failed (' + res.status + ')');
     const text = await res.text();
-    managers = parseCSV(text);
+    const rows = parseCSV(text);
+    if (rows.length < 2) throw new Error('No data in sheet');
+    managers = processRows(rows);
     populateCityFilter();
     renderAll();
-    document.getElementById('sync-time').textContent = 'Last synced ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    document.getElementById('sync-time').textContent = 'Last synced ' + new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
   } catch(e) {
-    document.getElementById('main').innerHTML = `<div class="error-box">Could not load data from Google Sheets. Make sure the sheet is published (File → Share → Publish to web → CSV) and try refreshing.<br><br><small>${e.message}</small></div>`;
+    document.getElementById('main').innerHTML = `<div class="error-box">Could not load data from Google Sheets.<br><br><small>${e.message}</small></div>`;
   }
 }
 
+function processRows(rows) {
+  const headers = rows[0];
+  const data = rows.slice(1).filter(r => r.some(c => c && c.trim()));
+
+  const idx = {
+    timestamp: findCol(headers, ['timestamp']),
+    name:      findCol(headers, ['your name', 'name']),
+    city:      findCol(headers, ['city']),
+    white:     findCol(headers, ['white']),
+    green:     findCol(headers, ['green']),
+    orange:    findCol(headers, ['orange']),
+    blue:      findCol(headers, ['blue']),
+    need:      findCol(headers, ['need']),
+    balls:     findCol(headers, ['ball']),
+  };
+
+  // Build raw list
+  const all = data.map(r => {
+    const get = (i) => i >= 0 ? (r[i] || '').trim() : '';
+    const getNum = (i) => {
+      const v = get(i);
+      const n = parseInt(v);
+      return isNaN(n) ? 0 : n;
+    };
+    const rawCity = get(idx.city);
+    return {
+      ts: idx.timestamp >= 0 ? new Date(r[idx.timestamp]) : new Date(0),
+      name: get(idx.name),
+      cityRaw: rawCity,
+      city: CITY_MAP[rawCity] || rawCity || 'Unknown',
+      white: getNum(idx.white),
+      green: getNum(idx.green),
+      orange: getNum(idx.orange),
+      blue: getNum(idx.blue),
+      need: get(idx.need),
+      balls: getNum(idx.balls),
+    };
+  }).filter(m => m.name);
+
+  // Dedup: latest per (name + city)
+  const latest = {};
+  all.forEach(m => {
+    const key = (m.name.toLowerCase() + '|' + m.city.toLowerCase());
+    if (!latest[key] || m.ts > latest[key].ts) latest[key] = m;
+  });
+  return Object.values(latest);
+}
+
+/* ---------- UI helpers ---------- */
 function populateCityFilter() {
   const sel = document.getElementById('city-filter');
-  const cities = [...new Set(managers.map(m => m.city).filter(Boolean))].sort();
+  const cities = [...new Set(managers.map(m => m.city))].filter(Boolean).sort();
   sel.innerHTML = '<option value="all">All cities</option>' + cities.map(c => `<option>${c}</option>`).join('');
 }
 
+function initials(name) { return name.split(/\s+/).filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
+function fmt(n) { return n % 1 === 0 ? n.toString() : n.toFixed(1); }
+function ds(c) { return `background:${COLORS[c].bg};${COLORS[c].border !== 'none' ? 'border:'+COLORS[c].border : ''}`; }
+function daysAgo(date) { return Math.floor((Date.now() - date.getTime()) / (1000*60*60*24)); }
+function relativeTime(date) {
+  const d = daysAgo(date);
+  if (d === 0) return 'Today';
+  if (d === 1) return 'Yesterday';
+  if (d < 30) return `${d} days ago`;
+  if (d < 60) return `~1 month ago`;
+  return `${Math.floor(d/30)} months ago`;
+}
+
+/* ---------- Coverage math (how many games can be played) ---------- */
 function calcCoverage(mm) {
   const inv = { white: mm.white, orange: mm.orange, green: mm.green, blue: mm.blue };
   const opts = [
@@ -200,123 +280,147 @@ function calcCoverage(mm) {
     if (total > bestTotal) {
       bestTotal = total;
       bestPairings = pairings;
-      bestLeftover = Object.entries(rem).filter(([,v]) => v > 0).map(([k,v]) => ({color:k,n:v}));
+      bestLeftover = Object.entries(rem).filter(([,v]) => v > 0).map(([k,v]) => ({color:k, n:v}));
     }
   }
-  let leftoverGames = 0;
-  if (bestLeftover.length >= 2) {
-    const lrem = {};
-    bestLeftover.forEach(l => lrem[l.color] = l.n);
-    const lc = Object.keys(lrem);
-    for (let i = 0; i < lc.length-1; i+=2) leftoverGames += Math.min(lrem[lc[i]], lrem[lc[i+1]]);
-    leftoverGames /= 2;
-  }
-  const maxPossible = bestTotal + leftoverGames;
-  const short = mm.max > 0 ? Math.max(0, mm.max - bestTotal) : 0;
-  return { pairings: bestPairings, total: bestTotal, leftover: bestLeftover, leftoverGames, maxPossible, short };
+  return { pairings: bestPairings, total: bestTotal, leftover: bestLeftover };
 }
 
-function initials(name) { return name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(); }
-function fmt(n) { return n % 1 === 0 ? n.toString() : n.toFixed(1); }
-function ds(c) { return `background:${COLORS[c].bg};${COLORS[c].border !== 'none' ? 'border:'+COLORS[c].border : ''}`; }
-
+/* ---------- Render ---------- */
 function renderAll() {
   const city = document.getElementById('city-filter').value;
   const filtered = city === 'all' ? managers : managers.filter(m => m.city === city);
 
-  const totalBalls = filtered.reduce((s,m) => s+m.balls, 0);
-  const shortCount = filtered.filter(m => { const c=calcCoverage(m); return m.max>0 && c.short>0; }).length;
-  const okCount = filtered.filter(m => { const c=calcCoverage(m); return m.max>0 && c.short===0; }).length;
+  // Summary
+  const totals = filtered.reduce((acc, m) => {
+    acc.white += m.white; acc.green += m.green; acc.orange += m.orange; acc.blue += m.blue;
+    acc.balls += m.balls;
+    return acc;
+  }, { white:0, green:0, orange:0, blue:0, balls:0 });
+
+  const staleCount = filtered.filter(m => daysAgo(m.ts) > STALE_THRESHOLD_DAYS).length;
+  const needCount = filtered.filter(m => m.need && m.need.toLowerCase() !== 'none' && m.need.toLowerCase() !== 'n/a' && m.need.trim() !== '').length;
 
   document.getElementById('summary').innerHTML = `
     <div class="sum-card"><div class="sum-label">Managers</div><div class="sum-val">${filtered.length}</div></div>
-    <div class="sum-card"><div class="sum-label">Total balls</div><div class="sum-val">${totalBalls}</div></div>
-    <div class="sum-card"><div class="sum-label">Need bibs</div><div class="sum-val" style="color:var(--red)">${shortCount}</div></div>
-    <div class="sum-card"><div class="sum-label">Covered</div><div class="sum-val" style="color:var(--green)">${okCount}</div></div>
+    <div class="sum-card"><div class="sum-label">Total balls</div><div class="sum-val">${totals.balls}</div></div>
+    <div class="sum-card"><div class="sum-label">Bib sets (W/G/O/B)</div><div class="sum-val" style="font-size:18px;font-family:'DM Mono',monospace;">${totals.white} · ${totals.green} · ${totals.orange} · ${totals.blue}</div></div>
+    <div class="sum-card"><div class="sum-label">Requested items</div><div class="sum-val" style="color:${needCount ? 'var(--amber)' : 'var(--text)'}">${needCount}</div></div>
+    <div class="sum-card"><div class="sum-label">Stale reports</div><div class="sum-val" style="color:${staleCount ? 'var(--red)' : 'var(--text)'}">${staleCount}</div></div>
   `;
 
   if (filtered.length === 0) {
-    document.getElementById('main').innerHTML = '<div class="loading">No managers found. Add rows to your Google Sheet.</div>';
+    document.getElementById('main').innerHTML = '<div class="loading">No inventory submissions yet. When managers fill the form, they\'ll appear here.</div>';
     return;
   }
 
-  const cities = [...new Set(filtered.map(m => m.city))];
-  document.getElementById('main').innerHTML = cities.map(c => {
-    const mms = filtered.filter(m => m.city === c);
+  // Sort cities by preferred order, then alphabetical
+  const cityList = [...new Set(filtered.map(m => m.city))];
+  cityList.sort((a,b) => {
+    const ai = CITY_ORDER.indexOf(a); const bi = CITY_ORDER.indexOf(b);
+    if (ai >= 0 && bi >= 0) return ai - bi;
+    if (ai >= 0) return -1;
+    if (bi >= 0) return 1;
+    return a.localeCompare(b);
+  });
+
+  document.getElementById('main').innerHTML = cityList.map(c => {
+    const mms = filtered.filter(m => m.city === c).sort((a,b) => b.ts - a.ts);
+    const cityTot = mms.reduce((acc, m) => {
+      acc.white += m.white; acc.green += m.green; acc.orange += m.orange; acc.blue += m.blue; acc.balls += m.balls;
+      return acc;
+    }, { white:0, green:0, orange:0, blue:0, balls:0 });
+
     return `<div class="city-section">
-      <div class="city-label">${c}</div>
+      <div class="city-header">
+        <div class="city-label">${c}</div>
+        <div class="city-summary">
+          <span>${mms.length} manager${mms.length!==1?'s':''}</span>
+          <span style="color:var(--hint)">·</span>
+          <span class="city-stat"><span class="cdot" style="${ds('white')}"></span><span class="val">${cityTot.white}</span> white</span>
+          <span class="city-stat"><span class="cdot" style="${ds('green')}"></span><span class="val">${cityTot.green}</span> green</span>
+          <span class="city-stat"><span class="cdot" style="${ds('orange')}"></span><span class="val">${cityTot.orange}</span> orange</span>
+          <span class="city-stat"><span class="cdot" style="${ds('blue')}"></span><span class="val">${cityTot.blue}</span> blue</span>
+          <span style="color:var(--hint)">·</span>
+          <span><span class="val" style="color:var(--text);font-weight:600">${cityTot.balls}</span> balls</span>
+        </div>
+      </div>
       <div class="mm-grid">
-        ${mms.map(mm => {
-          const { pairings, total, leftover, leftoverGames, maxPossible, short } = calcCoverage(mm);
-          const covered = mm.max > 0 && short === 0;
-          const noMax = mm.max === 0;
-          const pillCls = noMax ? 'badge-neutral' : covered ? 'badge-good' : 'badge-bad';
-          const pillTxt = noMax ? 'No max set' : covered ? 'Covered' : `Short ${short} game${short!==1?'s':''}`;
-          const possColor = noMax ? 'var(--text)' : covered ? 'var(--green)' : 'var(--red)';
-          const possBorder = noMax ? 'var(--border)' : covered ? 'rgba(29,158,117,0.3)' : 'rgba(200,51,42,0.3)';
-          return `<div class="mm-card">
-            <div class="mm-head">
-              <div class="avatar">${initials(mm.name)}</div>
-              <div class="mm-info">
-                <div class="mm-name">${mm.name}</div>
-                <div class="mm-venue">${mm.venue}</div>
-              </div>
-              <div class="badges">
-                <span class="badge badge-neutral">${mm.balls} ball${mm.balls!==1?'s':''}</span>
-                <span class="badge ${pillCls}">${pillTxt}</span>
-              </div>
-            </div>
-
-            <div class="max-row">
-              <span class="max-label">Max games needed (peak day)</span>
-              <span class="max-val">${mm.max || '—'}</span>
-            </div>
-
-            <div class="possible-row" style="border-color:${possBorder}">
-              <span class="possible-label">Max games possible with current sets</span>
-              <span class="possible-val" style="color:${possColor}">${fmt(maxPossible)}</span>
-            </div>
-
-            <div class="inv-grid">
-              <div class="team-box">
-                <div class="team-heading">Team 1</div>
-                <div class="color-row"><div class="cdot" style="${ds('white')}"></div><span class="clabel">White</span><span class="cval">${mm.white}</span></div>
-                <div class="color-row"><div class="cdot" style="${ds('orange')}"></div><span class="clabel">Orange</span><span class="cval">${mm.orange}</span></div>
-              </div>
-              <div class="team-box">
-                <div class="team-heading">Team 2</div>
-                <div class="color-row"><div class="cdot" style="${ds('green')}"></div><span class="clabel">Green</span><span class="cval">${mm.green}</span></div>
-                <div class="color-row"><div class="cdot" style="${ds('blue')}"></div><span class="clabel">Blue</span><span class="cval">${mm.blue}</span></div>
-              </div>
-            </div>
-
-            <div class="pairings-box">
-              <div class="pairings-heading">Optimal pairing</div>
-              ${pairings.length === 0
-                ? `<span style="font-size:13px;color:var(--red)">No complete sets available</span>`
-                : pairings.map(p => `<div class="pairing-row">
-                    <div class="cdot-sm" style="${ds(p.a)}"></div>
-                    <span>${COLORS[p.a].label}</span>
-                    <span style="color:var(--hint);font-size:11px">vs</span>
-                    <div class="cdot-sm" style="${ds(p.b)}"></div>
-                    <span>${COLORS[p.b].label}</span>
-                    <span style="font-weight:600;margin-left:6px;font-family:'DM Mono',monospace;font-size:13px">${p.n} game${p.n!==1?'s':''}</span>
-                  </div>`).join('')}
-              ${leftover.length > 0 ? `<div class="leftover">Leftover: ${leftover.map(l=>`${l.n} ${COLORS[l.color].label}`).join(', ')}${leftoverGames > 0 ? ` — ${fmt(leftoverGames)} more possible` : ' (no pair available)'}</div>` : ''}
-            </div>
-
-            ${mm.notes ? `<div style="margin-top:10px;padding:9px 12px;background:#FFFBEB;border:1px solid rgba(234,179,8,0.25);border-radius:var(--radius-sm);font-size:13px;color:#92400E;">
-              <span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#B45309;display:block;margin-bottom:3px;">Note</span>
-              ${mm.notes}
-            </div>` : ''}
-          </div>`;
-        }).join('')}
+        ${mms.map(renderCard).join('')}
       </div>
     </div>`;
   }).join('');
 }
 
+function renderCard(mm) {
+  const { pairings, total, leftover } = calcCoverage(mm);
+  const stale = daysAgo(mm.ts) > STALE_THRESHOLD_DAYS;
+  const updatedStr = relativeTime(mm.ts);
+  const timestamp = mm.ts.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const hasNeed = mm.need && mm.need.trim() && mm.need.toLowerCase() !== 'none' && mm.need.toLowerCase() !== 'n/a' && mm.need.toLowerCase() !== 'nothing';
+
+  return `<div class="mm-card ${stale ? 'stale' : ''}">
+    <div class="mm-head">
+      <div class="avatar">${initials(mm.name)}</div>
+      <div class="mm-info">
+        <div class="mm-name">${escape(mm.name)}</div>
+        <div class="mm-sub">Updated ${updatedStr} · ${timestamp}</div>
+      </div>
+      <div class="badges">
+        ${stale ? `<span class="badge badge-bad">Stale</span>` : `<span class="badge badge-good">Current</span>`}
+      </div>
+    </div>
+
+    <div class="balls-row">
+      <span class="balls-label">⚽ MatchDay balls</span>
+      <span class="balls-val">${mm.balls}</span>
+    </div>
+
+    <div class="inv-grid">
+      <div class="team-box">
+        <div class="team-heading">Team 1 options</div>
+        <div class="color-row"><div class="cdot" style="${ds('white')}"></div><span class="clabel">White</span><span class="cval">${mm.white}</span></div>
+        <div class="color-row"><div class="cdot" style="${ds('orange')}"></div><span class="clabel">Orange</span><span class="cval">${mm.orange}</span></div>
+      </div>
+      <div class="team-box">
+        <div class="team-heading">Team 2 options</div>
+        <div class="color-row"><div class="cdot" style="${ds('green')}"></div><span class="clabel">Green</span><span class="cval">${mm.green}</span></div>
+        <div class="color-row"><div class="cdot" style="${ds('blue')}"></div><span class="clabel">Blue</span><span class="cval">${mm.blue}</span></div>
+      </div>
+    </div>
+
+    <div class="pairings-box">
+      <div class="pairings-heading">Max concurrent games possible</div>
+      ${pairings.length === 0
+        ? `<span style="font-size:13px;color:var(--red)">No complete pairings available</span>`
+        : pairings.map(p => `<div class="pairing-row">
+            <div class="cdot-sm" style="${ds(p.a)}"></div>
+            <span>${COLORS[p.a].label}</span>
+            <span style="color:var(--hint);font-size:11px">vs</span>
+            <div class="cdot-sm" style="${ds(p.b)}"></div>
+            <span>${COLORS[p.b].label}</span>
+            <span style="font-weight:600;margin-left:6px;font-family:'DM Mono',monospace;font-size:13px">${p.n} game${p.n!==1?'s':''}</span>
+          </div>`).join('')
+      }
+      ${pairings.length > 0 ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-size:12px;color:var(--text);"><strong>Total: ${total} game${total!==1?'s':''} at once</strong></div>` : ''}
+      ${leftover.length > 0 ? `<div class="leftover">Leftover: ${leftover.map(l=>`${l.n} ${COLORS[l.color].label}`).join(', ')}</div>` : ''}
+    </div>
+
+    ${hasNeed ? `<div class="need-box">
+      <span class="need-label">Requested</span>
+      ${escape(mm.need)}
+    </div>` : ''}
+  </div>`;
+}
+
+function escape(s) {
+  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/* ---------- Auto-refresh ---------- */
 loadData();
+setInterval(() => { if (!document.hidden) loadData(); }, REFRESH_INTERVAL_MS);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) loadData(); });
 </script>
 </body>
 </html>
