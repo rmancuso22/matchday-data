@@ -183,9 +183,13 @@ async function loadBase(){
     const now = new Date();
     const cur = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
     selMonth = months.includes(cur) ? cur : months[months.length-1] || 'all';
+    const latestDate = allCharges
+      .map(r => r['Created date (UTC)'] || r['Created'] || '')
+      .filter(Boolean).sort().slice(-1)[0];
+    const latestFmt = latestDate ? new Date(latestDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
     document.getElementById('sdot').style.background = '#2ecc71';
-    document.getElementById('stxt').textContent = allCharges.length.toLocaleString()+' charges loaded from base.csv · Drop a new export to add recent data';
-    document.getElementById('lupd').textContent = 'Base loaded';
+    document.getElementById('stxt').textContent = allCharges.length.toLocaleString()+' charges · data through '+latestFmt;
+    document.getElementById('lupd').textContent = 'Through '+latestFmt;
     renderAll();
   } catch(err) {
     document.getElementById('sdot').style.background = '#d4830a';
@@ -223,6 +227,12 @@ function parseCSV(text){
     for(const ch of line){ if(ch==='"')inQ=!inQ; else if(ch===','&&!inQ){vals.push(cur.trim().replace(/^"|"$/g,''));cur='';} else cur+=ch; }
     vals.push(cur.trim().replace(/^"|"$/g,''));
     const obj={}; headers.forEach((h,i)=>obj[h]=vals[i]||'');
+    // Normalize column names from Stripe export format
+    if(obj['Created date (UTC)'] && !obj['Created']) obj['Created'] = obj['Created date (UTC)'];
+    if(obj['type (metadata)'] && !obj['Type']) obj['Type'] = obj['type (metadata)'];
+    if(obj['cityIdentifier (metadata)'] && !obj['City Identifier']) obj['City Identifier'] = obj['cityIdentifier (metadata)'];
+    if(obj['matchName (metadata)'] && !obj['Match Name']) obj['Match Name'] = obj['matchName (metadata)'];
+    if(obj['id'] && !obj['Id']) obj['Id'] = obj['id'];
     return obj;
   });
 }
@@ -242,9 +252,13 @@ function handleNewFile(event){
       const now=new Date();
       const cur=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
       selMonth=months.includes(cur)?cur:months[months.length-1]||'all';
+      const latestD = allCharges
+        .map(r => r['Created date (UTC)'] || r['Created'] || '')
+        .filter(Boolean).sort().slice(-1)[0];
+      const latestF = latestD ? new Date(latestD).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—';
       document.getElementById('sdot').style.background='#2ecc71';
-      document.getElementById('stxt').textContent=allCharges.length.toLocaleString()+' total charges · '+added+' new from '+file.name;
-      document.getElementById('lupd').textContent='Updated '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      document.getElementById('stxt').textContent=allCharges.length.toLocaleString()+' charges · '+added+' new added · data through '+latestF;
+      document.getElementById('lupd').textContent='Through '+latestF;
       renderAll();
     } catch(err){
       document.getElementById('sdot').style.background='#c0392b';
