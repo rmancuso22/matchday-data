@@ -574,8 +574,8 @@
   <div class="meeting-tag">
     <div class="month-tag" id="month-tag">— LOADING —</div>
     <div class="file-loader">
-      <label class="file-btn" for="csv-upload">↑ Load new CSV</label>
-      <input type="file" id="csv-upload" accept=".csv" onchange="handleFileUpload(event)">
+      <label class="file-btn" for="csv-upload">↑ Load 2-month export</label>
+      <input type="file" id="csv-upload" accept=".csv" onchange="handleFileUpload(event)"><span style="font-size:10px;color:rgba(44,219,135,0.5);margin-left:8px;font-family:'JetBrains Mono',monospace;">drop 2-month export — auto-detects current &amp; prev month</span>
     </div>
   </div>
 </header>
@@ -1055,16 +1055,9 @@ function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').re
    ===================================================== */
 let latestStats = null;
 
-async function loadDefaultData() {
-  try {
-    const res = await fetch(DEFAULT_DATA_CSV);
-    if (!res.ok) throw new Error('No default CSV at ' + DEFAULT_DATA_CSV);
-    const text = await res.text();
-    processCSV(text);
-  } catch (e) {
-    document.getElementById('hero-sub').innerHTML = `No data file loaded. Click <strong>↑ Load new CSV</strong> above to load your monthly export.`;
-    document.getElementById('stats-grid').innerHTML = '';
-  }
+function loadDefaultData() {
+  document.getElementById('hero-sub').innerHTML = `Drop your 2-month Retool export above — the page auto-detects the current and previous month for comparison.`;
+  document.getElementById('stats-grid').innerHTML = '';
 }
 
 function processCSV(text) {
