@@ -61,15 +61,15 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f5;color:#0f1f17;font-size
 <div class="header">
   <div class="logo">⚽ MatchDay — Data</div>
   <div class="hright">
-    <span class="lupd" id="lupd">No data loaded</span>
-    <input type="file" id="csvfile" accept=".csv" style="display:none;" onchange="handleFile(event)">
-    <button class="hbtn" onclick="document.getElementById('csvfile').click()">Upload Stripe CSV</button>
+    <span class="lupd" id="lupd">Loading base data...</span>
+    <input type="file" id="csvfile" accept=".csv" style="display:none;" onchange="handleNewFile(event)">
+    <button class="hbtn" onclick="document.getElementById('csvfile').click()">+ Load new export</button>
   </div>
 </div>
 
 <div class="sbar">
   <div class="sdot" id="sdot" style="background:#888;"></div>
-  <span id="stxt">Upload your Stripe charges CSV to get started</span>
+  <span id="stxt">Loading base.csv...</span>
 </div>
 
 <div class="nav">
@@ -84,7 +84,7 @@ body{font-family:'DM Sans',sans-serif;background:#f4f7f5;color:#0f1f17;font-size
   <div class="sec active" id="tab-ov">
     <div class="empty">
       <h3>No data loaded</h3>
-      <p>Download your Stripe charges CSV from Coefficient<br>and upload it using the button in the top right</p>
+      <p>Base data is loading automatically.<br>Use "+ Load new export" in the top right to add recent data.</p>
       <button class="ubtn" onclick="document.getElementById('csvfile').click()">Upload Stripe CSV</button>
     </div>
   </div>
@@ -156,7 +156,44 @@ const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const CITY_COLORS=['#1a7a4a','#0e9e6e','#2980b9','#d4830a','#8e44ad','#c0392b','#16a085'];
 const gc='rgba(0,0,0,0.05)',tc='#8aa398';
 
-let allCharges=[], selMonth='', charts={};
+let allCharges=[], baseCharges=[], selMonth='', charts={};
+
+function mergeCharges(base, newRows){
+  const seen = new Set(base.map(r => r['id']));
+  const merged = [...base];
+  let added = 0;
+  newRows.forEach(r => {
+    if(!seen.has(r['id'])){
+      merged.push(r);
+      seen.add(r['id']);
+      added++;
+    }
+  });
+  return { merged, added };
+}
+
+async function loadBase(){
+  try {
+    const resp = await fetch('base.csv');
+    if(!resp.ok) throw new Error('base.csv not found ('+resp.status+')');
+    const text = await resp.text();
+    baseCharges = parseCSV(text).filter(r => r['Status'] === 'succeeded' || r['Status'] === 'Paid');
+    allCharges = [...baseCharges];
+    const months = getMonths();
+    const now = new Date();
+    const cur = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+    selMonth = months.includes(cur) ? cur : months[months.length-1] || 'all';
+    document.getElementById('sdot').style.background = '#2ecc71';
+    document.getElementById('stxt').textContent = allCharges.length.toLocaleString()+' charges loaded from base.csv · Drop a new export to add recent data';
+    document.getElementById('lupd').textContent = 'Base loaded';
+    renderAll();
+  } catch(err) {
+    document.getElementById('sdot').style.background = '#d4830a';
+    document.getElementById('stxt').textContent = 'Could not load base.csv — use "+ Load new export" to upload manually';
+    document.getElementById('lupd').textContent = 'No base data';
+    console.warn('base.csv load failed:', err.message);
+  }
+}
 
 function cityFromCharge(r){
   const code=(r['City Identifier']||'').trim();
@@ -190,22 +227,24 @@ function parseCSV(text){
   });
 }
 
-function handleFile(event){
+function handleNewFile(event){
   const file=event.target.files[0];
   if(!file) return;
-  document.getElementById('stxt').textContent='Reading '+file.name+'...';
+  document.getElementById('stxt').textContent='Merging '+file.name+'...';
   document.getElementById('sdot').style.background='#888';
   const reader=new FileReader();
   reader.onload=function(e){
     try{
-      allCharges=parseCSV(e.target.result).filter(r=>r['Status']==='succeeded');
+      const newRows=parseCSV(e.target.result).filter(r=>(r['Status']==='succeeded'||r['Status']==='Paid')||r['Status']==='Paid');
+      const { merged, added } = mergeCharges(baseCharges.length ? baseCharges : allCharges, newRows);
+      allCharges = merged;
       const months=getMonths();
       const now=new Date();
       const cur=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
       selMonth=months.includes(cur)?cur:months[months.length-1]||'all';
       document.getElementById('sdot').style.background='#2ecc71';
-      document.getElementById('stxt').textContent=allCharges.length.toLocaleString()+' charges loaded from '+file.name;
-      document.getElementById('lupd').textContent='Loaded '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      document.getElementById('stxt').textContent=allCharges.length.toLocaleString()+' total charges · '+added+' new from '+file.name;
+      document.getElementById('lupd').textContent='Updated '+new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
       renderAll();
     } catch(err){
       document.getElementById('sdot').style.background='#c0392b';
@@ -335,7 +374,7 @@ function renderOv(){
 function renderMo(){
   const months=getMonths();
   const rows=months.map(m=>{
-    const c=allCharges.filter(r=>r['Created']?.startsWith(m)&&r['Status']==='succeeded');
+    const c=allCharges.filter(r=>r['Created']?.startsWith(m)&&(r['Status']==='succeeded'||r['Status']==='Paid'));
     const mr=c.filter(r=>r['Type']==='match').reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
     const sr=c.filter(r=>r['Type']==='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
     const or=c.filter(r=>r['Type']!=='match'&&r['Type']!=='').reduce((s,r)=>s+parseFloat(r['Amount']||0),0);
@@ -433,7 +472,7 @@ function renderCi(){
     type:'line',
     data:{labels:months.map(m=>MONTHS[m]||m),datasets:CITY_ORDER.map((city,i)=>({
       label:city,
-      data:months.map(m=>{ const c=allCharges.filter(r=>r['Created']?.startsWith(m)&&r['Type']==='match'&&r['Status']==='succeeded'); return Math.round(c.filter(r=>cityFromCharge(r)===city).reduce((s,r)=>s+parseFloat(r['Amount']||0),0)); }),
+      data:months.map(m=>{ const c=allCharges.filter(r=>r['Created']?.startsWith(m)&&r['Type']==='match'&&(r['Status']==='succeeded'||r['Status']==='Paid')); return Math.round(c.filter(r=>cityFromCharge(r)===city).reduce((s,r)=>s+parseFloat(r['Amount']||0),0)); }),
       borderColor:CITY_COLORS[i],tension:.35,pointRadius:3,borderWidth:2,fill:false
     }))},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:11}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'},beginAtZero:true}}}
@@ -493,7 +532,7 @@ function filterFields(city,btn){
 function renderMe(){
   const months=getMonths();
   const mrows=months.map(m=>{
-    const c=allCharges.filter(r=>r['Created']?.startsWith(m)&&r['Type']===''&&r['Status']==='succeeded');
+    const c=allCharges.filter(r=>r['Created']?.startsWith(m)&&r['Type']===''&&(r['Status']==='succeeded'||r['Status']==='Paid'));
     return{m,tot:c.reduce((s,r)=>s+parseFloat(r['Amount']||0),0),cnt:c.length};
   });
   const ch=getCharges(selMonth).filter(r=>r['Type']==='');
@@ -535,6 +574,8 @@ function renderMe(){
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' $'+ctx.parsed.y.toLocaleString()}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:11}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>'$'+Math.round(v/1000)+'k'},beginAtZero:true}}}
   });
 }
+
+window.addEventListener('DOMContentLoaded', loadBase);
 
 function showTab(id,el){
   document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
