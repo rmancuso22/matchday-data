@@ -138,15 +138,26 @@ const FIELD_NORMALIZE = {
   'Centennial Commons':'Centennial Commons','🎥 Centennial Commons':'Centennial Commons',
   'Hammond Park':'Hammond Park','Hammond Park - Friday':'Hammond Park',
   '🎥 Hammond Park':'Hammond Park','🎥 Hammond Park - Saturday':'Hammond Park',
-  'Scissortail Park':'Scissortail Park','Scissortail Park - Thursday':'Scissortail Park',
-  'PRUMC':'PRUMC','🎥 PRUMC':'PRUMC','🎥 PRUMC - Thursday':'PRUMC',
-  'Onion Creek - Field 4':'Onion Creek','Onion Creek Field 4':'Onion Creek','Onion Creek- Field 1':'Onion Creek',
-  'Bicentennial Park - Friday':'Bicentennial Park',
+  'Scissortail Park':'Scissortail Park',
+  'Scissortail Park - Thursday':'Scissortail Park','Scissortail Park - Sunday':'Scissortail Park',
+  'Scissortail Park - Tuesday':'Scissortail Park','Scissortail Park - Wednesday':'Scissortail Park',
+  'PRUMC':'PRUMC','🎥 PRUMC':'PRUMC',
+  '🎥 PRUMC - Thursday':'PRUMC','🎥 PRUMC - Tuesday':'PRUMC',
+  '🎥 PRUMC - Monday':'PRUMC','🎥 PRUMC - Sunday':'PRUMC',
+  'Onion Creek - Field 4':'Onion Creek','Onion Creek Field 4':'Onion Creek',
+  'Onion Creek- Field 1':'Onion Creek','Onion Creek- Field 6':'Onion Creek','Onion Creek- Field 7':'Onion Creek',
+  'Bicentennial Park - Friday':'Bicentennial Park','Bicentennial Park - Sunday':'Bicentennial Park',
+  'Bicentennial Park - Tuesday':'Bicentennial Park',
+  'Carroll Senior High School - Thursday':'Carroll Senior High School',
+  'Majestic Gardens - Monday':'Majestic Gardens','Majestic Gardens - Saturday':'Majestic Gardens',
+  'Majestic Gardens - Wednesday':'Majestic Gardens',
   'STAR Soccer Complex Field 11':'STAR Soccer Complex','STAR Soccer Complex Field 7':'STAR Soccer Complex',
   'Katy International Sports Complex - Field 8':'Katy Intl Sports Complex',
   'Katy International Sports Complex':'Katy Intl Sports Complex',
+  'ATH Pearland':'ATH Pearland','ATH Katy':'ATH Katy',
   'PAC GLOBAL':'PAC Global','PAC GLOBAL - Field J2':'PAC Global',
-  'Stony Point High School':'Stony Point','🎥 Stony Point High School':'Stony Point'
+  'Stony Point High School':'Stony Point','🎥 Stony Point High School':'Stony Point',
+  'GALATZAN PARK - Wednesday':'Galatzan Park'
 };
 
 const CODE_CITY={'ATX':'Austin','HOU':'Houston','SATX':'San Antonio','STL':'St. Louis','DFW':'Dallas / Fort Worth','ATL':'Atlanta','OKC':'Oklahoma City'};
@@ -219,7 +230,7 @@ function parseCSV(text){
     const obj={}; headers.forEach((h,i)=>obj[h]=vals[i]||'');
     // Normalize column names from Stripe export format
     if(obj['Created date (UTC)'] && !obj['Created']) obj['Created'] = obj['Created date (UTC)'];
-    if(obj['type (metadata)'] && !obj['Type']) obj['Type'] = obj['type (metadata)'];
+    if(obj['type (metadata)'] !== undefined && !obj['Type']) obj['Type'] = obj['type (metadata)'];
     if(obj['cityIdentifier (metadata)'] && !obj['City Identifier']) obj['City Identifier'] = obj['cityIdentifier (metadata)'];
     if(obj['matchName (metadata)'] && !obj['Match Name']) obj['Match Name'] = obj['matchName (metadata)'];
     if(obj['id'] && !obj['Id']) obj['Id'] = obj['id'];
@@ -340,9 +351,90 @@ function renderOv(){
         <thead><tr><th style="width:30%">Field</th><th style="width:15%">City</th><th style="width:15%">Revenue</th><th style="width:12%">Charges</th><th style="width:28%">Share</th></tr></thead>
         <tbody>${topFields.map(([f,v])=>`<tr><td>${f||'—'}</td><td style="color:#8aa398">${fieldCity[f]||'—'}</td><td>${fmt(v)}</td><td>${fieldCnt[f]}</td><td><div class="bar"><div class="bf" style="width:${Math.round(v/maxFieldRev*100)}%"></div></div></td></tr>`).join('')}</tbody>
       </table>
+    </div>
+    <div class="card">
+      <div class="ct">Field movers</div>
+      <div class="cs">Top 3 up · top 3 down · vs same date range last month</div>
+      <div id="fieldMovers"></div>
     </div>`;
 
   pills('pov',selMonth);
+
+  // Field movers table
+  (function(){
+    const months = getMonths();
+    let curCharges, prevCharges, label1, label2;
+
+    if(selMonth === 'all' || months.length < 2) {
+      // YTD: skip movers, not meaningful
+      const el = document.getElementById('fieldMovers');
+      if(el) el.innerHTML = '<div style="font-size:12px;color:#8aa398;padding:8px 0;">Select a specific month to see field movers.</div>';
+      return;
+    }
+
+    const curM = selMonth; // e.g. "2026-04"
+    const prevM = months[months.indexOf(curM) - 1];
+    if(!prevM) return;
+
+    // Find latest day in current month data
+    const curMonthRows = allCharges.filter(r => r['Created'] && r['Created'].startsWith(curM) && r['Type']==='match');
+    if(!curMonthRows.length) return;
+    const latestDay = curMonthRows.map(r => parseInt(r['Created'].slice(8,10))).sort((a,b)=>b-a)[0];
+    const cutoffDay = String(latestDay).padStart(2,'0');
+
+    // Filter both months to same day range
+    curCharges  = allCharges.filter(r => r['Created'] && r['Created'].startsWith(curM) && parseInt(r['Created'].slice(8,10)) <= latestDay && r['Type']==='match');
+    prevCharges = allCharges.filter(r => r['Created'] && r['Created'].startsWith(prevM) && parseInt(r['Created'].slice(8,10)) <= latestDay && r['Type']==='match');
+
+    const curM_label  = (MONTHS[curM]||curM)  + ' 1–' + latestDay;
+    const prevM_label = (MONTHS[prevM]||prevM) + ' 1–' + latestDay;
+
+    // Build field revenue for each period
+    const curRev={}, prevRev={};
+    curCharges.forEach(r  => { const f=fieldFromCharge(r); curRev[f]  = (curRev[f]||0)  + parseFloat(r['Amount']||0); });
+    prevCharges.forEach(r => { const f=fieldFromCharge(r); prevRev[f] = (prevRev[f]||0) + parseFloat(r['Amount']||0); });
+
+    // All fields that appear in either period
+    const allFields = [...new Set([...Object.keys(curRev), ...Object.keys(prevRev)])].filter(f=>f);
+    const changes = allFields.map(f => ({
+      f,
+      cur:  Math.round(curRev[f]  || 0),
+      prev: Math.round(prevRev[f] || 0),
+      delta: Math.round((curRev[f]||0) - (prevRev[f]||0))
+    })).sort((a,b) => b.delta - a.delta);
+
+    const top3up   = changes.filter(c => c.delta > 0).slice(0, 3);
+    const top3down = changes.filter(c => c.delta < 0).slice(-3).reverse();
+
+    const row = (c, isUp) => `<tr>
+      <td>${c.f||'—'}</td>
+      <td style="text-align:right;color:#4a6358">${'$'+c.prev.toLocaleString()}</td>
+      <td style="text-align:right;color:#4a6358">${'$'+c.cur.toLocaleString()}</td>
+      <td style="text-align:right;font-weight:600;color:${isUp?'#1a7a4a':'#c0392b'}">${isUp?'+':''}$${c.delta.toLocaleString()}</td>
+    </tr>`;
+
+    const el = document.getElementById('fieldMovers');
+    if(!el) return;
+    el.innerHTML = `
+      <div style="font-size:11px;color:#8aa398;margin-bottom:10px;font-family:'DM Mono',monospace;">${prevM_label} → ${curM_label} · same date window</div>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1rem;">
+        <div>
+          <div style="font-size:11px;font-weight:600;color:#1a7a4a;margin-bottom:6px;">▲ Top movers up</div>
+          <table class="tbl">
+            <thead><tr><th>Field</th><th style="text-align:right">${MONTHS[prevM]||prevM}</th><th style="text-align:right">${MONTHS[curM]||curM}</th><th style="text-align:right">Change</th></tr></thead>
+            <tbody>${top3up.map(c=>row(c,true)).join('')}</tbody>
+          </table>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:600;color:#c0392b;margin-bottom:6px;">▼ Top movers down</div>
+          <table class="tbl">
+            <thead><tr><th>Field</th><th style="text-align:right">${MONTHS[prevM]||prevM}</th><th style="text-align:right">${MONTHS[curM]||curM}</th><th style="text-align:right">Change</th></tr></thead>
+            <tbody>${top3down.map(c=>row(c,false)).join('')}</tbody>
+          </table>
+        </div>
+      </div>`;
+  })();
+
   // Day of week table — cities as rows, days as columns
   const dayTotals = DAYS.map((_,i) => CITY_ORDER.reduce((s,c) => s+(dayCity[c][i]||0), 0));
   const maxDayTot = Math.max(...dayTotals, 1);
