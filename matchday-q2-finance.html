@@ -359,6 +359,11 @@
   .num.neg { color: var(--negative); }
   .num.zero { color: var(--text-faint); }
 
+  /* Explicit overrides for Monthly Cash Flow cells (pnl-cell.num.pos/neg must win over defaults) */
+  .pnl-cell.num.pos { color: var(--positive); }
+  .pnl-cell.num.neg { color: var(--negative); }
+  .pnl-cell.num.zero { color: var(--text-faint); }
+
   /* Projection styling — italic, but preserve green/red for kind */
   .pnl-cell.projection,
   .city-line .num.projection {
@@ -545,6 +550,115 @@
   .city-line .num.zero { color: var(--text-faint); }
 
   .city-line.indent .name { padding-left: 12px; color: var(--text-dim); }
+
+  /* ===== FIELD RANKING TABLE ===== */
+  .table-scroll {
+    overflow-x: auto;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+  }
+
+  .ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+
+  .ranking-table thead th {
+    background: var(--bg-raised);
+    text-align: right;
+    padding: 12px 16px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    border-bottom: 1px solid var(--border-strong);
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s ease;
+  }
+
+  .ranking-table thead th:first-child,
+  .ranking-table thead th:nth-child(2) {
+    text-align: left;
+  }
+
+  .ranking-table thead th:hover {
+    color: var(--text);
+  }
+
+  .ranking-table thead th.sorted {
+    color: var(--accent);
+  }
+
+  .ranking-table thead th.sorted::after {
+    content: '';
+    display: inline-block;
+    margin-left: 6px;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    vertical-align: middle;
+  }
+
+  .ranking-table thead th.sorted.asc::after {
+    border-bottom: 5px solid var(--accent);
+  }
+
+  .ranking-table thead th.sorted.desc::after {
+    border-top: 5px solid var(--accent);
+  }
+
+  .ranking-table td {
+    padding: 10px 16px;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .ranking-table td:first-child,
+  .ranking-table td:nth-child(2) {
+    text-align: left;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+  }
+
+  .ranking-table td.rank {
+    color: var(--text-faint);
+    font-size: 11px;
+    width: 40px;
+  }
+
+  .ranking-table td.city-cell {
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+
+  .ranking-table tr:last-child td { border-bottom: none; }
+
+  .ranking-table tr:hover td {
+    background: rgba(255, 255, 255, 0.015);
+  }
+
+  .ranking-table td.num.pos { color: var(--positive); }
+  .ranking-table td.num.neg { color: var(--negative); }
+  .ranking-table td.num.zero { color: var(--text-faint); }
+
+  .ranking-table td.projection {
+    font-style: italic;
+    opacity: 0.75;
+  }
+
+  .ranking-table tr.total-row td {
+    background: rgba(212, 160, 77, 0.05);
+    border-top: 1px solid var(--border-strong);
+    font-weight: 600;
+  }
 
   .margin-badge {
     display: inline-block;
@@ -738,6 +852,16 @@
       </div>
     </div>
     <div class="city-grid" id="city-grid"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Field <em>Ranking</em></h2>
+      <span class="section-note">Click column headers to sort · follows month &amp; view above</span>
+    </div>
+    <div class="table-scroll">
+      <table class="ranking-table" id="ranking-table"></table>
+    </div>
   </section>
 
   <footer>
@@ -1771,6 +1895,182 @@ function renderCityCards() {
   grid.innerHTML = html;
 }
 
+// ============== FIELD RANKING ==============
+let rankingSort = { column: 'net', direction: 'asc' }; // 'asc' = worst-first for net
+
+function renderFieldRanking() {
+  const tableEl = document.getElementById('ranking-table');
+  if (!tableEl) return;
+  
+  const monthKey = MONTHS[activeMonth].sheetKey;
+  const monthsToSum = monthKey === 'Q2 Total' 
+    ? ['Apr 2026', 'May 2026', 'Jun 2026'] 
+    : [monthKey];
+  
+  const venuesByCity = getVenuesPerCity(loadedData.venues);
+  const revenue = aggregateRevenue(loadedData.revenue);
+  const scheduleCosts = aggregateScheduleCosts(loadedData.schedule);
+  const monthlyFlatCosts = aggregateMonthlyFlatVenueCosts(loadedData.expenses);
+  
+  function extrapolatePartial(amount, month) {
+    if (activeView !== 'projected') return { value: amount, projected: false };
+    const progress = monthProgress[month];
+    if (progress && progress.fraction < 1 && progress.fraction > 0 && amount > 0) {
+      return { value: amount / progress.fraction, projected: true };
+    }
+    return { value: amount, projected: false };
+  }
+  
+  // Build rows — one per venue across all cities
+  const rows = [];
+  for (const city of CITIES) {
+    const cityVenues = venuesByCity[city] || [];
+    for (const v of cityVenues) {
+      // Revenue (partial → extrapolate in projected view)
+      let rev = 0, revProj = false;
+      for (const m of monthsToSum) {
+        const raw = revenue.byVenueMonth[v.name]?.[m] || 0;
+        const { value, projected } = extrapolatePartial(raw, m);
+        rev += value;
+        if (projected) revProj = true;
+      }
+      
+      // Cost: per-match partial, monthly_flat not
+      let cost = 0, costProj = false;
+      if (v.billing === 'monthly_flat') {
+        for (const m of monthsToSum) {
+          cost += monthlyFlatCosts[v.name]?.[m] || 0;
+        }
+      } else {
+        for (const m of monthsToSum) {
+          const raw = scheduleCosts.byVenueMonth[v.name]?.[m] || 0;
+          const { value, projected } = extrapolatePartial(raw, m);
+          cost += value;
+          if (projected) costProj = true;
+        }
+      }
+      
+      const net = rev - cost;
+      const margin = rev !== 0 ? (net / rev) * 100 : 0;
+      const projected = revProj || costProj;
+      
+      // Only include venues with any activity
+      if (rev === 0 && cost === 0) continue;
+      
+      rows.push({
+        venue: v.name,
+        city,
+        revenue: rev,
+        cost,
+        net,
+        margin,
+        projected,
+      });
+    }
+  }
+  
+  // Sort
+  const { column, direction } = rankingSort;
+  rows.sort((a, b) => {
+    let av, bv;
+    switch (column) {
+      case 'venue': av = a.venue; bv = b.venue; break;
+      case 'city': av = a.city; bv = b.city; break;
+      case 'revenue': av = a.revenue; bv = b.revenue; break;
+      case 'cost': av = a.cost; bv = b.cost; break;
+      case 'net': av = a.net; bv = b.net; break;
+      case 'margin': av = a.margin; bv = b.margin; break;
+      default: av = a.net; bv = b.net;
+    }
+    if (typeof av === 'string') {
+      return direction === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+    }
+    return direction === 'asc' ? av - bv : bv - av;
+  });
+  
+  // Totals
+  const total = rows.reduce((acc, r) => ({
+    revenue: acc.revenue + r.revenue,
+    cost: acc.cost + r.cost,
+    net: acc.net + r.net,
+  }), { revenue: 0, cost: 0, net: 0 });
+  const totalMargin = total.revenue !== 0 ? (total.net / total.revenue) * 100 : 0;
+  const anyProjected = rows.some(r => r.projected);
+  
+  // Build HTML
+  function sortClass(col) {
+    if (column !== col) return '';
+    return `sorted ${direction}`;
+  }
+  
+  function marginBadgeHtml(m, hasData) {
+    if (!hasData) return '<span class="margin-badge neu">—</span>';
+    if (m === 0 || isNaN(m)) return '<span class="margin-badge neu">—</span>';
+    const cls = m > 0 ? 'pos' : 'neg';
+    return `<span class="margin-badge ${cls}">${fmtPct(m)}</span>`;
+  }
+  
+  let html = `<thead>
+    <tr>
+      <th class="${sortClass('rank')}">#</th>
+      <th class="${sortClass('venue')}" data-sort="venue">Venue</th>
+      <th class="${sortClass('city')}" data-sort="city">City</th>
+      <th class="${sortClass('revenue')}" data-sort="revenue">Revenue</th>
+      <th class="${sortClass('cost')}" data-sort="cost">Cost</th>
+      <th class="${sortClass('net')}" data-sort="net">Net P&L</th>
+      <th class="${sortClass('margin')}" data-sort="margin">Margin</th>
+    </tr>
+  </thead><tbody>`;
+  
+  rows.forEach((r, idx) => {
+    const projCls = r.projected ? ' projection' : '';
+    html += `<tr>
+      <td class="rank">${idx + 1}</td>
+      <td>${r.venue}</td>
+      <td class="city-cell">${r.city}</td>
+      <td class="num pos${projCls}">${fmtMoney(r.revenue)}</td>
+      <td class="num neg${projCls}">${fmtMoney(r.cost)}</td>
+      <td class="num ${numClass(r.net)}${projCls}">${fmtMoney(r.net)}</td>
+      <td>${marginBadgeHtml(r.margin, r.revenue !== 0 || r.cost !== 0)}</td>
+    </tr>`;
+  });
+  
+  // Total row
+  const totalProjCls = anyProjected ? ' projection' : '';
+  html += `<tr class="total-row">
+    <td class="rank"></td>
+    <td>Total</td>
+    <td></td>
+    <td class="num pos${totalProjCls}">${fmtMoney(total.revenue)}</td>
+    <td class="num neg${totalProjCls}">${fmtMoney(total.cost)}</td>
+    <td class="num ${numClass(total.net)}${totalProjCls}">${fmtMoney(total.net)}</td>
+    <td>${marginBadgeHtml(totalMargin, total.revenue !== 0)}</td>
+  </tr>`;
+  
+  html += '</tbody>';
+  tableEl.innerHTML = html;
+  
+  // Attach sort handlers
+  tableEl.querySelectorAll('thead th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.sort;
+      if (rankingSort.column === col) {
+        // Toggle direction
+        rankingSort.direction = rankingSort.direction === 'asc' ? 'desc' : 'asc';
+      } else {
+        rankingSort.column = col;
+        // Default direction for numeric columns: revenue/cost = desc (biggest first), net/margin = asc (worst first)
+        if (col === 'revenue' || col === 'cost') {
+          rankingSort.direction = 'desc';
+        } else {
+          rankingSort.direction = 'asc';
+        }
+      }
+      renderFieldRanking();
+    });
+  });
+}
+
 function initMonthTabs() {
   // Month tabs (for City & Field section)
   const monthTabs = document.querySelectorAll('#month-tabs .month-tab');
@@ -1780,6 +2080,7 @@ function initMonthTabs() {
       tab.classList.add('active');
       activeMonth = tab.dataset.month;
       renderCityCards();
+      renderFieldRanking();
     });
   });
   
@@ -1794,6 +2095,7 @@ function initMonthTabs() {
       renderHero(loadedData.dashboard);
       renderMonthlyPL(loadedData.dashboard);
       renderCityCards();
+      renderFieldRanking();
     });
   });
 }
@@ -1824,6 +2126,7 @@ async function loadAll() {
     renderMonthlyPL(dashboard);
     renderTrendChart(dashboard);
     renderCityCards();
+    renderFieldRanking();
 
     const now = new Date();
     document.getElementById('refresh-time').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
