@@ -353,6 +353,59 @@
   .num.neg { color: var(--negative); }
   .num.zero { color: var(--text-faint); }
 
+  /* Projection styling */
+  .pnl-cell.projection,
+  .city-line .num.projection {
+    font-style: italic;
+    color: var(--text-faint);
+  }
+
+  .pnl-cell.projection .est-tag,
+  .projection-tag {
+    display: inline-block;
+    font-style: normal;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--accent-muted);
+    margin-left: 4px;
+    padding: 1px 4px;
+    border: 1px solid rgba(212, 160, 77, 0.3);
+    border-radius: 2px;
+    vertical-align: 1px;
+  }
+
+  /* Section divider row inside P&L table */
+  .pnl-row.section-divider {
+    background: var(--bg-raised-2);
+    border-top: 1px solid var(--border-strong);
+  }
+  
+  .pnl-row.section-divider .pnl-cell {
+    padding: 10px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border-right: none;
+    text-align: left;
+    background: transparent;
+  }
+  
+  .pnl-row.section-divider .pnl-cell.label {
+    grid-column: 1 / -1;
+  }
+
+  .pnl-row.subtotal {
+    background: rgba(212, 160, 77, 0.03);
+    border-top: 1px solid var(--border-strong);
+  }
+
+  .pnl-row.subtotal .pnl-cell { font-weight: 600; }
+  .pnl-row.subtotal .pnl-cell.label { font-weight: 600; color: var(--text); }
+
   /* ===== CHART ===== */
   .chart-wrap {
     background: var(--bg-card);
@@ -637,7 +690,7 @@
   <section>
     <div class="section-head">
       <h2>Monthly <em>Cash Flow</em></h2>
-      <span class="section-note">April actual · May/June projected</span>
+      <span class="section-note">April actual · May/June allocated by April share · <span class="projection-tag">EST</span> = projection</span>
     </div>
     <div class="pnl-grid" id="pnl-table"></div>
   </section>
@@ -1017,43 +1070,311 @@ function renderHero(dash) {
 
 function renderMonthlyPL(dash) {
   const container = document.getElementById('pnl-table');
-  const rows = [
-    { type: 'header', cells: ['', 'Apr 2026', 'May 2026', 'Jun 2026', 'Q2 Total'] },
-    { type: 'subtle', label: 'Starting Cash', source: 'Starting Cash' },
-    { type: 'indent', label: 'Gross Revenue', source: 'Gross Revenue', contains: true },
-    { type: 'indent', label: '(−) Stripe Fees', source: 'Stripe Fees', contains: true },
-    { type: 'normal', label: 'Net Revenue', source: '+ Net Revenue' },
-    { type: 'normal', label: 'Expenses', source: '- Expenses' },
-    { type: 'highlight', label: 'Net P&L', source: 'Net P&L', contains: true, colorize: true },
-    { type: 'total', label: 'Ending Cash', source: 'Ending Cash' },
-  ];
-
-  let html = '';
-  for (const def of rows) {
-    if (def.type === 'header') {
-      html += '<div class="pnl-row header">';
-      for (const c of def.cells) {
-        html += `<div class="pnl-cell label" style="text-align:${c === '' ? 'left' : 'right'}">${c}</div>`;
-      }
-      html += '</div>';
-      continue;
+  const months = ['Apr 2026', 'May 2026', 'Jun 2026'];
+  
+  // === AGGREGATE from source tabs (not just dashboard summary) ===
+  const revenue = aggregateRevenue(loadedData.revenue);
+  const mgrPay = aggregateManagerPay(loadedData.managerPay);
+  const cityOverhead = aggregateMonthlyCityOverhead(loadedData.monthlyExpenses);
+  
+  // Build per-city, per-month revenue from venue + membership
+  // revenue.byCityMonth already includes both DPP (venue-tagged) and Membership for each city
+  // But projection rows are Company-wide, so we auto-allocate them by April's share.
+  
+  // === Calculate per-city April revenue for allocation share ===
+  const aprCityRev = {};
+  let aprTotalCity = 0;
+  for (const city of CITIES) {
+    aprCityRev[city] = revenue.byCityMonth[city]?.['Apr 2026'] || 0;
+    aprTotalCity += aprCityRev[city];
+  }
+  
+  // === Company-wide monthly totals (projections or unmatched actuals) ===
+  const companyWide = {};
+  for (const m of months) {
+    companyWide[m] = revenue.companyWideMonth[m]?.total || 0;
+  }
+  
+  // === Detect whether each month's company-wide bucket is mostly projection ===
+  // Check if most of company-wide revenue is tagged as PROJECTION for that month
+  const monthIsProjection = { 'Apr 2026': false, 'May 2026': false, 'Jun 2026': false };
+  const revTab = loadedData.revenue;
+  let revStartRow = -1;
+  for (let i = 0; i < revTab.length; i++) {
+    if (revTab[i][0] && String(revTab[i][0]).trim() === 'Date') {
+      revStartRow = i + 1;
+      break;
     }
-    const row = def.contains ? findRowContains(dash, def.source) : findRow(dash, def.source);
-    if (!row) continue;
+  }
+  if (revStartRow === -1) revStartRow = 4;
+  
+  const monthSources = {};
+  for (let i = revStartRow; i < revTab.length; i++) {
+    const row = revTab[i];
+    if (!row || !row[0]) continue;
+    const m = (row[1] ? String(row[1]).trim() : null) || monthFromDate(row[0]);
+    const src = row[8] ? String(row[8]).trim() : '';
+    if (!m) continue;
+    if (!monthSources[m]) monthSources[m] = { projection: 0, actual: 0 };
+    const net = parseCurrency(row[7]);
+    if (src === 'PROJECTION') monthSources[m].projection += net;
+    else monthSources[m].actual += net;
+  }
+  for (const m of months) {
+    const s = monthSources[m] || { projection: 0, actual: 0 };
+    monthIsProjection[m] = s.projection > s.actual;
+  }
+  
+  // === For each city, per month: actual + allocated projection ===
+  // If month is mostly projection, city revenue = actual city share * company-wide projection ratio
+  function getCityRev(city, month) {
+    const actual = revenue.byCityMonth[city]?.[month] || 0;
+    if (!monthIsProjection[month]) {
+      return { value: actual, isProjection: false };
+    }
+    // Month is projection-heavy. Allocate company-wide amount by April share.
+    const share = aprTotalCity > 0 ? (aprCityRev[city] / aprTotalCity) : 0;
+    const allocated = companyWide[month] * share;
+    return { value: actual + allocated, isProjection: true };
+  }
+  
+  function getCorpRev(month) {
+    // Corporate is unmatched / leftover company-wide when not projection
+    if (monthIsProjection[month]) {
+      return { value: 0, isProjection: true };  // all allocated out to cities
+    }
+    return { value: companyWide[month], isProjection: false };
+  }
+  
+  // === Expense breakdown using source tabs ===
+  // Categories: Match Manager, City Manager, Marketing, Equipment, Venue Costs (Schedule), 
+  // Venue Rental (flat Expenses), VEO Camera, Corporate Salaries, Contractors, Scaling, MISC
+  
+  const scheduleCosts = {};  // month -> total venue cost from schedule
+  const scheduleTab = loadedData.schedule;
+  let schedStart = -1;
+  for (let i = 0; i < scheduleTab.length; i++) {
+    if (scheduleTab[i][0] && String(scheduleTab[i][0]).trim() === 'Date') {
+      schedStart = i + 1;
+      break;
+    }
+  }
+  if (schedStart === -1) schedStart = 4;
+  for (let i = schedStart; i < scheduleTab.length; i++) {
+    const row = scheduleTab[i];
+    if (!row || !row[0]) continue;
+    const m = (row[1] ? String(row[1]).trim() : null) || monthFromDate(row[0]);
+    const cost = parseCurrency(row[6]);
+    if (!m) continue;
+    scheduleCosts[m] = (scheduleCosts[m] || 0) + cost;
+  }
+  
+  const expensesByCat = {};  // category -> month -> total
+  const expTab = loadedData.expenses;
+  let expStart = -1;
+  for (let i = 0; i < expTab.length; i++) {
+    if (expTab[i][0] && String(expTab[i][0]).trim() === 'Date') {
+      expStart = i + 1;
+      break;
+    }
+  }
+  if (expStart === -1) expStart = 4;
+  for (let i = expStart; i < expTab.length; i++) {
+    const row = expTab[i];
+    if (!row || !row[0]) continue;
+    const m = (row[1] ? String(row[1]).trim() : null) || monthFromDate(row[0]);
+    const cat = row[3] ? String(row[3]).trim() : null;
+    const amount = parseCurrency(row[5]);
+    if (!m || !cat) continue;
+    if (!expensesByCat[cat]) expensesByCat[cat] = {};
+    expensesByCat[cat][m] = (expensesByCat[cat][m] || 0) + amount;
+  }
+  
+  function sumCityMgr(month) {
+    let total = 0;
+    for (const city of [...CITIES, 'Corporate']) {
+      total += cityOverhead[city]?.cityMgr?.[month] || 0;
+    }
+    return total;
+  }
+  function sumMarketing(month) {
+    let total = 0;
+    for (const city of [...CITIES, 'Corporate']) {
+      total += cityOverhead[city]?.marketing?.[month] || 0;
+    }
+    return total;
+  }
+  function sumEquipment(month) {
+    let total = 0;
+    for (const city of [...CITIES, 'Corporate']) {
+      total += cityOverhead[city]?.equipment?.[month] || 0;
+    }
+    return total;
+  }
+  function sumMatchMgr(month) {
+    let total = 0;
+    for (const city of CITIES) {
+      total += mgrPay[city]?.[month] || 0;
+    }
+    return total;
+  }
+
+  // === Also get starting cash & total from Dashboard summary ===
+  const startRow = findRow(dash, 'Starting Cash');
+  const starting = [1, 2, 3].map(i => parseCurrency(startRow?.[i]));
+  
+  // === BUILD HTML ===
+  function sectionDivider(label) {
+    return `<div class="pnl-row section-divider"><div class="pnl-cell label">${label}</div></div>`;
+  }
+  
+  function dataRow({ label, values, isProjection = [], opts = {} }) {
+    const { indent = false, bold = false, colorize = false, subtotal = false, highlight = false, total = false } = opts;
     let rowClass = 'pnl-row';
-    if (def.type === 'indent') rowClass += ' indent';
-    if (def.type === 'highlight') rowClass += ' highlight';
-    if (def.type === 'total') rowClass += ' total';
-    html += `<div class="${rowClass}">`;
-    html += `<div class="pnl-cell label">${def.label}</div>`;
-    for (let i = 1; i <= 4; i++) {
-      const val = parseCurrency(row[i]);
+    if (indent) rowClass += ' indent';
+    if (subtotal) rowClass += ' subtotal';
+    if (highlight) rowClass += ' highlight';
+    if (total) rowClass += ' total';
+    
+    let html = `<div class="${rowClass}">`;
+    html += `<div class="pnl-cell label">${label}</div>`;
+    
+    const q2 = values.reduce((a, b) => a + b, 0);
+    const q2IsProj = isProjection.some(Boolean);  // if any month is projection, Q2 is partly projected
+    
+    const allVals = [...values, q2];
+    const allProj = [...isProjection, q2IsProj];
+    
+    for (let i = 0; i < 4; i++) {
+      const val = allVals[i];
+      const proj = allProj[i];
       let cls = 'pnl-cell num';
-      if (def.colorize) cls += ' ' + numClass(val);
-      html += `<div class="${cls}">${fmtMoney(val)}</div>`;
+      if (colorize) cls += ' ' + numClass(val);
+      if (proj && val !== 0) cls += ' projection';
+      const tag = (proj && val !== 0 && i < 3) ? '<span class="est-tag">EST</span>' : '';
+      html += `<div class="${cls}">${fmtMoney(val)}${tag}</div>`;
     }
     html += '</div>';
+    return html;
   }
+
+  let html = '';
+  
+  // Header
+  html += '<div class="pnl-row header">';
+  for (const c of ['', 'Apr 2026', 'May 2026', 'Jun 2026', 'Q2 Total']) {
+    html += `<div class="pnl-cell label" style="text-align:${c === '' ? 'left' : 'right'}">${c}</div>`;
+  }
+  html += '</div>';
+  
+  // Starting Cash
+  html += dataRow({
+    label: 'Starting Cash',
+    values: starting,
+    isProjection: [false, false, false],
+  });
+  
+  // ================= REVENUE =================
+  html += sectionDivider('Revenue by City');
+  
+  let totalNetRev = [0, 0, 0];
+  for (const city of CITIES) {
+    const vals = months.map(m => getCityRev(city, m));
+    const values = vals.map(v => v.value);
+    const projs = vals.map(v => v.isProjection);
+    // Skip cities with nothing
+    if (values.every(v => v === 0)) continue;
+    html += dataRow({
+      label: city,
+      values,
+      isProjection: projs,
+      opts: { indent: true },
+    });
+    values.forEach((v, i) => { totalNetRev[i] += v; });
+  }
+  
+  // Corporate/Unmatched
+  const corpVals = months.map(m => getCorpRev(m));
+  const corpValues = corpVals.map(v => v.value);
+  const corpProjs = corpVals.map(v => v.isProjection);
+  if (corpValues.some(v => v !== 0)) {
+    html += dataRow({
+      label: 'Corporate / Unmatched',
+      values: corpValues,
+      isProjection: corpProjs,
+      opts: { indent: true },
+    });
+    corpValues.forEach((v, i) => { totalNetRev[i] += v; });
+  }
+  
+  // Total Net Revenue subtotal
+  html += dataRow({
+    label: 'Total Net Revenue',
+    values: totalNetRev,
+    isProjection: months.map(m => monthIsProjection[m]),
+    opts: { subtotal: true },
+  });
+  
+  // ================= EXPENSES =================
+  html += sectionDivider('Expenses by Category');
+  
+  let totalExp = [0, 0, 0];
+  
+  function addExpenseRow(label, valsFn) {
+    const vals = months.map(valsFn);
+    if (vals.every(v => v === 0)) return;
+    html += dataRow({
+      label,
+      values: vals,
+      isProjection: [false, false, false],
+      opts: { indent: true },
+    });
+    vals.forEach((v, i) => { totalExp[i] += v; });
+  }
+  
+  addExpenseRow('Match Manager Pay', m => sumMatchMgr(m));
+  addExpenseRow('City Manager', m => sumCityMgr(m));
+  addExpenseRow('Marketing', m => sumMarketing(m));
+  addExpenseRow('Equipment', m => sumEquipment(m));
+  addExpenseRow('Venue Costs (per-match)', m => scheduleCosts[m] || 0);
+  addExpenseRow('Venue Rental (flat)', m => expensesByCat['Venue Rental']?.[m] || 0);
+  addExpenseRow('VEO Camera', m => expensesByCat['VEO Camera']?.[m] || 0);
+  addExpenseRow('Corporate Salaries', m => expensesByCat['Corporate Salaries']?.[m] || 0);
+  addExpenseRow('Contractors', m => expensesByCat['Contractors']?.[m] || 0);
+  addExpenseRow('Scaling', m => expensesByCat['Scaling']?.[m] || 0);
+  addExpenseRow('MISC', m => expensesByCat['MISC']?.[m] || 0);
+  
+  html += dataRow({
+    label: 'Total Expenses',
+    values: totalExp,
+    isProjection: [false, false, false],
+    opts: { subtotal: true },
+  });
+  
+  // ================= NET P&L =================
+  const netPnl = totalNetRev.map((r, i) => r - totalExp[i]);
+  html += dataRow({
+    label: 'Net P&L (Monthly)',
+    values: netPnl,
+    isProjection: months.map(m => monthIsProjection[m]),
+    opts: { highlight: true, colorize: true },
+  });
+  
+  // ================= ENDING CASH =================
+  // Starts from given start, adds monthly net
+  const ending = [];
+  let cash = starting[0];
+  for (let i = 0; i < 3; i++) {
+    cash = (i === 0 ? starting[0] : ending[i - 1]) + netPnl[i];
+    ending.push(cash);
+  }
+  html += dataRow({
+    label: 'Ending Cash',
+    values: ending,
+    isProjection: months.map(m => monthIsProjection[m]),
+    opts: { total: true },
+  });
+  
   container.innerHTML = html;
 }
 
