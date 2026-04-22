@@ -539,6 +539,11 @@
     color: var(--text);
   }
 
+  /* Explicit green/red within city-line so they win over default .city-line .num color */
+  .city-line .num.pos { color: var(--positive); }
+  .city-line .num.neg { color: var(--negative); }
+  .city-line .num.zero { color: var(--text-faint); }
+
   .city-line.indent .name { padding-left: 12px; color: var(--text-dim); }
 
   .margin-badge {
