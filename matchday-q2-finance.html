@@ -1319,7 +1319,7 @@ function renderMonthlyPL(dash) {
   }
   
   function dataRow({ label, values, isProjection = [], opts = {} }) {
-    const { indent = false, bold = false, colorize = false, subtotal = false, highlight = false, total = false } = opts;
+    const { indent = false, bold = false, colorize = false, subtotal = false, highlight = false, total = false, kind = null } = opts;
     let rowClass = 'pnl-row';
     if (indent) rowClass += ' indent';
     if (subtotal) rowClass += ' subtotal';
@@ -1330,7 +1330,7 @@ function renderMonthlyPL(dash) {
     html += `<div class="pnl-cell label">${label}</div>`;
     
     const q2 = values.reduce((a, b) => a + b, 0);
-    const q2IsProj = isProjection.some(Boolean);  // if any month is projection, Q2 is partly projected
+    const q2IsProj = isProjection.some(Boolean);
     
     const allVals = [...values, q2];
     const allProj = [...isProjection, q2IsProj];
@@ -1339,7 +1339,14 @@ function renderMonthlyPL(dash) {
       const val = allVals[i];
       const proj = allProj[i];
       let cls = 'pnl-cell num';
-      if (colorize) cls += ' ' + numClass(val);
+      if (colorize) {
+        // Color by sign (for Net P&L rows)
+        cls += ' ' + numClass(val);
+      } else if (kind === 'revenue' && val !== 0) {
+        cls += ' pos';
+      } else if (kind === 'expense' && val !== 0) {
+        cls += ' neg';
+      }
       if (proj && val !== 0) cls += ' projection';
       const tag = (proj && val !== 0 && i < 3) ? '<span class="est-tag">EST</span>' : '';
       html += `<div class="${cls}">${fmtMoney(val)}${tag}</div>`;
@@ -1378,7 +1385,7 @@ function renderMonthlyPL(dash) {
       label: city,
       values,
       isProjection: projs,
-      opts: { indent: true },
+      opts: { indent: true, kind: 'revenue' },
     });
     values.forEach((v, i) => { totalNetRev[i] += v; });
   }
@@ -1392,7 +1399,7 @@ function renderMonthlyPL(dash) {
       label: 'Corporate / Unmatched',
       values: corpValues,
       isProjection: corpProjs,
-      opts: { indent: true },
+      opts: { indent: true, kind: 'revenue' },
     });
     corpValues.forEach((v, i) => { totalNetRev[i] += v; });
   }
@@ -1402,7 +1409,7 @@ function renderMonthlyPL(dash) {
     label: 'Total Net Revenue',
     values: totalNetRev,
     isProjection: months.map(m => monthIsProjection[m]),
-    opts: { subtotal: true },
+    opts: { subtotal: true, kind: 'revenue' },
   });
   
   // ================= EXPENSES =================
@@ -1431,7 +1438,7 @@ function renderMonthlyPL(dash) {
       label,
       values,
       isProjection: projs,
-      opts: { indent: true },
+      opts: { indent: true, kind: 'expense' },
     });
     values.forEach((v, i) => { 
       totalExp[i] += v;
@@ -1464,7 +1471,7 @@ function renderMonthlyPL(dash) {
     label: 'Total Expenses',
     values: totalExp,
     isProjection: expIsProj,
-    opts: { subtotal: true },
+    opts: { subtotal: true, kind: 'expense' },
   });
   
   // ================= NET P&L =================
@@ -1614,8 +1621,8 @@ function renderCityCards() {
       fieldRevTotal += vRev;
       fieldCostTotal += vCost;
       
-      const revCls = vRevProjected && vRev !== 0 ? ' projection' : '';
-      const costCls = vCostProjected && vCost !== 0 ? ' projection' : '';
+      const revCls = (vRevProjected && vRev !== 0 ? ' projection' : '') + (vRev !== 0 ? ' pos' : '');
+      const costCls = (vCostProjected && vCost !== 0 ? ' projection' : '') + (vCost !== 0 ? ' neg' : '');
       const netCls = (vRevProjected || vCostProjected) && vNet !== 0 ? ' projection' : '';
       
       venueHtml += `
@@ -1682,8 +1689,8 @@ function renderCityCards() {
         ${venueHtml}
         <div class="city-line subtotal">
           <div class="name">Field Subtotal</div>
-          <div class="num">${fmtMoney(fieldRevTotal)}</div>
-          <div class="num">${fmtMoney(fieldCostTotal)}</div>
+          <div class="num pos">${fmtMoney(fieldRevTotal)}</div>
+          <div class="num neg">${fmtMoney(fieldCostTotal)}</div>
           <div class="num ${numClass(fieldNet)}">${fmtMoney(fieldNet)}</div>
         </div>
         ` : `<div class="city-line"><div class="name" style="color: var(--text-faint); font-style: italic;">No venues yet</div><div class="num">—</div><div class="num">—</div><div class="num">—</div></div>`}
@@ -1691,47 +1698,47 @@ function renderCityCards() {
         <div class="city-section-head">Membership Revenue</div>
         <div class="city-line indent">
           <div class="name">${city} Memberships</div>
-          <div class="num ${numClass(membershipRev)}${memberCls}">${fmtMoney(membershipRev)}</div>
+          <div class="num pos${memberCls}">${fmtMoney(membershipRev)}</div>
           <div class="num">—</div>
-          <div class="num ${numClass(membershipRev)}${memberCls}">${membershipRev ? fmtMoney(membershipRev) : '—'}</div>
+          <div class="num pos${memberCls}">${membershipRev ? fmtMoney(membershipRev) : '—'}</div>
         </div>
         
         <div class="city-section-head">City Overhead</div>
         <div class="city-line indent">
           <div class="name">Match Manager Pay</div>
           <div class="num">—</div>
-          <div class="num${mmCls}">${fmtMoney(mmPay)}</div>
-          <div class="num ${numClass(-mmPay)}${mmCls}">${mmPay ? fmtMoney(-mmPay) : '—'}</div>
+          <div class="num neg${mmCls}">${fmtMoney(mmPay)}</div>
+          <div class="num neg${mmCls}">${mmPay ? fmtMoney(-mmPay) : '—'}</div>
         </div>
         <div class="city-line indent">
           <div class="name">City Manager</div>
           <div class="num">—</div>
-          <div class="num">${fmtMoney(cm)}</div>
-          <div class="num ${numClass(-cm)}">${cm ? fmtMoney(-cm) : '—'}</div>
+          <div class="num neg">${fmtMoney(cm)}</div>
+          <div class="num neg">${cm ? fmtMoney(-cm) : '—'}</div>
         </div>
         <div class="city-line indent">
           <div class="name">Marketing</div>
           <div class="num">—</div>
-          <div class="num">${fmtMoney(mktg)}</div>
-          <div class="num ${numClass(-mktg)}">${mktg ? fmtMoney(-mktg) : '—'}</div>
+          <div class="num neg">${fmtMoney(mktg)}</div>
+          <div class="num neg">${mktg ? fmtMoney(-mktg) : '—'}</div>
         </div>
         <div class="city-line indent">
           <div class="name">Equipment</div>
           <div class="num">—</div>
-          <div class="num">${fmtMoney(equip)}</div>
-          <div class="num ${numClass(-equip)}">${equip ? fmtMoney(-equip) : '—'}</div>
+          <div class="num neg">${fmtMoney(equip)}</div>
+          <div class="num neg">${equip ? fmtMoney(-equip) : '—'}</div>
         </div>
         <div class="city-line subtotal">
           <div class="name">Overhead Subtotal</div>
           <div class="num">—</div>
-          <div class="num">${fmtMoney(overheadTotal)}</div>
-          <div class="num ${numClass(-overheadTotal)}">${overheadTotal ? fmtMoney(-overheadTotal) : '—'}</div>
+          <div class="num neg">${fmtMoney(overheadTotal)}</div>
+          <div class="num neg">${overheadTotal ? fmtMoney(-overheadTotal) : '—'}</div>
         </div>
         
         <div class="city-line total-line">
           <div class="name">${city} Total ${marginBadge(cityMargin, totalRev !== 0)}</div>
-          <div class="num">${fmtMoney(totalRev)}</div>
-          <div class="num">${fmtMoney(cityTotalCost)}</div>
+          <div class="num pos">${fmtMoney(totalRev)}</div>
+          <div class="num neg">${fmtMoney(cityTotalCost)}</div>
           <div class="num ${numClass(cityNet)}">${fmtMoney(cityNet)}</div>
         </div>
       </div>`;
