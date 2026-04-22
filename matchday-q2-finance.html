@@ -1221,25 +1221,28 @@ function renderMonthlyPL(dash) {
   
   // === For each city, per month: actual + allocated projection ===
   // If month is mostly projection, city revenue = actual city share * company-wide projection ratio
-  // If activeView === 'projected' and month has progress < 1, extrapolate actuals to full month
+  // If activeView === 'projected' and month has progress < 1, extrapolate ONLY DPP (membership is billed on the 1st)
   function getCityRev(city, month) {
-    const actual = revenue.byCityMonth[city]?.[month] || 0;
+    const totalActual = revenue.byCityMonth[city]?.[month] || 0;
+    const membership = revenue.byCityMembershipMonth[city]?.[month] || 0;
+    const dpp = totalActual - membership;  // DPP + Private Rental
+    
     const progress = monthProgress[month];
     const isPartialMonth = progress && progress.fraction < 1 && progress.fraction > 0;
     
     if (!monthIsProjection[month]) {
       // Actual data month
-      if (activeView === 'projected' && isPartialMonth && actual > 0) {
-        // Extrapolate to full month
-        const fullMonth = actual / progress.fraction;
-        return { value: fullMonth, isProjection: true };
+      if (activeView === 'projected' && isPartialMonth && dpp > 0) {
+        // Extrapolate only DPP portion to full month; keep membership at actual
+        const dppFull = dpp / progress.fraction;
+        return { value: membership + dppFull, isProjection: true };
       }
-      return { value: actual, isProjection: false };
+      return { value: totalActual, isProjection: false };
     }
     // Projection month — allocate company-wide by April share
     const share = aprTotalCity > 0 ? (aprCityRev[city] / aprTotalCity) : 0;
     const allocated = companyWide[month] * share;
-    return { value: actual + allocated, isProjection: true };
+    return { value: totalActual + allocated, isProjection: true };
   }
   
   function getCorpRev(month) {
@@ -1250,9 +1253,7 @@ function renderMonthlyPL(dash) {
       return { value: 0, isProjection: true };
     }
     const actual = companyWide[month];
-    if (activeView === 'projected' && isPartialMonth && actual > 0) {
-      return { value: actual / progress.fraction, isProjection: true };
-    }
+    // Corporate revenue is typically unmatched memberships — don't extrapolate
     return { value: actual, isProjection: false };
   }
   
@@ -1656,14 +1657,12 @@ function renderCityCards() {
     
     const fieldNet = fieldRevTotal - fieldCostTotal;
     
-    // Membership revenue — partial, extrapolate
-    let membershipRev = 0, membershipProjected = false;
+    // Membership revenue — NOT extrapolated (billed on the 1st, mostly captured by mid-month)
+    let membershipRev = 0;
     for (const m of monthsToSum) {
-      const raw = revenue.byCityMembershipMonth[city]?.[m] || 0;
-      const { value, projected } = extrapolatePartial(raw, m);
-      membershipRev += value;
-      if (projected) membershipProjected = true;
+      membershipRev += revenue.byCityMembershipMonth[city]?.[m] || 0;
     }
+    const membershipProjected = false;
     
     // Match Manager Pay — partial, extrapolate
     let mmPay = 0, mmProjected = false;
