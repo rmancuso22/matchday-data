@@ -900,6 +900,18 @@ const csvUrl = (gid) => `${BASE_URL}?gid=${gid}&single=true&output=csv`;
 
 const CITIES = ['Austin', 'Dallas', 'Houston', 'San Antonio', 'Atlanta', 'St. Louis', 'OKC', 'El Paso'];
 
+// Venue aliases: map schedule/expense variant names → canonical venue name (used in Venues tab).
+// Used to merge same-field-different-billing-type venues so revenue + cost line up correctly.
+const VENUE_ALIASES = {
+  'ATH Katy Sunday': 'ATH Katy',
+};
+
+function canonicalVenue(name) {
+  if (!name) return name;
+  const trimmed = String(name).trim();
+  return VENUE_ALIASES[trimmed] || trimmed;
+}
+
 const MONTHS = {
   q2: { label: 'Q2 Total', sheetKey: 'Q2 Total' },
   apr: { label: 'April', sheetKey: 'Apr 2026' },
@@ -1105,7 +1117,7 @@ function aggregateRevenue(revenueTab) {
     const monthStrFromRow = row[1] ? String(row[1]).trim() : null;
     const month = monthStrFromRow || monthFromDate(dateStr);
     const city = row[2] ? String(row[2]).trim() : null;
-    const venue = row[3] ? String(row[3]).trim() : null;
+    const venue = canonicalVenue(row[3] ? String(row[3]).trim() : null);
     const type = row[4] ? String(row[4]).trim() : null;
     const net = parseCurrency(row[7]);
 
@@ -1149,7 +1161,7 @@ function aggregateScheduleCosts(scheduleTab) {
     if (!row || !row[0]) continue;
     const dateStr = row[0];
     const month = (row[1] ? String(row[1]).trim() : null) || monthFromDate(dateStr);
-    const venue = row[3] ? String(row[3]).trim() : null;
+    const venue = canonicalVenue(row[3] ? String(row[3]).trim() : null);
     const cost = parseCurrency(row[6]);
     if (!month || !venue) continue;
     if (!byVenueMonth[venue]) byVenueMonth[venue] = {};
@@ -1178,7 +1190,7 @@ function aggregateMonthlyFlatVenueCosts(expensesTab) {
     
     const dateStr = row[0];
     const month = (row[1] ? String(row[1]).trim() : null) || monthFromDate(dateStr);
-    const vendor = row[4] ? String(row[4]).trim() : null;
+    const vendor = canonicalVenue(row[4] ? String(row[4]).trim() : null);
     const amount = parseCurrency(row[5]);
     if (!month || !vendor) continue;
     if (!byVenueMonth[vendor]) byVenueMonth[vendor] = {};
@@ -1939,7 +1951,7 @@ function renderFieldRanking() {
     const row = schedTab[i];
     if (!row || !row[0]) continue;
     const m = (row[1] ? String(row[1]).trim() : null) || monthFromDate(row[0]);
-    const venue = row[3] ? String(row[3]).trim() : null;
+    const venue = canonicalVenue(row[3] ? String(row[3]).trim() : null);
     const cost = parseCurrency(row[6]);
     if (!m || !venue) continue;
     if (!venueMatchInfo[venue]) venueMatchInfo[venue] = {};
