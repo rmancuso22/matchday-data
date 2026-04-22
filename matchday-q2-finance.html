@@ -800,6 +800,7 @@ function monthFromDate(dateStr) {
 function aggregateRevenue(revenueTab) {
   const byCityMonth = {};
   const byVenueMonth = {};
+  const byCityMembershipMonth = {};  // NEW: memberships per city per month
   const companyWideMonth = {};
   
   let startRow = -1;
@@ -831,13 +832,18 @@ function aggregateRevenue(revenueTab) {
     } else if (city && CITIES.includes(city)) {
       if (!byCityMonth[city]) byCityMonth[city] = {};
       byCityMonth[city][month] = (byCityMonth[city][month] || 0) + net;
-      if (venue && venue !== 'N/A') {
+      
+      if (type === 'Membership') {
+        // Track memberships separately (no venue attribution)
+        if (!byCityMembershipMonth[city]) byCityMembershipMonth[city] = {};
+        byCityMembershipMonth[city][month] = (byCityMembershipMonth[city][month] || 0) + net;
+      } else if (venue && venue !== 'N/A') {
         if (!byVenueMonth[venue]) byVenueMonth[venue] = {};
         byVenueMonth[venue][month] = (byVenueMonth[venue][month] || 0) + net;
       }
     }
   }
-  return { byCityMonth, byVenueMonth, companyWideMonth };
+  return { byCityMonth, byVenueMonth, byCityMembershipMonth, companyWideMonth };
 }
 
 function aggregateScheduleCosts(scheduleTab) {
@@ -1145,15 +1151,20 @@ function renderCityCards() {
     
     const fieldNet = fieldRevTotal - fieldCostTotal;
     
+    // Membership revenue for this city
+    const membershipRev = monthsToSum.reduce((acc, m) => acc + (revenue.byCityMembershipMonth[city]?.[m] || 0), 0);
+    
     const mmPay = mgrPay[city]?.[monthKey] || 0;
     const cm = cityOverhead[city]?.cityMgr?.[monthKey] || 0;
     const mktg = cityOverhead[city]?.marketing?.[monthKey] || 0;
     const equip = cityOverhead[city]?.equipment?.[monthKey] || 0;
     const overheadTotal = mmPay + cm + mktg + equip;
     
-    const cityNet = fieldNet - overheadTotal;
+    // City total now includes membership revenue
+    const totalRev = fieldRevTotal + membershipRev;
+    const cityNet = fieldNet + membershipRev - overheadTotal;
     const cityTotalCost = fieldCostTotal + overheadTotal;
-    const cityMargin = fieldRevTotal !== 0 ? (cityNet / fieldRevTotal) * 100 : 0;
+    const cityMargin = totalRev !== 0 ? (cityNet / totalRev) * 100 : 0;
     
     html += `
       <div class="city-card">
@@ -1181,6 +1192,14 @@ function renderCityCards() {
           <div class="num ${numClass(fieldNet)}">${fmtMoney(fieldNet)}</div>
         </div>
         ` : `<div class="city-line"><div class="name" style="color: var(--text-faint); font-style: italic;">No venues yet</div><div class="num">—</div><div class="num">—</div><div class="num">—</div></div>`}
+        
+        <div class="city-section-head">Membership Revenue</div>
+        <div class="city-line indent">
+          <div class="name">${city} Memberships</div>
+          <div class="num ${numClass(membershipRev)}">${fmtMoney(membershipRev)}</div>
+          <div class="num">—</div>
+          <div class="num ${numClass(membershipRev)}">${membershipRev ? fmtMoney(membershipRev) : '—'}</div>
+        </div>
         
         <div class="city-section-head">City Overhead</div>
         <div class="city-line indent">
@@ -1215,8 +1234,8 @@ function renderCityCards() {
         </div>
         
         <div class="city-line total-line">
-          <div class="name">${city} Total ${marginBadge(cityMargin, fieldRevTotal !== 0)}</div>
-          <div class="num">${fmtMoney(fieldRevTotal)}</div>
+          <div class="name">${city} Total ${marginBadge(cityMargin, totalRev !== 0)}</div>
+          <div class="num">${fmtMoney(totalRev)}</div>
           <div class="num">${fmtMoney(cityTotalCost)}</div>
           <div class="num ${numClass(cityNet)}">${fmtMoney(cityNet)}</div>
         </div>
