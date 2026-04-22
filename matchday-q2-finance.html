@@ -246,6 +246,12 @@
   }
 
   /* ===== MONTH TABS ===== */
+  .view-toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
   .month-tabs {
     display: inline-flex;
     background: var(--bg-card);
@@ -690,7 +696,13 @@
   <section>
     <div class="section-head">
       <h2>Monthly <em>Cash Flow</em></h2>
-      <span class="section-note">April actual · May/June allocated by April share · <span class="projection-tag">EST</span> = projection</span>
+      <div class="view-toggle-wrap">
+        <span class="section-note" style="margin-right: 12px;">View:</span>
+        <div class="month-tabs" id="view-toggle">
+          <button class="month-tab active" data-view="mtd">Month-to-Date</button>
+          <button class="month-tab" data-view="projected">Full-Month Projection</button>
+        </div>
+      </div>
     </div>
     <div class="pnl-grid" id="pnl-table"></div>
   </section>
@@ -753,6 +765,68 @@ const MONTHS = {
 
 let loadedData = {};
 let activeMonth = 'q2';
+let activeView = 'mtd'; // 'mtd' (Month-to-date) or 'projected' (Full-month extrapolation)
+
+// Month progress: for each current-period month, fraction of month elapsed based on
+// latest date in the Revenue tab
+let monthProgress = {}; // { 'Apr 2026': { elapsed: 22, total: 30, fraction: 0.733 } }
+
+function computeMonthProgress(revenueTab) {
+  monthProgress = {};
+  let latestDates = {}; // month -> latest day of month seen
+  let startRow = -1;
+  for (let i = 0; i < revenueTab.length; i++) {
+    if (revenueTab[i][0] && String(revenueTab[i][0]).trim() === 'Date') {
+      startRow = i + 1;
+      break;
+    }
+  }
+  if (startRow === -1) startRow = 4;
+
+  for (let i = startRow; i < revenueTab.length; i++) {
+    const row = revenueTab[i];
+    if (!row || !row[0]) continue;
+    const dateStr = String(row[0]).trim();
+    // Parse date
+    let y, mn, d;
+    if (dateStr.includes('/')) {
+      const parts = dateStr.split('/');
+      mn = parseInt(parts[0], 10);
+      d = parseInt(parts[1], 10);
+      y = parseInt(parts[2], 10);
+    } else if (dateStr.includes('-')) {
+      const parts = dateStr.split('-');
+      y = parseInt(parts[0], 10);
+      mn = parseInt(parts[1], 10);
+      d = parseInt(parts[2], 10);
+    }
+    if (!y || !mn || !d) continue;
+    const source = row[8] ? String(row[8]).trim() : '';
+    // Only count actual Stripe/non-projection rows to determine "how far along are we"
+    if (source === 'PROJECTION') continue;
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthKey = `${monthNames[mn-1]} ${y}`;
+    const existing = latestDates[monthKey] || 0;
+    if (d > existing) latestDates[monthKey] = d;
+  }
+
+  // For each month that has actuals, compute progress
+  const daysInMonth = {
+    'Jan': 31, 'Feb': 28, 'Mar': 31, 'Apr': 30, 'May': 31, 'Jun': 30,
+    'Jul': 31, 'Aug': 31, 'Sep': 30, 'Oct': 31, 'Nov': 30, 'Dec': 31
+  };
+  for (const monthKey of Object.keys(latestDates)) {
+    const monthShort = monthKey.split(' ')[0];
+    const total = daysInMonth[monthShort] || 30;
+    const elapsed = latestDates[monthKey];
+    monthProgress[monthKey] = {
+      elapsed,
+      total,
+      fraction: elapsed / total,
+    };
+  }
+  return monthProgress;
+}
 
 async function fetchCSV(gid) {
   const directUrl = csvUrl(gid);
@@ -1127,23 +1201,39 @@ function renderMonthlyPL(dash) {
   
   // === For each city, per month: actual + allocated projection ===
   // If month is mostly projection, city revenue = actual city share * company-wide projection ratio
+  // If activeView === 'projected' and month has progress < 1, extrapolate actuals to full month
   function getCityRev(city, month) {
     const actual = revenue.byCityMonth[city]?.[month] || 0;
+    const progress = monthProgress[month];
+    const isPartialMonth = progress && progress.fraction < 1 && progress.fraction > 0;
+    
     if (!monthIsProjection[month]) {
+      // Actual data month
+      if (activeView === 'projected' && isPartialMonth && actual > 0) {
+        // Extrapolate to full month
+        const fullMonth = actual / progress.fraction;
+        return { value: fullMonth, isProjection: true };
+      }
       return { value: actual, isProjection: false };
     }
-    // Month is projection-heavy. Allocate company-wide amount by April share.
+    // Projection month — allocate company-wide by April share
     const share = aprTotalCity > 0 ? (aprCityRev[city] / aprTotalCity) : 0;
     const allocated = companyWide[month] * share;
     return { value: actual + allocated, isProjection: true };
   }
   
   function getCorpRev(month) {
+    const progress = monthProgress[month];
+    const isPartialMonth = progress && progress.fraction < 1 && progress.fraction > 0;
     // Corporate is unmatched / leftover company-wide when not projection
     if (monthIsProjection[month]) {
-      return { value: 0, isProjection: true };  // all allocated out to cities
+      return { value: 0, isProjection: true };
     }
-    return { value: companyWide[month], isProjection: false };
+    const actual = companyWide[month];
+    if (activeView === 'projected' && isPartialMonth && actual > 0) {
+      return { value: actual / progress.fraction, isProjection: true };
+    }
+    return { value: actual, isProjection: false };
   }
   
   // === Expense breakdown using source tabs ===
@@ -1319,35 +1409,61 @@ function renderMonthlyPL(dash) {
   html += sectionDivider('Expenses by Category');
   
   let totalExp = [0, 0, 0];
+  let expIsProj = [false, false, false];
   
-  function addExpenseRow(label, valsFn) {
-    const vals = months.map(valsFn);
-    if (vals.every(v => v === 0)) return;
+  // extrapolateType: 'none' (expense is full-month by design — CM, Marketing, Salaries, Contractors),
+  //                  'partial' (expense accumulates over the month — MM Pay, Venue Costs per-match)
+  function addExpenseRow(label, valsFn, extrapolateType = 'partial') {
+    const vals = months.map(m => {
+      let actual = valsFn(m);
+      if (activeView === 'projected' && extrapolateType === 'partial') {
+        const progress = monthProgress[m];
+        if (progress && progress.fraction < 1 && progress.fraction > 0 && actual > 0) {
+          return { value: actual / progress.fraction, projected: true };
+        }
+      }
+      return { value: actual, projected: false };
+    });
+    if (vals.every(v => v.value === 0)) return;
+    const values = vals.map(v => v.value);
+    const projs = vals.map(v => v.projected);
     html += dataRow({
       label,
-      values: vals,
-      isProjection: [false, false, false],
+      values,
+      isProjection: projs,
       opts: { indent: true },
     });
-    vals.forEach((v, i) => { totalExp[i] += v; });
+    values.forEach((v, i) => { 
+      totalExp[i] += v;
+      if (projs[i]) expIsProj[i] = true;
+    });
   }
   
-  addExpenseRow('Match Manager Pay', m => sumMatchMgr(m));
-  addExpenseRow('City Manager', m => sumCityMgr(m));
-  addExpenseRow('Marketing', m => sumMarketing(m));
-  addExpenseRow('Equipment', m => sumEquipment(m));
-  addExpenseRow('Venue Costs (per-match)', m => scheduleCosts[m] || 0);
-  addExpenseRow('Venue Rental (flat)', m => expensesByCat['Venue Rental']?.[m] || 0);
-  addExpenseRow('VEO Camera', m => expensesByCat['VEO Camera']?.[m] || 0);
-  addExpenseRow('Corporate Salaries', m => expensesByCat['Corporate Salaries']?.[m] || 0);
-  addExpenseRow('Contractors', m => expensesByCat['Contractors']?.[m] || 0);
-  addExpenseRow('Scaling', m => expensesByCat['Scaling']?.[m] || 0);
-  addExpenseRow('MISC', m => expensesByCat['MISC']?.[m] || 0);
+  // Match Manager Pay & Venue Costs are partial (accumulate during month) — extrapolate
+  addExpenseRow('Match Manager Pay', m => sumMatchMgr(m), 'partial');
+  // City Manager is flat monthly salary — don't extrapolate
+  addExpenseRow('City Manager', m => sumCityMgr(m), 'none');
+  // Marketing is monthly flat (weekly × 4) — don't extrapolate
+  addExpenseRow('Marketing', m => sumMarketing(m), 'none');
+  // Equipment is one-time purchases — don't extrapolate
+  addExpenseRow('Equipment', m => sumEquipment(m), 'none');
+  // Venue costs per-match accumulate — extrapolate
+  addExpenseRow('Venue Costs (per-match)', m => scheduleCosts[m] || 0, 'partial');
+  // Venue Rental (flat monthly) — don't extrapolate
+  addExpenseRow('Venue Rental (flat)', m => expensesByCat['Venue Rental']?.[m] || 0, 'none');
+  // VEO Camera is annual/one-time — don't extrapolate
+  addExpenseRow('VEO Camera', m => expensesByCat['VEO Camera']?.[m] || 0, 'none');
+  // Corporate Salaries are monthly flat — don't extrapolate
+  addExpenseRow('Corporate Salaries', m => expensesByCat['Corporate Salaries']?.[m] || 0, 'none');
+  // Contractors are monthly flat — don't extrapolate
+  addExpenseRow('Contractors', m => expensesByCat['Contractors']?.[m] || 0, 'none');
+  addExpenseRow('Scaling', m => expensesByCat['Scaling']?.[m] || 0, 'none');
+  addExpenseRow('MISC', m => expensesByCat['MISC']?.[m] || 0, 'partial');
   
   html += dataRow({
     label: 'Total Expenses',
     values: totalExp,
-    isProjection: [false, false, false],
+    isProjection: expIsProj,
     opts: { subtotal: true },
   });
   
@@ -1441,6 +1557,26 @@ function renderCityCards() {
     ? ['Apr 2026', 'May 2026', 'Jun 2026'] 
     : [monthKey];
 
+  // Extrapolation helper — scale a partial-month amount to full-month when in projected view
+  function extrapolatePartial(amount, month) {
+    if (activeView !== 'projected') return { value: amount, projected: false };
+    const progress = monthProgress[month];
+    if (progress && progress.fraction < 1 && progress.fraction > 0 && amount > 0) {
+      return { value: amount / progress.fraction, projected: true };
+    }
+    return { value: amount, projected: false };
+  }
+
+  // Check if any month in view is being projected
+  let viewHasProjection = false;
+  for (const m of monthsToSum) {
+    const progress = monthProgress[m];
+    if (activeView === 'projected' && progress && progress.fraction < 1 && progress.fraction > 0) {
+      viewHasProjection = true;
+      break;
+    }
+  }
+
   let html = '';
 
   for (const city of CITIES) {
@@ -1450,47 +1586,85 @@ function renderCityCards() {
     let fieldRevTotal = 0, fieldCostTotal = 0;
     
     for (const v of cityVenues) {
-      const vRev = monthsToSum.reduce((acc, m) => acc + (revenue.byVenueMonth[v.name]?.[m] || 0), 0);
-      let vCost;
-      if (v.billing === 'monthly_flat') {
-        vCost = monthsToSum.reduce((acc, m) => acc + (monthlyFlatCosts[v.name]?.[m] || 0), 0);
-      } else {
-        vCost = monthsToSum.reduce((acc, m) => acc + (scheduleCosts.byVenueMonth[v.name]?.[m] || 0), 0);
+      // Revenue: partial-month → extrapolate when projected
+      let vRev = 0, vRevProjected = false;
+      for (const m of monthsToSum) {
+        const raw = revenue.byVenueMonth[v.name]?.[m] || 0;
+        const { value, projected } = extrapolatePartial(raw, m);
+        vRev += value;
+        if (projected) vRevProjected = true;
       }
+      
+      // Cost: per-match costs are partial, monthly-flat are NOT
+      let vCost = 0, vCostProjected = false;
+      if (v.billing === 'monthly_flat') {
+        for (const m of monthsToSum) {
+          vCost += monthlyFlatCosts[v.name]?.[m] || 0;
+        }
+      } else {
+        for (const m of monthsToSum) {
+          const raw = scheduleCosts.byVenueMonth[v.name]?.[m] || 0;
+          const { value, projected } = extrapolatePartial(raw, m);
+          vCost += value;
+          if (projected) vCostProjected = true;
+        }
+      }
+      
       const vNet = vRev - vCost;
       fieldRevTotal += vRev;
       fieldCostTotal += vCost;
       
+      const revCls = vRevProjected && vRev !== 0 ? ' projection' : '';
+      const costCls = vCostProjected && vCost !== 0 ? ' projection' : '';
+      const netCls = (vRevProjected || vCostProjected) && vNet !== 0 ? ' projection' : '';
+      
       venueHtml += `
         <div class="city-line indent">
           <div class="name">${v.name}</div>
-          <div class="num">${fmtMoney(vRev)}</div>
-          <div class="num">${fmtMoney(vCost)}</div>
-          <div class="num ${numClass(vNet)}">${fmtMoney(vNet)}</div>
+          <div class="num${revCls}">${fmtMoney(vRev)}</div>
+          <div class="num${costCls}">${fmtMoney(vCost)}</div>
+          <div class="num ${numClass(vNet)}${netCls}">${fmtMoney(vNet)}</div>
         </div>`;
     }
     
     const fieldNet = fieldRevTotal - fieldCostTotal;
     
-    // Membership revenue for this city
-    const membershipRev = monthsToSum.reduce((acc, m) => acc + (revenue.byCityMembershipMonth[city]?.[m] || 0), 0);
+    // Membership revenue — partial, extrapolate
+    let membershipRev = 0, membershipProjected = false;
+    for (const m of monthsToSum) {
+      const raw = revenue.byCityMembershipMonth[city]?.[m] || 0;
+      const { value, projected } = extrapolatePartial(raw, m);
+      membershipRev += value;
+      if (projected) membershipProjected = true;
+    }
     
-    const mmPay = mgrPay[city]?.[monthKey] || 0;
-    const cm = cityOverhead[city]?.cityMgr?.[monthKey] || 0;
-    const mktg = cityOverhead[city]?.marketing?.[monthKey] || 0;
-    const equip = cityOverhead[city]?.equipment?.[monthKey] || 0;
+    // Match Manager Pay — partial, extrapolate
+    let mmPay = 0, mmProjected = false;
+    for (const m of monthsToSum) {
+      const raw = mgrPay[city]?.[m] || 0;
+      const { value, projected } = extrapolatePartial(raw, m);
+      mmPay += value;
+      if (projected) mmProjected = true;
+    }
+    
+    // City Manager, Marketing, Equipment — monthly flat, don't extrapolate
+    const cm = monthsToSum.reduce((acc, m) => acc + (cityOverhead[city]?.cityMgr?.[m] || 0), 0);
+    const mktg = monthsToSum.reduce((acc, m) => acc + (cityOverhead[city]?.marketing?.[m] || 0), 0);
+    const equip = monthsToSum.reduce((acc, m) => acc + (cityOverhead[city]?.equipment?.[m] || 0), 0);
     const overheadTotal = mmPay + cm + mktg + equip;
     
-    // City total now includes membership revenue
     const totalRev = fieldRevTotal + membershipRev;
     const cityNet = fieldNet + membershipRev - overheadTotal;
     const cityTotalCost = fieldCostTotal + overheadTotal;
     const cityMargin = totalRev !== 0 ? (cityNet / totalRev) * 100 : 0;
     
+    const memberCls = membershipProjected && membershipRev !== 0 ? ' projection' : '';
+    const mmCls = mmProjected && mmPay !== 0 ? ' projection' : '';
+    
     html += `
       <div class="city-card">
         <div class="city-card-header">
-          <div class="city-name">${city}</div>
+          <div class="city-name">${city}${viewHasProjection ? ' <span class="projection-tag">EST</span>' : ''}</div>
           <div class="city-net">
             <span class="label-sm">Net P&L</span>
             <span class="num ${numClass(cityNet)}">${fmtMoney(cityNet)}</span>
@@ -1517,17 +1691,17 @@ function renderCityCards() {
         <div class="city-section-head">Membership Revenue</div>
         <div class="city-line indent">
           <div class="name">${city} Memberships</div>
-          <div class="num ${numClass(membershipRev)}">${fmtMoney(membershipRev)}</div>
+          <div class="num ${numClass(membershipRev)}${memberCls}">${fmtMoney(membershipRev)}</div>
           <div class="num">—</div>
-          <div class="num ${numClass(membershipRev)}">${membershipRev ? fmtMoney(membershipRev) : '—'}</div>
+          <div class="num ${numClass(membershipRev)}${memberCls}">${membershipRev ? fmtMoney(membershipRev) : '—'}</div>
         </div>
         
         <div class="city-section-head">City Overhead</div>
         <div class="city-line indent">
           <div class="name">Match Manager Pay</div>
           <div class="num">—</div>
-          <div class="num">${fmtMoney(mmPay)}</div>
-          <div class="num ${numClass(-mmPay)}">${mmPay ? fmtMoney(-mmPay) : '—'}</div>
+          <div class="num${mmCls}">${fmtMoney(mmPay)}</div>
+          <div class="num ${numClass(-mmPay)}${mmCls}">${mmPay ? fmtMoney(-mmPay) : '—'}</div>
         </div>
         <div class="city-line indent">
           <div class="name">City Manager</div>
@@ -1567,12 +1741,27 @@ function renderCityCards() {
 }
 
 function initMonthTabs() {
-  const tabs = document.querySelectorAll('.month-tab');
-  tabs.forEach(tab => {
+  // Month tabs (for City & Field section)
+  const monthTabs = document.querySelectorAll('#month-tabs .month-tab');
+  monthTabs.forEach(tab => {
     tab.addEventListener('click', () => {
-      tabs.forEach(t => t.classList.remove('active'));
+      monthTabs.forEach(t => t.classList.remove('active'));
       tab.classList.add('active');
       activeMonth = tab.dataset.month;
+      renderCityCards();
+    });
+  });
+  
+  // View toggle (MTD vs Projected) — affects both Monthly Cash Flow and City cards
+  const viewTabs = document.querySelectorAll('#view-toggle .month-tab');
+  viewTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      viewTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      activeView = tab.dataset.view;
+      // Re-render everything that depends on view
+      renderHero(loadedData.dashboard);
+      renderMonthlyPL(loadedData.dashboard);
       renderCityCards();
     });
   });
@@ -1596,6 +1785,9 @@ async function loadAll() {
     ]);
     
     loadedData = { dashboard, revenue, expenses, schedule, managerPay, monthlyExpenses, venues };
+    
+    // Compute month progress from Revenue tab (how far into each month are the actuals?)
+    computeMonthProgress(revenue);
     
     renderHero(dashboard);
     renderMonthlyPL(dashboard);
