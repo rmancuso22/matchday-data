@@ -20,14 +20,11 @@
     --text: #f4f4f5;
     --text-dim: #a1a1aa;
     --text-faint: #71717a;
-    --accent: #d4a04d; /* warm gold accent */
+    --accent: #d4a04d;
     --accent-muted: #8a6b36;
     --positive: #7dd3a0;
-    --positive-dim: #4a8a65;
     --negative: #f47373;
-    --negative-dim: #9c4848;
     --neutral: #7aabd4;
-    --warning: #e8c26b;
   }
 
   * { box-sizing: border-box; }
@@ -60,13 +57,7 @@
     position: fixed;
     inset: 0;
     background-image:
-      repeating-linear-gradient(
-        0deg,
-        rgba(255, 255, 255, 0.005) 0,
-        rgba(255, 255, 255, 0.005) 1px,
-        transparent 1px,
-        transparent 3px
-      );
+      repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.005) 0, rgba(255, 255, 255, 0.005) 1px, transparent 1px, transparent 3px);
     pointer-events: none;
     z-index: 0;
   }
@@ -79,7 +70,6 @@
     padding: 48px 32px 80px;
   }
 
-  /* ===== HEADER ===== */
   header {
     display: flex;
     align-items: flex-end;
@@ -90,11 +80,7 @@
     border-bottom: 1px solid var(--border);
   }
 
-  .brand {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
+  .brand { display: flex; flex-direction: column; gap: 4px; }
 
   .eyebrow {
     font-family: 'JetBrains Mono', monospace;
@@ -108,7 +94,7 @@
   h1 {
     font-family: 'Fraunces', Georgia, serif;
     font-weight: 500;
-    font-variation-settings: "opsz" 144, "SOFT" 0;
+    font-variation-settings: "opsz" 144;
     font-size: 48px;
     line-height: 1;
     letter-spacing: -0.03em;
@@ -116,11 +102,7 @@
     margin: 8px 0 0;
   }
 
-  h1 em {
-    font-style: italic;
-    font-weight: 400;
-    color: var(--accent);
-  }
+  h1 em { font-style: italic; font-weight: 400; color: var(--accent); }
 
   .meta {
     text-align: right;
@@ -159,11 +141,9 @@
     50% { opacity: 0.4; }
   }
 
-  .meta-line {
-    margin-top: 8px;
-  }
+  .meta-line { margin-top: 8px; }
 
-  /* ===== HERO CASH METRICS ===== */
+  /* ===== HERO ===== */
   .hero {
     display: grid;
     grid-template-columns: 1.3fr 1fr 1fr 1fr;
@@ -177,7 +157,7 @@
 
   .hero-cell {
     background: var(--bg-card);
-    padding: 28px 28px;
+    padding: 28px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -218,9 +198,7 @@
     margin-top: 8px;
   }
 
-  .hero-cell.primary .hero-value {
-    font-size: 56px;
-  }
+  .hero-cell.primary .hero-value { font-size: 56px; }
 
   .hero-sub {
     margin-top: 10px;
@@ -230,17 +208,11 @@
     font-weight: 500;
   }
 
-  .hero-sub .delta {
-    font-weight: 600;
-  }
-
+  .hero-sub .delta { font-weight: 600; }
   .delta.pos { color: var(--positive); }
   .delta.neg { color: var(--negative); }
 
-  /* ===== SECTIONS ===== */
-  section {
-    margin-bottom: 64px;
-  }
+  section { margin-bottom: 64px; }
 
   .section-head {
     display: flex;
@@ -249,6 +221,8 @@
     margin-bottom: 20px;
     border-bottom: 1px solid var(--border);
     padding-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 16px;
   }
 
   h2 {
@@ -261,11 +235,7 @@
     color: var(--text);
   }
 
-  h2 em {
-    font-style: italic;
-    font-weight: 400;
-    color: var(--accent);
-  }
+  h2 em { font-style: italic; font-weight: 400; color: var(--accent); }
 
   .section-note {
     font-family: 'JetBrains Mono', monospace;
@@ -275,7 +245,44 @@
     color: var(--text-faint);
   }
 
-  /* ===== MONTHLY P&L TABLE ===== */
+  /* ===== MONTH TABS ===== */
+  .month-tabs {
+    display: inline-flex;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .month-tab {
+    padding: 8px 18px;
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .month-tab:last-child { border-right: none; }
+
+  .month-tab:hover:not(.active) {
+    background: var(--bg-raised);
+    color: var(--text);
+  }
+
+  .month-tab.active {
+    background: var(--accent);
+    color: #0a0a0b;
+    font-weight: 600;
+  }
+
+  /* ===== MONTHLY P&L GRID ===== */
   .pnl-grid {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -290,10 +297,7 @@
   }
 
   .pnl-row:last-child { border-bottom: none; }
-
-  .pnl-row.header {
-    background: var(--bg-raised);
-  }
+  .pnl-row.header { background: var(--bg-raised); }
 
   .pnl-row.total {
     background: rgba(212, 160, 77, 0.04);
@@ -301,13 +305,7 @@
     border-bottom: 1px solid var(--border-strong);
   }
 
-  .pnl-row.subtle {
-    background: transparent;
-  }
-
-  .pnl-row.highlight {
-    background: rgba(212, 160, 77, 0.06);
-  }
+  .pnl-row.highlight { background: rgba(212, 160, 77, 0.06); }
 
   .pnl-cell {
     padding: 14px 20px;
@@ -348,21 +346,14 @@
     font-weight: 400;
   }
 
-  .pnl-row.total .pnl-cell {
-    font-weight: 600;
-    color: var(--text);
-  }
-
-  .pnl-row.total .pnl-cell.label {
-    font-weight: 600;
-    color: var(--accent);
-  }
+  .pnl-row.total .pnl-cell { font-weight: 600; color: var(--text); }
+  .pnl-row.total .pnl-cell.label { font-weight: 600; color: var(--accent); }
 
   .num.pos { color: var(--positive); }
   .num.neg { color: var(--negative); }
   .num.zero { color: var(--text-faint); }
 
-  /* ===== CHART CONTAINER ===== */
+  /* ===== CHART ===== */
   .chart-wrap {
     background: var(--bg-card);
     border: 1px solid var(--border);
@@ -372,90 +363,119 @@
     position: relative;
   }
 
-  /* ===== CITY P&L TABLE ===== */
-  .table-scroll {
-    overflow-x: auto;
+  /* ===== CITY CARDS ===== */
+  .city-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+    gap: 16px;
+  }
+
+  .city-card {
     background: var(--bg-card);
     border: 1px solid var(--border);
     border-radius: 3px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
-  table.city-table, table.field-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-  }
-
-  .city-table th, .field-table th {
+  .city-card-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 18px 20px;
     background: var(--bg-raised);
-    text-align: right;
-    padding: 12px 16px;
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--text-faint);
-    border-bottom: 1px solid var(--border-strong);
-    white-space: nowrap;
-    font-family: 'JetBrains Mono', monospace;
-  }
-
-  .city-table th:first-child, .field-table th:first-child {
-    text-align: left;
-  }
-
-  .city-table td, .field-table td {
-    padding: 12px 16px;
-    text-align: right;
     border-bottom: 1px solid var(--border);
-    white-space: nowrap;
-    font-weight: 500;
+    gap: 16px;
   }
 
-  .city-table td:first-child, .field-table td:first-child {
-    text-align: left;
-    font-family: 'Inter', sans-serif;
-    color: var(--text);
-    font-weight: 500;
-  }
-
-  .city-table tr:last-child td, .field-table tr:last-child td { border-bottom: none; }
-
-  .city-table tr.total-row td {
-    background: rgba(212, 160, 77, 0.05);
-    color: var(--text);
-    font-weight: 600;
-    border-top: 1px solid var(--border-strong);
-  }
-
-  .field-table tr.city-header td {
-    background: var(--bg-raised-2);
+  .city-name {
     font-family: 'Fraunces', serif;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 20px;
     letter-spacing: -0.01em;
-    padding: 14px 16px;
-    color: var(--accent);
-    border-top: 1px solid var(--border-strong);
-  }
-
-  .field-table tr.subtotal-row td {
-    background: rgba(212, 160, 77, 0.04);
-    font-weight: 600;
     color: var(--text);
-    border-bottom: 1px solid var(--border-strong);
   }
 
-  .field-table td.venue-cell {
-    padding-left: 32px;
+  .city-card-header .city-net {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .city-card-header .city-net .label-sm {
+    display: block;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 2px;
+  }
+
+  .city-section-head {
+    padding: 10px 20px;
+    background: var(--bg-raised-2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .city-line {
+    display: grid;
+    grid-template-columns: 1.3fr repeat(3, 1fr);
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .city-line:last-child { border-bottom: none; }
+
+  .city-line .name {
+    font-family: 'Inter', sans-serif;
     color: var(--text-dim);
+    font-size: 13px;
     font-weight: 400;
   }
 
-  .field-table td.venue-cell {
-    font-family: 'Inter', sans-serif;
+  .city-line.subtotal {
+    background: rgba(212, 160, 77, 0.04);
+    font-weight: 600;
   }
+
+  .city-line.subtotal .name {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .city-line.total-line {
+    background: rgba(212, 160, 77, 0.08);
+    border-top: 1px solid var(--border-strong);
+    padding: 14px 20px;
+    font-weight: 600;
+  }
+
+  .city-line.total-line .name {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  .city-line .num {
+    text-align: right;
+    color: var(--text);
+  }
+
+  .city-line.indent .name { padding-left: 12px; color: var(--text-dim); }
 
   .margin-badge {
     display: inline-block;
@@ -464,8 +484,9 @@
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
     font-weight: 600;
-    min-width: 52px;
+    min-width: 56px;
     text-align: center;
+    margin-left: 8px;
   }
 
   .margin-badge.pos {
@@ -486,7 +507,7 @@
     border: 1px solid var(--border);
   }
 
-  /* ===== STATUS / LOADING ===== */
+  /* ===== STATUS ===== */
   #status {
     font-family: 'JetBrains Mono', monospace;
     font-size: 11px;
@@ -507,7 +528,6 @@
 
   .hidden { display: none !important; }
 
-  /* ===== FOOTER ===== */
   footer {
     margin-top: 80px;
     padding-top: 32px;
@@ -522,7 +542,6 @@
     text-transform: uppercase;
   }
 
-  /* ===== RESPONSIVE ===== */
   @media (max-width: 900px) {
     h1 { font-size: 36px; }
     .hero { grid-template-columns: 1fr 1fr; }
@@ -532,6 +551,7 @@
     .pnl-row { grid-template-columns: 1.5fr repeat(4, 1fr); }
     .pnl-cell { padding: 10px 12px; font-size: 12px; }
     .wrap { padding: 32px 20px 60px; }
+    .city-grid { grid-template-columns: 1fr; }
   }
 
   @media (max-width: 600px) {
@@ -545,6 +565,8 @@
     .pnl-row { grid-template-columns: 1.2fr repeat(4, 1fr); }
     .pnl-cell { padding: 8px 8px; font-size: 11px; }
     .pnl-row.indent .pnl-cell.label { padding-left: 20px; }
+    .city-line { grid-template-columns: 1.2fr repeat(3, 1fr); padding: 8px 14px; font-size: 11px; }
+    .city-line .name { font-size: 12px; }
   }
 
   .skeleton {
@@ -578,7 +600,6 @@
 
   <div id="status">Loading data from Google Sheets…</div>
 
-  <!-- HERO METRICS -->
   <div class="hero" id="hero">
     <div class="hero-cell primary">
       <div>
@@ -613,7 +634,6 @@
     </div>
   </div>
 
-  <!-- MONTHLY P&L TABLE -->
   <section>
     <div class="section-head">
       <h2>Monthly <em>Cash Flow</em></h2>
@@ -622,7 +642,6 @@
     <div class="pnl-grid" id="pnl-table"></div>
   </section>
 
-  <!-- CHART -->
   <section>
     <div class="section-head">
       <h2>Trend <em>by Month</em></h2>
@@ -633,26 +652,17 @@
     </div>
   </section>
 
-  <!-- CITY P&L -->
   <section>
     <div class="section-head">
-      <h2>City <em>P&amp;L</em></h2>
-      <span class="section-note">Q2 total · attributable expenses</span>
+      <h2>City & Field <em>P&amp;L</em></h2>
+      <div class="month-tabs" id="month-tabs">
+        <button class="month-tab active" data-month="q2">Q2 Total</button>
+        <button class="month-tab" data-month="apr">April</button>
+        <button class="month-tab" data-month="may">May</button>
+        <button class="month-tab" data-month="jun">June</button>
+      </div>
     </div>
-    <div class="table-scroll">
-      <table class="city-table" id="city-table"></table>
-    </div>
-  </section>
-
-  <!-- FIELD P&L -->
-  <section>
-    <div class="section-head">
-      <h2>Field-Level <em>P&amp;L</em></h2>
-      <span class="section-note">Revenue vs. venue cost</span>
-    </div>
-    <div class="table-scroll">
-      <table class="field-table" id="field-table"></table>
-    </div>
+    <div class="city-grid" id="city-grid"></div>
   </section>
 
   <footer>
@@ -679,9 +689,18 @@ const TABS = {
 
 const csvUrl = (gid) => `${BASE_URL}?gid=${gid}&single=true&output=csv`;
 
-// ============== FETCHING ==============
-// Tries direct fetch first (works when served over HTTP/HTTPS).
-// Falls back to a CORS proxy when that fails (e.g., when opened as file://).
+const CITIES = ['Austin', 'Dallas', 'Houston', 'San Antonio', 'Atlanta', 'St. Louis', 'OKC', 'El Paso'];
+
+const MONTHS = {
+  q2: { label: 'Q2 Total', sheetKey: 'Q2 Total' },
+  apr: { label: 'April', sheetKey: 'Apr 2026' },
+  may: { label: 'May', sheetKey: 'May 2026' },
+  jun: { label: 'June', sheetKey: 'Jun 2026' },
+};
+
+let loadedData = {};
+let activeMonth = 'q2';
+
 async function fetchCSV(gid) {
   const directUrl = csvUrl(gid);
   try {
@@ -690,7 +709,6 @@ async function fetchCSV(gid) {
     const text = await response.text();
     return Papa.parse(text, { header: false }).data;
   } catch (err) {
-    // Fallback via free public CORS proxy
     const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(directUrl)}`;
     const response = await fetch(proxyUrl);
     if (!response.ok) throw new Error(`Proxy failed: ${response.status}`);
@@ -699,27 +717,12 @@ async function fetchCSV(gid) {
   }
 }
 
-// ============== UTILITIES ==============
-const CITIES = ['Austin', 'Dallas', 'Houston', 'San Antonio', 'Atlanta', 'St. Louis', 'OKC', 'El Paso'];
-
 function parseCurrency(str) {
   if (str === null || str === undefined || str === '') return 0;
   const s = String(str).trim();
-  if (s === '-' || s === '') return 0;
-  // Handle parentheses as negative
+  if (s === '-' || s === '' || s === 'n/a') return 0;
   const isNeg = /^\(.*\)$/.test(s);
   const cleaned = s.replace(/[\$,\(\)]/g, '').trim();
-  const n = parseFloat(cleaned);
-  if (isNaN(n)) return 0;
-  return isNeg ? -n : n;
-}
-
-function parsePercent(str) {
-  if (str === null || str === undefined || str === '') return 0;
-  const s = String(str).trim();
-  if (s === '-' || s === 'n/a' || s === '') return 0;
-  const isNeg = /^\(.*\)$/.test(s);
-  const cleaned = s.replace(/[%\(\)]/g, '').trim();
   const n = parseFloat(cleaned);
   if (isNaN(n)) return 0;
   return isNeg ? -n : n;
@@ -753,7 +756,13 @@ function numClass(n) {
   return n > 0 ? 'pos' : 'neg';
 }
 
-// Find row in CSV by first-column value
+function marginBadge(pct, hasData = true) {
+  if (!hasData) return '<span class="margin-badge neu">—</span>';
+  if (pct === 0 || isNaN(pct)) return '<span class="margin-badge neu">—</span>';
+  const cls = pct > 0 ? 'pos' : 'neg';
+  return `<span class="margin-badge ${cls}">${fmtPct(pct)}</span>`;
+}
+
 function findRow(csv, label) {
   for (const row of csv) {
     if (!row[0]) continue;
@@ -770,14 +779,199 @@ function findRowContains(csv, substring) {
   return null;
 }
 
-// ============== RENDER ==============
+function monthFromDate(dateStr) {
+  if (!dateStr) return null;
+  const s = String(dateStr).trim();
+  let m, y;
+  if (s.includes('/')) {
+    const parts = s.split('/');
+    m = parseInt(parts[0], 10);
+    y = parseInt(parts[2], 10);
+  } else if (s.includes('-')) {
+    const parts = s.split('-');
+    y = parseInt(parts[0], 10);
+    m = parseInt(parts[1], 10);
+  }
+  if (!m || !y) return null;
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${monthNames[m-1]} ${y}`;
+}
+
+function aggregateRevenue(revenueTab) {
+  const byCityMonth = {};
+  const byVenueMonth = {};
+  const companyWideMonth = {};
+  
+  let startRow = -1;
+  for (let i = 0; i < revenueTab.length; i++) {
+    if (revenueTab[i][0] && String(revenueTab[i][0]).trim() === 'Date') {
+      startRow = i + 1;
+      break;
+    }
+  }
+  if (startRow === -1) startRow = 4;
+
+  for (let i = startRow; i < revenueTab.length; i++) {
+    const row = revenueTab[i];
+    if (!row || !row[0]) continue;
+    const dateStr = row[0];
+    const monthStrFromRow = row[1] ? String(row[1]).trim() : null;
+    const month = monthStrFromRow || monthFromDate(dateStr);
+    const city = row[2] ? String(row[2]).trim() : null;
+    const venue = row[3] ? String(row[3]).trim() : null;
+    const type = row[4] ? String(row[4]).trim() : null;
+    const net = parseCurrency(row[7]);
+
+    if (!month) continue;
+    
+    if (city === 'Company-wide') {
+      if (!companyWideMonth[month]) companyWideMonth[month] = { total: 0, byType: {} };
+      companyWideMonth[month].total += net;
+      companyWideMonth[month].byType[type] = (companyWideMonth[month].byType[type] || 0) + net;
+    } else if (city && CITIES.includes(city)) {
+      if (!byCityMonth[city]) byCityMonth[city] = {};
+      byCityMonth[city][month] = (byCityMonth[city][month] || 0) + net;
+      if (venue && venue !== 'N/A') {
+        if (!byVenueMonth[venue]) byVenueMonth[venue] = {};
+        byVenueMonth[venue][month] = (byVenueMonth[venue][month] || 0) + net;
+      }
+    }
+  }
+  return { byCityMonth, byVenueMonth, companyWideMonth };
+}
+
+function aggregateScheduleCosts(scheduleTab) {
+  const byVenueMonth = {};
+  
+  let startRow = -1;
+  for (let i = 0; i < scheduleTab.length; i++) {
+    if (scheduleTab[i][0] && String(scheduleTab[i][0]).trim() === 'Date') {
+      startRow = i + 1;
+      break;
+    }
+  }
+  if (startRow === -1) startRow = 4;
+
+  for (let i = startRow; i < scheduleTab.length; i++) {
+    const row = scheduleTab[i];
+    if (!row || !row[0]) continue;
+    const dateStr = row[0];
+    const month = (row[1] ? String(row[1]).trim() : null) || monthFromDate(dateStr);
+    const venue = row[3] ? String(row[3]).trim() : null;
+    const cost = parseCurrency(row[6]);
+    if (!month || !venue) continue;
+    if (!byVenueMonth[venue]) byVenueMonth[venue] = {};
+    byVenueMonth[venue][month] = (byVenueMonth[venue][month] || 0) + cost;
+  }
+  return { byVenueMonth };
+}
+
+function aggregateMonthlyFlatVenueCosts(expensesTab) {
+  const byVenueMonth = {};
+  
+  let startRow = -1;
+  for (let i = 0; i < expensesTab.length; i++) {
+    if (expensesTab[i][0] && String(expensesTab[i][0]).trim() === 'Date') {
+      startRow = i + 1;
+      break;
+    }
+  }
+  if (startRow === -1) startRow = 4;
+
+  for (let i = startRow; i < expensesTab.length; i++) {
+    const row = expensesTab[i];
+    if (!row || !row[0]) continue;
+    const category = row[3] ? String(row[3]).trim() : null;
+    if (category !== 'Venue Rental') continue;
+    
+    const dateStr = row[0];
+    const month = (row[1] ? String(row[1]).trim() : null) || monthFromDate(dateStr);
+    const vendor = row[4] ? String(row[4]).trim() : null;
+    const amount = parseCurrency(row[5]);
+    if (!month || !vendor) continue;
+    if (!byVenueMonth[vendor]) byVenueMonth[vendor] = {};
+    byVenueMonth[vendor][month] = (byVenueMonth[vendor][month] || 0) + amount;
+  }
+  return byVenueMonth;
+}
+
+function aggregateManagerPay(managerPayTab) {
+  const byCity = {};
+  for (let i = 0; i < managerPayTab.length; i++) {
+    const row = managerPayTab[i];
+    if (!row || !row[0]) continue;
+    const city = String(row[0]).trim();
+    if (!CITIES.includes(city)) continue;
+    byCity[city] = {
+      'Apr 2026': parseCurrency(row[14]),
+      'May 2026': parseCurrency(row[15]),
+      'Jun 2026': parseCurrency(row[16]),
+      'Q2 Total': parseCurrency(row[17]),
+    };
+  }
+  return byCity;
+}
+
+function aggregateMonthlyCityOverhead(monthlyExpensesTab) {
+  const byCity = {};
+  for (let i = 0; i < monthlyExpensesTab.length; i++) {
+    const row = monthlyExpensesTab[i];
+    if (!row || !row[0]) continue;
+    const city = String(row[0]).trim();
+    if (!CITIES.includes(city) && city !== 'Corporate') continue;
+    byCity[city] = {
+      cityMgr: {
+        'Apr 2026': parseCurrency(row[1]),
+        'May 2026': parseCurrency(row[2]),
+        'Jun 2026': parseCurrency(row[3]),
+      },
+      marketing: {
+        'Apr 2026': parseCurrency(row[4]),
+        'May 2026': parseCurrency(row[5]),
+        'Jun 2026': parseCurrency(row[6]),
+      },
+      equipment: {
+        'Apr 2026': parseCurrency(row[7]),
+        'May 2026': parseCurrency(row[8]),
+        'Jun 2026': parseCurrency(row[9]),
+      },
+    };
+    byCity[city].cityMgr['Q2 Total'] = byCity[city].cityMgr['Apr 2026'] + byCity[city].cityMgr['May 2026'] + byCity[city].cityMgr['Jun 2026'];
+    byCity[city].marketing['Q2 Total'] = byCity[city].marketing['Apr 2026'] + byCity[city].marketing['May 2026'] + byCity[city].marketing['Jun 2026'];
+    byCity[city].equipment['Q2 Total'] = byCity[city].equipment['Apr 2026'] + byCity[city].equipment['May 2026'] + byCity[city].equipment['Jun 2026'];
+  }
+  return byCity;
+}
+
+function getVenuesPerCity(venuesTab) {
+  const result = {};
+  let startRow = -1;
+  for (let i = 0; i < venuesTab.length; i++) {
+    if (venuesTab[i][0] && String(venuesTab[i][0]).trim() === 'Venue Name') {
+      startRow = i + 1;
+      break;
+    }
+  }
+  if (startRow === -1) startRow = 4;
+
+  for (let i = startRow; i < venuesTab.length; i++) {
+    const row = venuesTab[i];
+    if (!row || !row[0]) continue;
+    const name = String(row[0]).trim();
+    const city = row[1] ? String(row[1]).trim() : null;
+    const billing = row[2] ? String(row[2]).trim() : null;
+    if (!city || !CITIES.includes(city)) continue;
+    if (!result[city]) result[city] = [];
+    result[city].push({ name, billing });
+  }
+  return result;
+}
+
 function renderHero(dash) {
   const startRow = findRow(dash, 'Starting Cash');
   const grossRow = findRowContains(dash, 'Gross Revenue');
   const feesRow = findRowContains(dash, 'Stripe Fees');
   const netRow = findRow(dash, '+ Net Revenue') || findRowContains(dash, 'Net Revenue');
-  const expRow = findRow(dash, '- Expenses') || findRowContains(dash, 'Expenses') && findRowContains(dash, '- Expenses');
-  // Be more specific for expense row
   let expRowActual = null;
   for (const row of dash) {
     if (row[0] && String(row[0]).trim() === '- Expenses') { expRowActual = row; break; }
@@ -786,7 +980,7 @@ function renderHero(dash) {
   const endRow = findRow(dash, 'Ending Cash');
 
   const start = parseCurrency(startRow?.[1]);
-  const gross = parseCurrency(grossRow?.[4]); // Q2 Total is column E (index 4)
+  const gross = parseCurrency(grossRow?.[4]);
   const fees = parseCurrency(feesRow?.[4]);
   const netRev = parseCurrency(netRow?.[4]);
   const expenses = parseCurrency(expRowActual?.[4]);
@@ -821,9 +1015,9 @@ function renderMonthlyPL(dash) {
     { type: 'header', cells: ['', 'Apr 2026', 'May 2026', 'Jun 2026', 'Q2 Total'] },
     { type: 'subtle', label: 'Starting Cash', source: 'Starting Cash' },
     { type: 'indent', label: 'Gross Revenue', source: 'Gross Revenue', contains: true },
-    { type: 'indent', label: '(−) Stripe Fees', source: 'Stripe Fees', contains: true, negative: true },
-    { type: 'normal', label: 'Net Revenue', source: '+ Net Revenue', emphasis: true },
-    { type: 'normal', label: 'Expenses', source: '- Expenses', negative: true },
+    { type: 'indent', label: '(−) Stripe Fees', source: 'Stripe Fees', contains: true },
+    { type: 'normal', label: 'Net Revenue', source: '+ Net Revenue' },
+    { type: 'normal', label: 'Expenses', source: '- Expenses' },
     { type: 'highlight', label: 'Net P&L', source: 'Net P&L', contains: true, colorize: true },
     { type: 'total', label: 'Ending Cash', source: 'Ending Cash' },
   ];
@@ -838,17 +1032,12 @@ function renderMonthlyPL(dash) {
       html += '</div>';
       continue;
     }
-
-    const row = def.contains
-      ? findRowContains(dash, def.source)
-      : findRow(dash, def.source);
+    const row = def.contains ? findRowContains(dash, def.source) : findRow(dash, def.source);
     if (!row) continue;
-
     let rowClass = 'pnl-row';
     if (def.type === 'indent') rowClass += ' indent';
     if (def.type === 'highlight') rowClass += ' highlight';
     if (def.type === 'total') rowClass += ' total';
-
     html += `<div class="${rowClass}">`;
     html += `<div class="pnl-cell label">${def.label}</div>`;
     for (let i = 1; i <= 4; i++) {
@@ -864,9 +1053,11 @@ function renderMonthlyPL(dash) {
 
 let trendChartInstance = null;
 function renderTrendChart(dash) {
-  const grossRow = findRowContains(dash, 'Gross Revenue');
   const netRevRow = findRow(dash, '+ Net Revenue') || findRowContains(dash, 'Net Revenue');
-  const expRow = findRow(dash, '- Expenses');
+  let expRow = null;
+  for (const row of dash) {
+    if (row[0] && String(row[0]).trim() === '- Expenses') { expRow = row; break; }
+  }
   const pnlRow = findRowContains(dash, 'Net P&L');
 
   const months = ['Apr 2026', 'May 2026', 'Jun 2026'];
@@ -882,225 +1073,171 @@ function renderTrendChart(dash) {
     data: {
       labels: months,
       datasets: [
-        {
-          label: 'Net Revenue',
-          data: revData,
-          backgroundColor: 'rgba(125, 211, 160, 0.6)',
-          borderColor: 'rgba(125, 211, 160, 1)',
-          borderWidth: 1,
-          borderRadius: 2,
-        },
-        {
-          label: 'Expenses',
-          data: expData,
-          backgroundColor: 'rgba(244, 115, 115, 0.5)',
-          borderColor: 'rgba(244, 115, 115, 1)',
-          borderWidth: 1,
-          borderRadius: 2,
-        },
-        {
-          label: 'Net P&L',
-          data: pnlData,
-          type: 'line',
-          borderColor: 'rgba(212, 160, 77, 1)',
-          backgroundColor: 'rgba(212, 160, 77, 0.2)',
-          borderWidth: 2,
-          pointRadius: 5,
-          pointBackgroundColor: 'rgba(212, 160, 77, 1)',
-          pointBorderColor: '#0a0a0b',
-          pointBorderWidth: 2,
-          tension: 0.2,
-          fill: false,
-          yAxisID: 'y',
-        },
+        { label: 'Net Revenue', data: revData, backgroundColor: 'rgba(125, 211, 160, 0.6)', borderColor: 'rgba(125, 211, 160, 1)', borderWidth: 1, borderRadius: 2 },
+        { label: 'Expenses', data: expData, backgroundColor: 'rgba(244, 115, 115, 0.5)', borderColor: 'rgba(244, 115, 115, 1)', borderWidth: 1, borderRadius: 2 },
+        { label: 'Net P&L', data: pnlData, type: 'line', borderColor: 'rgba(212, 160, 77, 1)', backgroundColor: 'rgba(212, 160, 77, 0.2)', borderWidth: 2, pointRadius: 5, pointBackgroundColor: 'rgba(212, 160, 77, 1)', pointBorderColor: '#0a0a0b', pointBorderWidth: 2, tension: 0.2, fill: false, yAxisID: 'y' },
       ],
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            color: '#a1a1aa',
-            font: { family: "'JetBrains Mono', monospace", size: 11 },
-            padding: 16,
-            usePointStyle: true,
-            pointStyle: 'rectRounded',
-          },
-        },
+        legend: { position: 'bottom', labels: { color: '#a1a1aa', font: { family: "'JetBrains Mono', monospace", size: 11 }, padding: 16, usePointStyle: true, pointStyle: 'rectRounded' } },
         tooltip: {
-          backgroundColor: '#17171c',
-          borderColor: '#2a2a31',
-          borderWidth: 1,
-          titleColor: '#f4f4f5',
-          titleFont: { family: "'Inter', sans-serif", size: 12, weight: '600' },
-          bodyColor: '#a1a1aa',
-          bodyFont: { family: "'JetBrains Mono', monospace", size: 11 },
-          padding: 12,
-          cornerRadius: 3,
-          callbacks: {
-            label: (ctx) => `${ctx.dataset.label}: ${fmtMoney(ctx.parsed.y)}`,
-          },
+          backgroundColor: '#17171c', borderColor: '#2a2a31', borderWidth: 1,
+          titleColor: '#f4f4f5', titleFont: { family: "'Inter', sans-serif", size: 12, weight: '600' },
+          bodyColor: '#a1a1aa', bodyFont: { family: "'JetBrains Mono', monospace", size: 11 },
+          padding: 12, cornerRadius: 3,
+          callbacks: { label: (ctx) => `${ctx.dataset.label}: ${fmtMoney(ctx.parsed.y)}` },
         },
       },
       scales: {
-        x: {
-          grid: { color: '#2a2a31', drawBorder: false },
-          ticks: {
-            color: '#a1a1aa',
-            font: { family: "'JetBrains Mono', monospace", size: 11 },
-          },
-        },
-        y: {
-          grid: { color: '#2a2a31', drawBorder: false },
-          ticks: {
-            color: '#a1a1aa',
-            font: { family: "'JetBrains Mono', monospace", size: 11 },
-            callback: (v) => fmtMoney(v, { compact: true }),
-          },
-        },
+        x: { grid: { color: '#2a2a31', drawBorder: false }, ticks: { color: '#a1a1aa', font: { family: "'JetBrains Mono', monospace", size: 11 } } },
+        y: { grid: { color: '#2a2a31', drawBorder: false }, ticks: { color: '#a1a1aa', font: { family: "'JetBrains Mono', monospace", size: 11 }, callback: (v) => fmtMoney(v, { compact: true }) } },
       },
     },
   });
 }
 
-function renderCityPnL(dash) {
-  // Find rows by label; City P&L section: row with "Revenue", "Total Expenses", "Net P&L", "Margin %"
-  // These repeat on the Dashboard csv. We want the ones in the City P&L section (with 9 value cols).
-  // Strategy: find the section header "City P&L — Q2 Total" then scan for subsequent rows.
-  let sectionStart = -1;
-  for (let i = 0; i < dash.length; i++) {
-    if (dash[i][0] && String(dash[i][0]).includes('City P&L')) {
-      sectionStart = i;
-      break;
-    }
-  }
-  if (sectionStart === -1) return;
+function renderCityCards() {
+  const grid = document.getElementById('city-grid');
+  const monthKey = MONTHS[activeMonth].sheetKey;
+  
+  const venuesByCity = getVenuesPerCity(loadedData.venues);
+  const revenue = aggregateRevenue(loadedData.revenue);
+  const scheduleCosts = aggregateScheduleCosts(loadedData.schedule);
+  const monthlyFlatCosts = aggregateMonthlyFlatVenueCosts(loadedData.expenses);
+  const mgrPay = aggregateManagerPay(loadedData.managerPay);
+  const cityOverhead = aggregateMonthlyCityOverhead(loadedData.monthlyExpenses);
 
-  // Headers should be on row sectionStart + 1
-  const cityHeaders = dash[sectionStart + 1] ? dash[sectionStart + 1].slice(1, 10) : CITIES.concat(['Corporate']);
+  const monthsToSum = monthKey === 'Q2 Total' 
+    ? ['Apr 2026', 'May 2026', 'Jun 2026'] 
+    : [monthKey];
 
-  // Find Revenue, Total Expenses, Net P&L, Margin % rows after sectionStart
-  let revRow = null, totalExpRow = null, netRow = null, marginRow = null;
-  for (let i = sectionStart + 1; i < Math.min(dash.length, sectionStart + 30); i++) {
-    const label = dash[i][0] ? String(dash[i][0]).trim() : '';
-    if (label === 'Revenue' && !revRow) revRow = dash[i];
-    else if (label === 'Total Expenses' && !totalExpRow) totalExpRow = dash[i];
-    else if (label === 'Net P&L' && !netRow) netRow = dash[i];
-    else if (label === 'Margin %' && !marginRow) marginRow = dash[i];
-  }
+  let html = '';
 
-  const headers = cityHeaders.filter(h => h);
-  let html = '<thead><tr><th>Metric</th>';
-  for (const h of headers) html += `<th>${h}</th>`;
-  html += '</tr></thead><tbody>';
-
-  const rows = [
-    { label: 'Revenue', data: revRow, type: 'money' },
-    { label: 'Expenses', data: totalExpRow, type: 'money' },
-    { label: 'Net P&L', data: netRow, type: 'money', colorize: true, className: 'total-row' },
-    { label: 'Margin', data: marginRow, type: 'pct' },
-  ];
-
-  for (const r of rows) {
-    if (!r.data) continue;
-    html += `<tr${r.className ? ` class="${r.className}"` : ''}><td>${r.label}</td>`;
-    for (let i = 0; i < headers.length; i++) {
-      const raw = r.data[i + 1];
-      if (r.type === 'money') {
-        const v = parseCurrency(raw);
-        const cls = r.colorize ? ` class="num ${numClass(v)}"` : '';
-        html += `<td${cls}>${fmtMoney(v)}</td>`;
-      } else {
-        // pct — show as badge
-        if (raw === 'n/a' || (!raw || raw === '-')) {
-          html += `<td><span class="margin-badge neu">—</span></td>`;
-        } else {
-          const p = parsePercent(raw);
-          let cls = 'neu';
-          if (p > 0) cls = 'pos';
-          else if (p < 0) cls = 'neg';
-          html += `<td><span class="margin-badge ${cls}">${fmtPct(p)}</span></td>`;
-        }
-      }
-    }
-    html += '</tr>';
-  }
-  html += '</tbody>';
-  document.getElementById('city-table').innerHTML = html;
-}
-
-function renderFieldPnL(dash) {
-  // Find "Field-Level P&L" section
-  let start = -1;
-  for (let i = 0; i < dash.length; i++) {
-    if (dash[i][0] && String(dash[i][0]).includes('Field-Level P&L')) {
-      start = i;
-      break;
-    }
-  }
-  if (start === -1) return;
-
-  // Header row is start + 1; data starts at start + 2
-  // Each row has: A=label, B=Revenue, C=Cost, D=Net, E=Margin
-  // City names = no leading spaces (but the field P&L in the sheet has city names in column A as header rows)
-  // Venue rows have 2 leading spaces
-  // Subtotal rows contain "Subtotal"
-
-  let html = '<thead><tr><th>Venue</th><th>Revenue</th><th>Cost</th><th>Net P&L</th><th>Margin</th></tr></thead><tbody>';
-
-  for (let i = start + 2; i < dash.length; i++) {
-    const row = dash[i];
-    if (!row || !row[0]) continue;
-    const labelRaw = String(row[0]);
-    const label = labelRaw.trim();
+  for (const city of CITIES) {
+    const cityVenues = venuesByCity[city] || [];
     
-    // End of section if we hit "Note:" or empty padding
-    if (label.startsWith('Note:') || label.includes('Reflects per_hour')) break;
-    if (!label) continue;
-
-    const rev = parseCurrency(row[1]);
-    const cost = parseCurrency(row[2]);
-    const net = parseCurrency(row[3]);
-    const pct = parsePercent(row[4]);
-
-    if (label.endsWith('Subtotal')) {
-      // Subtotal row
-      html += `<tr class="subtotal-row">`;
-      html += `<td style="padding-left:16px">${label}</td>`;
-      html += `<td>${fmtMoney(rev)}</td>`;
-      html += `<td>${fmtMoney(cost)}</td>`;
-      html += `<td class="num ${numClass(net)}">${fmtMoney(net)}</td>`;
-      let badgeCls = 'neu';
-      if (pct > 0) badgeCls = 'pos';
-      else if (pct < 0) badgeCls = 'neg';
-      html += `<td>${rev === 0 && cost === 0 ? '<span class="margin-badge neu">—</span>' : `<span class="margin-badge ${badgeCls}">${fmtPct(pct)}</span>`}</td>`;
-      html += '</tr>';
-    } else if (labelRaw.startsWith('  ')) {
-      // Venue row
-      html += `<tr>`;
-      html += `<td class="venue-cell">${label}</td>`;
-      html += `<td>${fmtMoney(rev)}</td>`;
-      html += `<td>${fmtMoney(cost)}</td>`;
-      html += `<td class="num ${numClass(net)}">${fmtMoney(net)}</td>`;
-      let badgeCls = 'neu';
-      if (pct > 0) badgeCls = 'pos';
-      else if (pct < 0) badgeCls = 'neg';
-      html += `<td>${rev === 0 && cost === 0 ? '<span class="margin-badge neu">—</span>' : `<span class="margin-badge ${badgeCls}">${fmtPct(pct)}</span>`}</td>`;
-      html += '</tr>';
-    } else {
-      // City header row
-      html += `<tr class="city-header"><td colspan="5">${label}</td></tr>`;
+    let venueHtml = '';
+    let fieldRevTotal = 0, fieldCostTotal = 0;
+    
+    for (const v of cityVenues) {
+      const vRev = monthsToSum.reduce((acc, m) => acc + (revenue.byVenueMonth[v.name]?.[m] || 0), 0);
+      let vCost;
+      if (v.billing === 'monthly_flat') {
+        vCost = monthsToSum.reduce((acc, m) => acc + (monthlyFlatCosts[v.name]?.[m] || 0), 0);
+      } else {
+        vCost = monthsToSum.reduce((acc, m) => acc + (scheduleCosts.byVenueMonth[v.name]?.[m] || 0), 0);
+      }
+      const vNet = vRev - vCost;
+      fieldRevTotal += vRev;
+      fieldCostTotal += vCost;
+      
+      venueHtml += `
+        <div class="city-line indent">
+          <div class="name">${v.name}</div>
+          <div class="num">${fmtMoney(vRev)}</div>
+          <div class="num">${fmtMoney(vCost)}</div>
+          <div class="num ${numClass(vNet)}">${fmtMoney(vNet)}</div>
+        </div>`;
     }
+    
+    const fieldNet = fieldRevTotal - fieldCostTotal;
+    
+    const mmPay = mgrPay[city]?.[monthKey] || 0;
+    const cm = cityOverhead[city]?.cityMgr?.[monthKey] || 0;
+    const mktg = cityOverhead[city]?.marketing?.[monthKey] || 0;
+    const equip = cityOverhead[city]?.equipment?.[monthKey] || 0;
+    const overheadTotal = mmPay + cm + mktg + equip;
+    
+    const cityNet = fieldNet - overheadTotal;
+    const cityTotalCost = fieldCostTotal + overheadTotal;
+    const cityMargin = fieldRevTotal !== 0 ? (cityNet / fieldRevTotal) * 100 : 0;
+    
+    html += `
+      <div class="city-card">
+        <div class="city-card-header">
+          <div class="city-name">${city}</div>
+          <div class="city-net">
+            <span class="label-sm">Net P&L</span>
+            <span class="num ${numClass(cityNet)}">${fmtMoney(cityNet)}</span>
+          </div>
+        </div>
+        
+        <div class="city-section-head">Field-Level</div>
+        ${cityVenues.length > 0 ? `
+        <div class="city-line" style="background: var(--bg-raised); font-size: 10px; color: var(--text-faint); letter-spacing: 0.1em; text-transform: uppercase; padding: 8px 20px;">
+          <div class="name" style="color: var(--text-faint);">Venue</div>
+          <div class="num">Revenue</div>
+          <div class="num">Cost</div>
+          <div class="num">Net</div>
+        </div>
+        ${venueHtml}
+        <div class="city-line subtotal">
+          <div class="name">Field Subtotal</div>
+          <div class="num">${fmtMoney(fieldRevTotal)}</div>
+          <div class="num">${fmtMoney(fieldCostTotal)}</div>
+          <div class="num ${numClass(fieldNet)}">${fmtMoney(fieldNet)}</div>
+        </div>
+        ` : `<div class="city-line"><div class="name" style="color: var(--text-faint); font-style: italic;">No venues yet</div><div class="num">—</div><div class="num">—</div><div class="num">—</div></div>`}
+        
+        <div class="city-section-head">City Overhead</div>
+        <div class="city-line indent">
+          <div class="name">Match Manager Pay</div>
+          <div class="num">—</div>
+          <div class="num">${fmtMoney(mmPay)}</div>
+          <div class="num ${numClass(-mmPay)}">${mmPay ? fmtMoney(-mmPay) : '—'}</div>
+        </div>
+        <div class="city-line indent">
+          <div class="name">City Manager</div>
+          <div class="num">—</div>
+          <div class="num">${fmtMoney(cm)}</div>
+          <div class="num ${numClass(-cm)}">${cm ? fmtMoney(-cm) : '—'}</div>
+        </div>
+        <div class="city-line indent">
+          <div class="name">Marketing</div>
+          <div class="num">—</div>
+          <div class="num">${fmtMoney(mktg)}</div>
+          <div class="num ${numClass(-mktg)}">${mktg ? fmtMoney(-mktg) : '—'}</div>
+        </div>
+        <div class="city-line indent">
+          <div class="name">Equipment</div>
+          <div class="num">—</div>
+          <div class="num">${fmtMoney(equip)}</div>
+          <div class="num ${numClass(-equip)}">${equip ? fmtMoney(-equip) : '—'}</div>
+        </div>
+        <div class="city-line subtotal">
+          <div class="name">Overhead Subtotal</div>
+          <div class="num">—</div>
+          <div class="num">${fmtMoney(overheadTotal)}</div>
+          <div class="num ${numClass(-overheadTotal)}">${overheadTotal ? fmtMoney(-overheadTotal) : '—'}</div>
+        </div>
+        
+        <div class="city-line total-line">
+          <div class="name">${city} Total ${marginBadge(cityMargin, fieldRevTotal !== 0)}</div>
+          <div class="num">${fmtMoney(fieldRevTotal)}</div>
+          <div class="num">${fmtMoney(cityTotalCost)}</div>
+          <div class="num ${numClass(cityNet)}">${fmtMoney(cityNet)}</div>
+        </div>
+      </div>`;
   }
-
-  html += '</tbody>';
-  document.getElementById('field-table').innerHTML = html;
+  
+  grid.innerHTML = html;
 }
 
-// ============== MAIN ==============
+function initMonthTabs() {
+  const tabs = document.querySelectorAll('.month-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      activeMonth = tab.dataset.month;
+      renderCityCards();
+    });
+  });
+}
+
 async function loadAll() {
   const status = document.getElementById('status');
   status.textContent = 'Loading data from Google Sheets…';
@@ -1108,13 +1245,22 @@ async function loadAll() {
   status.classList.remove('hidden');
 
   try {
-    const dash = await fetchCSV(TABS.dashboard);
+    const [dashboard, revenue, expenses, schedule, managerPay, monthlyExpenses, venues] = await Promise.all([
+      fetchCSV(TABS.dashboard),
+      fetchCSV(TABS.revenue),
+      fetchCSV(TABS.expenses),
+      fetchCSV(TABS.schedule),
+      fetchCSV(TABS.managerPay),
+      fetchCSV(TABS.monthlyExpenses),
+      fetchCSV(TABS.venues),
+    ]);
     
-    renderHero(dash);
-    renderMonthlyPL(dash);
-    renderTrendChart(dash);
-    renderCityPnL(dash);
-    renderFieldPnL(dash);
+    loadedData = { dashboard, revenue, expenses, schedule, managerPay, monthlyExpenses, venues };
+    
+    renderHero(dashboard);
+    renderMonthlyPL(dashboard);
+    renderTrendChart(dashboard);
+    renderCityCards();
 
     const now = new Date();
     document.getElementById('refresh-time').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -1122,14 +1268,12 @@ async function loadAll() {
   } catch (err) {
     console.error(err);
     status.className = 'error';
-    status.innerHTML = `Error loading data: ${err.message}.<br><br>If you opened this file directly (file://), try: (1) hosting it online via GitHub Pages, Netlify, or Vercel, or (2) running a local web server. The Google Sheet fetch is blocked from file:// origins by your browser.`;
+    status.innerHTML = `Error loading data: ${err.message}.<br><br>If opened as file://, try hosting online (GitHub Pages) or running a local web server.`;
   }
 }
 
-// Initial load
+initMonthTabs();
 loadAll();
-
-// Auto-refresh every 5 minutes
 setInterval(loadAll, 5 * 60 * 1000);
 </script>
 </body>
