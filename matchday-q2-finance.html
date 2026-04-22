@@ -359,10 +359,15 @@
   .num.neg { color: var(--negative); }
   .num.zero { color: var(--text-faint); }
 
-  /* Projection styling */
+  /* Projection styling — italic, but preserve green/red for kind */
   .pnl-cell.projection,
   .city-line .num.projection {
     font-style: italic;
+    opacity: 0.65;
+  }
+  /* Default projection color for cells without kind (white/neutral) */
+  .pnl-cell.projection:not(.pos):not(.neg):not(.zero),
+  .city-line .num.projection:not(.pos):not(.neg):not(.zero) {
     color: var(--text-faint);
   }
 
@@ -815,10 +820,25 @@ function computeMonthProgress(revenueTab) {
     'Jan': 31, 'Feb': 28, 'Mar': 31, 'Apr': 30, 'May': 31, 'Jun': 30,
     'Jul': 31, 'Aug': 31, 'Sep': 30, 'Oct': 31, 'Nov': 30, 'Dec': 31
   };
+  
+  // Cap the "elapsed" by today's date — we can't be further along than the calendar
+  const now = new Date();
+  const todayYear = now.getFullYear();
+  const todayMonth = now.getMonth() + 1; // 1-indexed
+  const todayDay = now.getDate();
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const currentMonthKey = `${monthNames[todayMonth-1]} ${todayYear}`;
+  
   for (const monthKey of Object.keys(latestDates)) {
     const monthShort = monthKey.split(' ')[0];
     const total = daysInMonth[monthShort] || 30;
-    const elapsed = latestDates[monthKey];
+    let elapsed = latestDates[monthKey];
+    
+    // If this is the current calendar month, cap elapsed at today's day
+    if (monthKey === currentMonthKey && elapsed > todayDay) {
+      elapsed = todayDay;
+    }
+    
     monthProgress[monthKey] = {
       elapsed,
       total,
@@ -1319,7 +1339,7 @@ function renderMonthlyPL(dash) {
   }
   
   function dataRow({ label, values, isProjection = [], opts = {} }) {
-    const { indent = false, bold = false, colorize = false, subtotal = false, highlight = false, total = false, kind = null } = opts;
+    const { indent = false, bold = false, colorize = false, subtotal = false, highlight = false, total = false, kind = null, q2Override = null } = opts;
     let rowClass = 'pnl-row';
     if (indent) rowClass += ' indent';
     if (subtotal) rowClass += ' subtotal';
@@ -1329,7 +1349,7 @@ function renderMonthlyPL(dash) {
     let html = `<div class="${rowClass}">`;
     html += `<div class="pnl-cell label">${label}</div>`;
     
-    const q2 = values.reduce((a, b) => a + b, 0);
+    const q2 = q2Override !== null ? q2Override : values.reduce((a, b) => a + b, 0);
     const q2IsProj = isProjection.some(Boolean);
     
     const allVals = [...values, q2];
@@ -1340,7 +1360,6 @@ function renderMonthlyPL(dash) {
       const proj = allProj[i];
       let cls = 'pnl-cell num';
       if (colorize) {
-        // Color by sign (for Net P&L rows)
         cls += ' ' + numClass(val);
       } else if (kind === 'revenue' && val !== 0) {
         cls += ' pos';
@@ -1364,11 +1383,12 @@ function renderMonthlyPL(dash) {
   }
   html += '</div>';
   
-  // Starting Cash
+  // Starting Cash — Q2 Total shows April's starting balance, not sum
   html += dataRow({
     label: 'Starting Cash',
     values: starting,
     isProjection: [false, false, false],
+    opts: { q2Override: starting[0] },
   });
   
   // ================= REVENUE =================
@@ -1495,7 +1515,7 @@ function renderMonthlyPL(dash) {
     label: 'Ending Cash',
     values: ending,
     isProjection: months.map(m => monthIsProjection[m]),
-    opts: { total: true },
+    opts: { total: true, q2Override: ending[2] },
   });
   
   container.innerHTML = html;
