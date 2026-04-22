@@ -649,6 +649,16 @@
   .ranking-table td.num.neg { color: var(--negative); }
   .ranking-table td.num.zero { color: var(--text-faint); }
 
+  .ranking-table .cost-detail {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 10px;
+    color: var(--text-faint);
+    font-weight: 400;
+    font-style: normal;
+    opacity: 0.85;
+  }
+
   .ranking-table td.projection {
     font-style: italic;
     opacity: 0.75;
@@ -857,7 +867,7 @@
   <section>
     <div class="section-head">
       <h2>Field <em>Ranking</em></h2>
-      <span class="section-note">Click column headers to sort · follows month &amp; view above</span>
+      <span class="section-note">Current month · sorted by revenue · click headers to resort</span>
     </div>
     <div class="table-scroll">
       <table class="ranking-table" id="ranking-table"></table>
@@ -1896,21 +1906,48 @@ function renderCityCards() {
 }
 
 // ============== FIELD RANKING ==============
-let rankingSort = { column: 'net', direction: 'asc' }; // 'asc' = worst-first for net
+let rankingSort = { column: 'revenue', direction: 'desc' }; // Default: highest revenue first
 
 function renderFieldRanking() {
   const tableEl = document.getElementById('ranking-table');
   if (!tableEl) return;
   
-  const monthKey = MONTHS[activeMonth].sheetKey;
-  const monthsToSum = monthKey === 'Q2 Total' 
-    ? ['Apr 2026', 'May 2026', 'Jun 2026'] 
-    : [monthKey];
+  // Always use current calendar month for field ranking (independent of month tabs above)
+  const now = new Date();
+  const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const currentMonthKey = `${monthNamesShort[now.getMonth()]} ${now.getFullYear()}`;
+  const monthsToSum = [currentMonthKey];
   
   const venuesByCity = getVenuesPerCity(loadedData.venues);
   const revenue = aggregateRevenue(loadedData.revenue);
   const scheduleCosts = aggregateScheduleCosts(loadedData.schedule);
   const monthlyFlatCosts = aggregateMonthlyFlatVenueCosts(loadedData.expenses);
+  
+  // Build per-venue per-month match count + cost details from Schedule tab
+  // venueMatchInfo[venue][month] = { count, costs: Map(rate -> count) }
+  const venueMatchInfo = {};
+  const schedTab = loadedData.schedule;
+  let schedStart = -1;
+  for (let i = 0; i < schedTab.length; i++) {
+    if (schedTab[i][0] && String(schedTab[i][0]).trim() === 'Date') {
+      schedStart = i + 1;
+      break;
+    }
+  }
+  if (schedStart === -1) schedStart = 4;
+  for (let i = schedStart; i < schedTab.length; i++) {
+    const row = schedTab[i];
+    if (!row || !row[0]) continue;
+    const m = (row[1] ? String(row[1]).trim() : null) || monthFromDate(row[0]);
+    const venue = row[3] ? String(row[3]).trim() : null;
+    const cost = parseCurrency(row[6]);
+    if (!m || !venue) continue;
+    if (!venueMatchInfo[venue]) venueMatchInfo[venue] = {};
+    if (!venueMatchInfo[venue][m]) venueMatchInfo[venue][m] = { count: 0, ratesByCount: {} };
+    venueMatchInfo[venue][m].count++;
+    const r = Math.round(cost);
+    venueMatchInfo[venue][m].ratesByCount[r] = (venueMatchInfo[venue][m].ratesByCount[r] || 0) + 1;
+  }
   
   function extrapolatePartial(amount, month) {
     if (activeView !== 'projected') return { value: amount, projected: false };
@@ -1919,6 +1956,35 @@ function renderFieldRanking() {
       return { value: amount / progress.fraction, projected: true };
     }
     return { value: amount, projected: false };
+  }
+  
+  // Build cost detail string: "(N × $YY)" for per-match, "(monthly)" for flat, "(free)" for $0
+  function costDetail(venue, billing, totalCost) {
+    if (billing === 'monthly_flat') {
+      if (totalCost === 0) return '<span class="cost-detail">(monthly · TBD)</span>';
+      return '<span class="cost-detail">(monthly)</span>';
+    }
+    // Per-match: aggregate match info across monthsToSum
+    let totalMatches = 0;
+    const ratesByCount = {};
+    for (const m of monthsToSum) {
+      const info = venueMatchInfo[venue]?.[m];
+      if (!info) continue;
+      totalMatches += info.count;
+      for (const [rate, count] of Object.entries(info.ratesByCount)) {
+        ratesByCount[rate] = (ratesByCount[rate] || 0) + count;
+      }
+    }
+    if (totalMatches === 0) return '';
+    const rates = Object.keys(ratesByCount).map(Number).sort((a,b) => a-b);
+    if (rates.length === 1) {
+      if (rates[0] === 0) {
+        return `<span class="cost-detail">(${totalMatches} × free)</span>`;
+      }
+      return `<span class="cost-detail">(${totalMatches} × $${rates[0]})</span>`;
+    }
+    // Mixed rates
+    return `<span class="cost-detail">(${totalMatches} matches)</span>`;
   }
   
   // Build rows — one per venue across all cities
@@ -1960,11 +2026,13 @@ function renderFieldRanking() {
       rows.push({
         venue: v.name,
         city,
+        billing: v.billing,
         revenue: rev,
         cost,
         net,
         margin,
         projected,
+        costDetailHtml: costDetail(v.name, v.billing, cost),
       });
     }
   }
@@ -2029,7 +2097,7 @@ function renderFieldRanking() {
       <td>${r.venue}</td>
       <td class="city-cell">${r.city}</td>
       <td class="num pos${projCls}">${fmtMoney(r.revenue)}</td>
-      <td class="num neg${projCls}">${fmtMoney(r.cost)}</td>
+      <td class="num neg${projCls}">${fmtMoney(r.cost)} ${r.costDetailHtml}</td>
       <td class="num ${numClass(r.net)}${projCls}">${fmtMoney(r.net)}</td>
       <td>${marginBadgeHtml(r.margin, r.revenue !== 0 || r.cost !== 0)}</td>
     </tr>`;
@@ -2072,7 +2140,7 @@ function renderFieldRanking() {
 }
 
 function initMonthTabs() {
-  // Month tabs (for City & Field section)
+  // Month tabs (for City & Field section only — does not affect Field Ranking which uses current month)
   const monthTabs = document.querySelectorAll('#month-tabs .month-tab');
   monthTabs.forEach(tab => {
     tab.addEventListener('click', () => {
@@ -2080,7 +2148,6 @@ function initMonthTabs() {
       tab.classList.add('active');
       activeMonth = tab.dataset.month;
       renderCityCards();
-      renderFieldRanking();
     });
   });
   
