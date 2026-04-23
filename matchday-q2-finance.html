@@ -640,6 +640,13 @@
     font-size: 12px;
   }
 
+  .ranking-table td.launched-cell {
+    text-align: left;
+    color: var(--text-dim);
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
   .ranking-table tr:last-child td { border-bottom: none; }
 
   .ranking-table tr:hover td {
@@ -1027,6 +1034,42 @@ function parseCurrency(str) {
   return isNeg ? -n : n;
 }
 
+function formatRelativeTime(dateStr) {
+  if (!dateStr) return '—';
+  // Parse date (supports MM/DD/YYYY, YYYY-MM-DD, ISO)
+  let d = null;
+  const trimmed = String(dateStr).trim();
+  if (!trimmed || trimmed === '-') return '—';
+  
+  if (trimmed.includes('/')) {
+    const parts = trimmed.split('/');
+    if (parts.length === 3) {
+      const m = parseInt(parts[0], 10);
+      const day = parseInt(parts[1], 10);
+      let y = parseInt(parts[2], 10);
+      if (y < 100) y += 2000;
+      d = new Date(y, m - 1, day);
+    }
+  } else if (trimmed.includes('-')) {
+    d = new Date(trimmed);
+  } else {
+    d = new Date(trimmed);
+  }
+  if (!d || isNaN(d.getTime())) return '—';
+  
+  const now = new Date();
+  const diffMs = now - d;
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 0) return 'future';
+  if (diffDays < 1) return 'today';
+  if (diffDays < 7) return `${diffDays}d`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w`;
+  if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo`;
+  const years = diffDays / 365;
+  return years < 2 ? `${years.toFixed(1)}y` : `${Math.floor(years)}y`;
+}
+
 function fmtMoney(n, options = {}) {
   const { compact = false, showZero = false, signed = false } = options;
   if (n === 0 || n === null || n === undefined || isNaN(n)) {
@@ -1252,7 +1295,7 @@ function getVenuesPerCity(venuesTab) {
   const result = {};
   let startRow = -1;
   for (let i = 0; i < venuesTab.length; i++) {
-    if (venuesTab[i][0] && String(venuesTab[i][0]).trim() === 'Venue Name') {
+    if (venuesTab[i][0] && String(venuesTab[i][0]).trim() === 'Venue Name' || (venuesTab[i][0] && String(venuesTab[i][0]).trim() === 'Venue')) {
       startRow = i + 1;
       break;
     }
@@ -1269,6 +1312,7 @@ function getVenuesPerCity(venuesTab) {
     const name = canonicalVenue(rawName);
     const city = row[1] ? String(row[1]).trim() : null;
     const billing = row[2] ? String(row[2]).trim() : null;
+    const launchDate = row[3] ? String(row[3]).trim() : null;  // column D
     if (!city || !CITIES.includes(city)) continue;
     
     const key = `${city}::${name}`;
@@ -1276,7 +1320,7 @@ function getVenuesPerCity(venuesTab) {
     seen.add(key);
     
     if (!result[city]) result[city] = [];
-    result[city].push({ name, billing });
+    result[city].push({ name, billing, launchDate });
   }
   return result;
 }
@@ -2075,6 +2119,8 @@ function renderFieldRanking() {
         venue: v.name,
         city,
         billing: v.billing,
+        launchDate: v.launchDate || null,
+        launchedRelative: formatRelativeTime(v.launchDate),
         revenue: rev,
         cost,
         net,
@@ -2092,6 +2138,13 @@ function renderFieldRanking() {
     switch (column) {
       case 'venue': av = a.venue; bv = b.venue; break;
       case 'city': av = a.city; bv = b.city; break;
+      case 'launched':
+        // Sort by actual date — venues with no launch date sink to bottom
+        av = a.launchDate ? new Date(a.launchDate).getTime() : (direction === 'asc' ? Infinity : -Infinity);
+        bv = b.launchDate ? new Date(b.launchDate).getTime() : (direction === 'asc' ? Infinity : -Infinity);
+        if (isNaN(av)) av = direction === 'asc' ? Infinity : -Infinity;
+        if (isNaN(bv)) bv = direction === 'asc' ? Infinity : -Infinity;
+        break;
       case 'revenue': av = a.revenue; bv = b.revenue; break;
       case 'cost': av = a.cost; bv = b.cost; break;
       case 'net': av = a.net; bv = b.net; break;
@@ -2131,6 +2184,7 @@ function renderFieldRanking() {
       <th class="${sortClass('rank')}">#</th>
       <th class="${sortClass('venue')}" data-sort="venue">Venue</th>
       <th class="${sortClass('city')}" data-sort="city">City</th>
+      <th class="${sortClass('launched')}" data-sort="launched">Launched</th>
       <th class="${sortClass('revenue')}" data-sort="revenue">Revenue</th>
       <th class="${sortClass('cost')}" data-sort="cost">Cost</th>
       <th class="${sortClass('net')}" data-sort="net">Net P&L</th>
@@ -2144,6 +2198,7 @@ function renderFieldRanking() {
       <td class="rank">${idx + 1}</td>
       <td>${r.venue}</td>
       <td class="city-cell">${r.city}</td>
+      <td class="launched-cell">${r.launchedRelative}</td>
       <td class="num pos${projCls}">${fmtMoney(r.revenue)}</td>
       <td class="num neg${projCls}">${fmtMoney(r.cost)} ${r.costDetailHtml}</td>
       <td class="num ${numClass(r.net)}${projCls}">${fmtMoney(r.net)}</td>
@@ -2156,6 +2211,7 @@ function renderFieldRanking() {
   html += `<tr class="total-row">
     <td class="rank"></td>
     <td>Total</td>
+    <td></td>
     <td></td>
     <td class="num pos${totalProjCls}">${fmtMoney(total.revenue)}</td>
     <td class="num neg${totalProjCls}">${fmtMoney(total.cost)}</td>
