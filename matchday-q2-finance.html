@@ -1627,16 +1627,17 @@ function renderMonthlyPL(dash) {
     });
   }
   
-  // Match Manager Pay & Venue Costs are partial (accumulate during month) — extrapolate
-  addExpenseRow('Match Manager Pay', m => sumMatchMgr(m), 'partial');
+  // ALL expenses are already entered through end-of-month in the Sheets, so none extrapolate.
+  // Match Manager Pay, Venue Costs, etc. all show actuals as committed/expected for the full month.
+  addExpenseRow('Match Manager Pay', m => sumMatchMgr(m), 'none');
   // City Manager is flat monthly salary — don't extrapolate
   addExpenseRow('City Manager', m => sumCityMgr(m), 'none');
   // Marketing is monthly flat (weekly × 4) — don't extrapolate
   addExpenseRow('Marketing', m => sumMarketing(m), 'none');
   // Equipment is one-time purchases — don't extrapolate
   addExpenseRow('Equipment', m => sumEquipment(m), 'none');
-  // Venue costs per-match accumulate — extrapolate
-  addExpenseRow('Venue Costs (per-match)', m => scheduleCosts[m] || 0, 'partial');
+  // Venue costs per-match — already entered for full month in Schedule tab
+  addExpenseRow('Venue Costs (per-match)', m => scheduleCosts[m] || 0, 'none');
   // Venue Rental (flat monthly) — don't extrapolate
   addExpenseRow('Venue Rental (flat)', m => expensesByCat['Venue Rental']?.[m] || 0, 'none');
   // VEO Camera is annual/one-time — don't extrapolate
@@ -1646,7 +1647,7 @@ function renderMonthlyPL(dash) {
   // Contractors are monthly flat — don't extrapolate
   addExpenseRow('Contractors', m => expensesByCat['Contractors']?.[m] || 0, 'none');
   addExpenseRow('Scaling', m => expensesByCat['Scaling']?.[m] || 0, 'none');
-  addExpenseRow('MISC', m => expensesByCat['MISC']?.[m] || 0, 'partial');
+  addExpenseRow('MISC', m => expensesByCat['MISC']?.[m] || 0, 'none');
   
   html += dataRow({
     label: 'Total Expenses',
@@ -1784,17 +1785,16 @@ function renderCityCards() {
       }
       
       // Cost: per-match costs are partial, monthly-flat are NOT
-      let vCost = 0, vCostProjected = false;
+      // Cost: all already entered for full month — no extrapolation
+      let vCost = 0;
+      const vCostProjected = false;
       if (v.billing === 'monthly_flat') {
         for (const m of monthsToSum) {
           vCost += monthlyFlatCosts[v.name]?.[m] || 0;
         }
       } else {
         for (const m of monthsToSum) {
-          const raw = scheduleCosts.byVenueMonth[v.name]?.[m] || 0;
-          const { value, projected } = extrapolatePartial(raw, m);
-          vCost += value;
-          if (projected) vCostProjected = true;
+          vCost += scheduleCosts.byVenueMonth[v.name]?.[m] || 0;
         }
       }
       
@@ -1824,14 +1824,12 @@ function renderCityCards() {
     }
     const membershipProjected = false;
     
-    // Match Manager Pay — partial, extrapolate
-    let mmPay = 0, mmProjected = false;
+    // Match Manager Pay — already entered for full month (no extrapolation)
+    let mmPay = 0;
     for (const m of monthsToSum) {
-      const raw = mgrPay[city]?.[m] || 0;
-      const { value, projected } = extrapolatePartial(raw, m);
-      mmPay += value;
-      if (projected) mmProjected = true;
+      mmPay += mgrPay[city]?.[m] || 0;
     }
+    const mmProjected = false;
     
     // City Manager, Marketing, Equipment — monthly flat, don't extrapolate
     const cm = monthsToSum.reduce((acc, m) => acc + (cityOverhead[city]?.cityMgr?.[m] || 0), 0);
@@ -2022,18 +2020,16 @@ function renderFieldRanking() {
         if (projected) revProj = true;
       }
       
-      // Cost: per-match partial, monthly_flat not
-      let cost = 0, costProj = false;
+      // Cost: all already entered in Schedule/Expenses tabs — no extrapolation
+      let cost = 0;
+      const costProj = false;
       if (v.billing === 'monthly_flat') {
         for (const m of monthsToSum) {
           cost += monthlyFlatCosts[v.name]?.[m] || 0;
         }
       } else {
         for (const m of monthsToSum) {
-          const raw = scheduleCosts.byVenueMonth[v.name]?.[m] || 0;
-          const { value, projected } = extrapolatePartial(raw, m);
-          cost += value;
-          if (projected) costProj = true;
+          cost += scheduleCosts.byVenueMonth[v.name]?.[m] || 0;
         }
       }
       
