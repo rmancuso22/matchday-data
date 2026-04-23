@@ -670,6 +670,11 @@
     font-style: normal;
     opacity: 0.85;
   }
+  
+  .ranking-table td.share-cell {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
 
   .ranking-table td.projection {
     font-style: italic;
@@ -906,6 +911,7 @@ const TABS = {
   schedule: 238383009,
   revenue: 178156285,
   expenses: 228997040,
+  memberSpots: 873151853,
 };
 
 const csvUrl = (gid) => `${BASE_URL}?gid=${gid}&single=true&output=csv`;
@@ -1340,6 +1346,114 @@ function getVenuesPerCity(venuesTab) {
     result[city].push({ name, billing, launchDate });
   }
   return result;
+}
+
+// Parse Member Spots tab → { member, dpp, other: {byVenueMonth, byCityMonth} }
+function aggregateMemberSpots(memberSpotsTab) {
+  const result = {
+    member: { byVenueMonth: {}, byCityMonth: {} },
+    dpp: { byVenueMonth: {}, byCityMonth: {} },
+    other: { byVenueMonth: {}, byCityMonth: {} },
+  };
+  if (!memberSpotsTab || !memberSpotsTab.length) return result;
+  
+  let startRow = -1;
+  let memberCols = {};
+  let dppCols = {};
+  let otherCols = {};
+  
+  for (let i = 0; i < memberSpotsTab.length; i++) {
+    const row = memberSpotsTab[i];
+    if (!row || !row[0]) continue;
+    if (String(row[0]).trim() === 'Venue') {
+      startRow = i + 1;
+      for (let c = 2; c < row.length; c++) {
+        const h = row[c] ? String(row[c]).trim() : '';
+        const memMatch = h.match(/^([A-Z][a-z]{2})\s+Member$/);
+        if (memMatch) { memberCols[`${memMatch[1]} 2026`] = c; continue; }
+        const dppMatch = h.match(/^([A-Z][a-z]{2})\s+DPP$/);
+        if (dppMatch) { dppCols[`${dppMatch[1]} 2026`] = c; continue; }
+        const otherMatch = h.match(/^([A-Z][a-z]{2})\s+Other$/);
+        if (otherMatch) { otherCols[`${otherMatch[1]} 2026`] = c; continue; }
+        // Back-compat
+        const plainMatch = h.match(/^([A-Z][a-z]{2})\s+\d{4}$/);
+        if (plainMatch) { memberCols[h] = c; }
+      }
+      break;
+    }
+  }
+  if (startRow === -1) return result;
+  
+  function addSpots(target, venue, city, month, spots) {
+    if (!spots) return;
+    if (!target.byVenueMonth[venue]) target.byVenueMonth[venue] = {};
+    target.byVenueMonth[venue][month] = (target.byVenueMonth[venue][month] || 0) + spots;
+    if (!target.byCityMonth[city]) target.byCityMonth[city] = {};
+    target.byCityMonth[city][month] = (target.byCityMonth[city][month] || 0) + spots;
+  }
+  
+  for (let i = startRow; i < memberSpotsTab.length; i++) {
+    const row = memberSpotsTab[i];
+    if (!row || !row[0]) continue;
+    const venue = canonicalVenue(String(row[0]).trim());
+    const city = row[1] ? String(row[1]).trim() : null;
+    if (!venue || !city || !CITIES.includes(city)) continue;
+    
+    for (const [month, col] of Object.entries(memberCols)) {
+      addSpots(result.member, venue, city, month, parseCurrency(row[col]));
+    }
+    for (const [month, col] of Object.entries(dppCols)) {
+      addSpots(result.dpp, venue, city, month, parseCurrency(row[col]));
+    }
+    for (const [month, col] of Object.entries(otherCols)) {
+      addSpots(result.other, venue, city, month, parseCurrency(row[col]));
+    }
+  }
+  return result;
+}
+
+// Get membership revenue allocated to a specific venue for a month based on member spot share
+function allocatedMembershipForVenue(venue, city, month, memberSpots, revenue) {
+  const cityMembershipRev = revenue.byCityMembershipMonth[city]?.[month] || 0;
+  if (cityMembershipRev === 0) return 0;
+  const venueSpots = memberSpots.member.byVenueMonth[venue]?.[month] || 0;
+  const citySpots = memberSpots.member.byCityMonth[city]?.[month] || 0;
+  if (citySpots === 0) return 0;
+  return cityMembershipRev * (venueSpots / citySpots);
+}
+
+// City share: venue's member spots / city's member spots
+function memberSpotsShare(venue, city, months, memberSpots) {
+  let vSpots = 0, citySpots = 0;
+  for (const m of months) {
+    vSpots += memberSpots.member.byVenueMonth[venue]?.[m] || 0;
+    citySpots += memberSpots.member.byCityMonth[city]?.[m] || 0;
+  }
+  return citySpots > 0 ? (vSpots / citySpots) * 100 : 0;
+}
+
+// Venue mix: venue's member spots / venue's TOTAL spots (Member + DPP + Other)
+function memberMixShare(venue, city, months, memberSpots) {
+  let m = 0, d = 0, o = 0;
+  for (const mo of months) {
+    m += memberSpots.member.byVenueMonth[venue]?.[mo] || 0;
+    d += memberSpots.dpp.byVenueMonth[venue]?.[mo] || 0;
+    o += memberSpots.other.byVenueMonth[venue]?.[mo] || 0;
+  }
+  const total = m + d + o;
+  return total > 0 ? (m / total) * 100 : 0;
+}
+
+// Venue mix: venue's DPP spots / venue's TOTAL spots
+function dppMixShare(venue, city, months, memberSpots) {
+  let m = 0, d = 0, o = 0;
+  for (const mo of months) {
+    m += memberSpots.member.byVenueMonth[venue]?.[mo] || 0;
+    d += memberSpots.dpp.byVenueMonth[venue]?.[mo] || 0;
+    o += memberSpots.other.byVenueMonth[venue]?.[mo] || 0;
+  }
+  const total = m + d + o;
+  return total > 0 ? (d / total) * 100 : 0;
 }
 
 function renderHero(dash) {
@@ -1833,6 +1947,7 @@ function renderCityCards() {
   const monthlyFlatCosts = aggregateMonthlyFlatVenueCosts(loadedData.expenses);
   const mgrPay = aggregateManagerPay(loadedData.managerPay);
   const cityOverhead = aggregateMonthlyCityOverhead(loadedData.monthlyExpenses);
+  const memberSpots = aggregateMemberSpots(loadedData.memberSpots);
 
   const monthsToSum = monthKey === 'Q2 Total' 
     ? ['Apr 2026', 'May 2026', 'Jun 2026'] 
@@ -1867,7 +1982,7 @@ function renderCityCards() {
     let fieldRevTotal = 0, fieldCostTotal = 0;
     
     for (const v of cityVenues) {
-      // Revenue: partial-month → extrapolate when projected
+      // DPP + Private Rental revenue (partial → extrapolate when projected)
       let vRev = 0, vRevProjected = false;
       for (const m of monthsToSum) {
         const raw = revenue.byVenueMonth[v.name]?.[m] || 0;
@@ -1876,7 +1991,6 @@ function renderCityCards() {
         if (projected) vRevProjected = true;
       }
       
-      // Cost: per-match costs are partial, monthly-flat are NOT
       // Cost: all already entered for full month — no extrapolation
       let vCost = 0;
       const vCostProjected = false;
@@ -1909,12 +2023,11 @@ function renderCityCards() {
     
     const fieldNet = fieldRevTotal - fieldCostTotal;
     
-    // Membership revenue — NOT extrapolated (billed on the 1st, mostly captured by mid-month)
+    // Total city membership revenue (shown as its own section, not allocated to venues in city cards)
     let membershipRev = 0;
     for (const m of monthsToSum) {
       membershipRev += revenue.byCityMembershipMonth[city]?.[m] || 0;
     }
-    const membershipProjected = false;
     
     // Match Manager Pay — already entered for full month (no extrapolation)
     let mmPay = 0;
@@ -1930,11 +2043,10 @@ function renderCityCards() {
     const overheadTotal = mmPay + cm + mktg + equip;
     
     const totalRev = fieldRevTotal + membershipRev;
-    const cityNet = fieldNet + membershipRev - overheadTotal;
+    const cityNet = totalRev - fieldCostTotal - overheadTotal;
     const cityTotalCost = fieldCostTotal + overheadTotal;
     const cityMargin = totalRev !== 0 ? (cityNet / totalRev) * 100 : 0;
     
-    const memberCls = membershipProjected && membershipRev !== 0 ? ' projection' : '';
     const mmCls = mmProjected && mmPay !== 0 ? ' projection' : '';
     
     html += `
@@ -1967,9 +2079,9 @@ function renderCityCards() {
         <div class="city-section-head">Membership Revenue</div>
         <div class="city-line indent">
           <div class="name">${city} Memberships</div>
-          <div class="num pos${memberCls}">${fmtMoney(membershipRev)}</div>
+          <div class="num pos">${fmtMoney(membershipRev)}</div>
           <div class="num">—</div>
-          <div class="num pos${memberCls}">${membershipRev ? fmtMoney(membershipRev) : '—'}</div>
+          <div class="num pos">${membershipRev ? fmtMoney(membershipRev) : '—'}</div>
         </div>
         
         <div class="city-section-head">City Overhead</div>
@@ -2017,7 +2129,7 @@ function renderCityCards() {
 }
 
 // ============== FIELD RANKING ==============
-let rankingSort = { column: 'revenue', direction: 'desc' }; // Default: highest revenue first
+let rankingSort = { column: 'dppRev', direction: 'desc' }; // Default: highest revenue first
 
 function renderFieldRanking() {
   const tableEl = document.getElementById('ranking-table');
@@ -2033,6 +2145,7 @@ function renderFieldRanking() {
   const revenue = aggregateRevenue(loadedData.revenue);
   const scheduleCosts = aggregateScheduleCosts(loadedData.schedule);
   const monthlyFlatCosts = aggregateMonthlyFlatVenueCosts(loadedData.expenses);
+  const memberSpots = aggregateMemberSpots(loadedData.memberSpots);
   
   // Build per-venue per-month match count + cost details from Schedule tab
   // venueMatchInfo[venue][month] = { count, costs: Map(rate -> count) }
@@ -2103,14 +2216,22 @@ function renderFieldRanking() {
   for (const city of CITIES) {
     const cityVenues = venuesByCity[city] || [];
     for (const v of cityVenues) {
-      // Revenue (partial → extrapolate in projected view)
-      let rev = 0, revProj = false;
+      // DPP + Private Rental revenue (partial → extrapolate in projected view)
+      let dppRev = 0, revProj = false;
       for (const m of monthsToSum) {
         const raw = revenue.byVenueMonth[v.name]?.[m] || 0;
         const { value, projected } = extrapolatePartial(raw, m);
-        rev += value;
+        dppRev += value;
         if (projected) revProj = true;
       }
+      
+      // Allocated Membership revenue (NOT extrapolated — memberships are billed on 1st)
+      let memberRev = 0;
+      for (const m of monthsToSum) {
+        memberRev += allocatedMembershipForVenue(v.name, city, m, memberSpots, revenue);
+      }
+      
+      const rev = dppRev + memberRev;
       
       // Cost: all already entered in Schedule/Expenses tabs — no extrapolation
       let cost = 0;
@@ -2139,6 +2260,11 @@ function renderFieldRanking() {
         launchDate: v.launchDate || null,
         launchedRelative: formatRelativeTime(v.launchDate),
         revenue: rev,
+        dppRev,
+        memberRev,
+        memberSharePct: memberSpotsShare(v.name, city, monthsToSum, memberSpots),
+        memberMixPct: memberMixShare(v.name, city, monthsToSum, memberSpots),
+        dppMixPct: dppMixShare(v.name, city, monthsToSum, memberSpots),
         cost,
         net,
         margin,
@@ -2163,6 +2289,11 @@ function renderFieldRanking() {
         if (isNaN(bv)) bv = direction === 'asc' ? Infinity : -Infinity;
         break;
       case 'revenue': av = a.revenue; bv = b.revenue; break;
+      case 'dppRev': av = a.dppRev; bv = b.dppRev; break;
+      case 'memberRev': av = a.memberRev; bv = b.memberRev; break;
+      case 'cityMemberShare': av = a.memberSharePct; bv = b.memberSharePct; break;
+      case 'memberMix': av = a.memberMixPct; bv = b.memberMixPct; break;
+      case 'dppMix': av = a.dppMixPct; bv = b.dppMixPct; break;
       case 'cost': av = a.cost; bv = b.cost; break;
       case 'net': av = a.net; bv = b.net; break;
       case 'margin': av = a.margin; bv = b.margin; break;
@@ -2176,10 +2307,12 @@ function renderFieldRanking() {
   
   // Totals
   const total = rows.reduce((acc, r) => ({
+    dppRev: acc.dppRev + r.dppRev,
+    memberRev: acc.memberRev + r.memberRev,
     revenue: acc.revenue + r.revenue,
     cost: acc.cost + r.cost,
     net: acc.net + r.net,
-  }), { revenue: 0, cost: 0, net: 0 });
+  }), { dppRev: 0, memberRev: 0, revenue: 0, cost: 0, net: 0 });
   const totalMargin = total.revenue !== 0 ? (total.net / total.revenue) * 100 : 0;
   const anyProjected = rows.some(r => r.projected);
   
@@ -2196,13 +2329,22 @@ function renderFieldRanking() {
     return `<span class="margin-badge ${cls}">${fmtPct(m)}</span>`;
   }
   
+  function fmtSharePct(p) {
+    if (!p || isNaN(p)) return '—';
+    return `${p.toFixed(1)}%`;
+  }
+  
   let html = `<thead>
     <tr>
       <th class="${sortClass('rank')}">#</th>
       <th class="${sortClass('venue')}" data-sort="venue">Venue</th>
       <th class="${sortClass('city')}" data-sort="city">City</th>
       <th class="${sortClass('launched')}" data-sort="launched">Launched</th>
-      <th class="${sortClass('revenue')}" data-sort="revenue">Revenue</th>
+      <th class="${sortClass('dppRev')}" data-sort="dppRev">DPP Rev</th>
+      <th class="${sortClass('memberRev')}" data-sort="memberRev">Member Rev</th>
+      <th class="${sortClass('cityMemberShare')}" data-sort="cityMemberShare" title="Venue's share of city's member pool">City Mbr %</th>
+      <th class="${sortClass('memberMix')}" data-sort="memberMix" title="% of this venue's spots from members">Mbr Mix %</th>
+      <th class="${sortClass('dppMix')}" data-sort="dppMix" title="% of this venue's spots from drop-in paid">DPP Mix %</th>
       <th class="${sortClass('cost')}" data-sort="cost">Cost</th>
       <th class="${sortClass('net')}" data-sort="net">Net P&L</th>
       <th class="${sortClass('margin')}" data-sort="margin">Margin</th>
@@ -2212,13 +2354,18 @@ function renderFieldRanking() {
   rows.forEach((r, idx) => {
     const projCls = r.projected ? ' projection' : '';
     const costCls = r.cost > 0 ? 'num neg' : 'num';
-    const revCls = r.revenue > 0 ? 'num pos' : 'num';
+    const dppCls = r.dppRev > 0 ? 'num pos' : 'num';
+    const memCls = r.memberRev > 0 ? 'num pos' : 'num';
     html += `<tr>
       <td class="rank">${idx + 1}</td>
       <td>${r.venue}</td>
       <td class="city-cell">${r.city}</td>
       <td class="launched-cell">${r.launchedRelative}</td>
-      <td class="${revCls}${projCls}">${fmtMoney(r.revenue)}</td>
+      <td class="${dppCls}${projCls}">${fmtMoney(r.dppRev)}</td>
+      <td class="${memCls}">${fmtMoney(r.memberRev)}</td>
+      <td class="num share-cell">${fmtSharePct(r.memberSharePct)}</td>
+      <td class="num share-cell">${fmtSharePct(r.memberMixPct)}</td>
+      <td class="num share-cell">${fmtSharePct(r.dppMixPct)}</td>
       <td class="${costCls}${projCls}">${fmtMoney(r.cost)} ${r.costDetailHtml}</td>
       <td class="num ${numClass(r.net)}${projCls}">${fmtMoney(r.net)}</td>
       <td>${marginBadgeHtml(r.margin, r.revenue !== 0 || r.cost !== 0)}</td>
@@ -2232,7 +2379,11 @@ function renderFieldRanking() {
     <td>Total</td>
     <td></td>
     <td></td>
-    <td class="num pos${totalProjCls}">${fmtMoney(total.revenue)}</td>
+    <td class="num pos${totalProjCls}">${fmtMoney(total.dppRev)}</td>
+    <td class="num pos">${fmtMoney(total.memberRev)}</td>
+    <td class="num share-cell">—</td>
+    <td class="num share-cell">—</td>
+    <td class="num share-cell">—</td>
     <td class="num neg${totalProjCls}">${fmtMoney(total.cost)}</td>
     <td class="num ${numClass(total.net)}${totalProjCls}">${fmtMoney(total.net)}</td>
     <td>${marginBadgeHtml(totalMargin, total.revenue !== 0)}</td>
@@ -2251,7 +2402,7 @@ function renderFieldRanking() {
       } else {
         rankingSort.column = col;
         // Default direction for numeric columns: revenue/cost = desc (biggest first), net/margin = asc (worst first)
-        if (col === 'revenue' || col === 'cost') {
+        if (['revenue','cost','dppRev','memberRev','cityMemberShare','memberMix','dppMix'].includes(col)) {
           rankingSort.direction = 'desc';
         } else {
           rankingSort.direction = 'asc';
@@ -2297,7 +2448,7 @@ async function loadAll() {
   status.classList.remove('hidden');
 
   try {
-    const [dashboard, revenue, expenses, schedule, managerPay, monthlyExpenses, venues] = await Promise.all([
+    const [dashboard, revenue, expenses, schedule, managerPay, monthlyExpenses, venues, memberSpots] = await Promise.all([
       fetchCSV(TABS.dashboard),
       fetchCSV(TABS.revenue),
       fetchCSV(TABS.expenses),
@@ -2305,9 +2456,10 @@ async function loadAll() {
       fetchCSV(TABS.managerPay),
       fetchCSV(TABS.monthlyExpenses),
       fetchCSV(TABS.venues),
+      fetchCSV(TABS.memberSpots),
     ]);
     
-    loadedData = { dashboard, revenue, expenses, schedule, managerPay, monthlyExpenses, venues };
+    loadedData = { dashboard, revenue, expenses, schedule, managerPay, monthlyExpenses, venues, memberSpots };
     
     // Compute month progress from Revenue tab (how far into each month are the actuals?)
     computeMonthProgress(revenue);
