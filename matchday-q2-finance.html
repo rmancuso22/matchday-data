@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>MatchDay — Q2 2026 Finance</title>
+<link rel="icon" href="/matchday-data/Matchday-RGB_Badge_LightGreen%20(2).png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -1461,6 +1462,20 @@ function renderMonthlyPL(dash) {
     expensesByCat[cat][m] = (expensesByCat[cat][m] || 0) + amount;
   }
   
+  // === Aggregate Gross + Fees from Revenue tab ===
+  const grossByMonth = {};  // month -> total gross
+  const feesByMonth = {};   // month -> total fees
+  for (let i = revStartRow; i < revTab.length; i++) {
+    const row = revTab[i];
+    if (!row || !row[0]) continue;
+    const m = (row[1] ? String(row[1]).trim() : null) || monthFromDate(row[0]);
+    if (!m) continue;
+    const gross = parseCurrency(row[5]);
+    const fees = parseCurrency(row[6]);
+    grossByMonth[m] = (grossByMonth[m] || 0) + gross;
+    feesByMonth[m] = (feesByMonth[m] || 0) + fees;
+  }
+  
   function sumCityMgr(month) {
     let total = 0;
     for (const city of [...CITIES, 'Corporate']) {
@@ -1591,6 +1606,22 @@ function renderMonthlyPL(dash) {
     values: totalNetRev,
     isProjection: months.map(m => monthIsProjection[m]),
     opts: { subtotal: true, kind: 'revenue' },
+  });
+  
+  // Memo lines: Gross Revenue and Stripe Fees breakdown (informational only — already in Total Net)
+  const grossVals = months.map(m => grossByMonth[m] || 0);
+  const feesVals = months.map(m => feesByMonth[m] || 0);
+  html += dataRow({
+    label: '↳ Gross Revenue',
+    values: grossVals,
+    isProjection: months.map(m => monthIsProjection[m]),
+    opts: { indent: true, kind: 'revenue' },
+  });
+  html += dataRow({
+    label: '↳ Stripe Fees',
+    values: feesVals,
+    isProjection: months.map(m => monthIsProjection[m]),
+    opts: { indent: true, kind: 'expense' },
   });
   
   // ================= EXPENSES =================
