@@ -687,6 +687,116 @@
     font-weight: 600;
   }
 
+  /* ===== EXECUTIVE SUMMARY + INSIGHTS ===== */
+  .summary-block {
+    background: linear-gradient(180deg, rgba(212, 160, 77, 0.05) 0%, rgba(212, 160, 77, 0.01) 100%);
+    border: 1px solid rgba(212, 160, 77, 0.2);
+    border-left: 3px solid var(--accent);
+    border-radius: 3px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+  }
+  
+  .summary-block .eyebrow {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  
+  .summary-block .summary-body {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--text);
+    font-weight: 400;
+  }
+  
+  .summary-block .summary-body em {
+    font-style: italic;
+    color: var(--text-dim);
+  }
+  
+  .insights-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  
+  .insight-column {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 18px 20px;
+    min-height: 100px;
+  }
+  
+  .insight-column.positive { border-left: 3px solid var(--positive); }
+  .insight-column.negative { border-left: 3px solid var(--negative); }
+  .insight-column.neutral { border-left: 3px solid var(--accent-muted); }
+  
+  .insight-column .header {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .insight-column.positive .header { color: var(--positive); }
+  .insight-column.negative .header { color: var(--negative); }
+  .insight-column.neutral .header { color: var(--accent-muted); }
+  
+  .insight-item {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--text);
+  }
+  
+  .insight-item:last-child { border-bottom: none; }
+  
+  .insight-item .label {
+    color: var(--text-dim);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    margin-bottom: 2px;
+  }
+  
+  .insight-item .value {
+    font-weight: 500;
+  }
+  
+  .insight-item .num-inline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+  }
+  
+  .insight-item.pos .num-inline { color: var(--positive); }
+  .insight-item.neg .num-inline { color: var(--negative); }
+  
+  .insight-empty {
+    color: var(--text-faint);
+    font-style: italic;
+    font-size: 12px;
+    padding: 8px 0;
+  }
+  
+  @media (max-width: 900px) {
+    .insights-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
   .margin-badge {
     display: inline-block;
     padding: 2px 8px;
@@ -809,6 +919,15 @@
   </header>
 
   <div id="status">Loading data from Google Sheets…</div>
+
+  <div class="summary-block">
+    <div class="eyebrow">Executive Summary · April 2026 (through 4/23)</div>
+    <div class="summary-body" id="summary-body">
+      Q2 tracking close to breakeven with <em>7 days remaining</em> in April. <strong>Austin + Houston are carrying the quarter</strong> — flagship venues (San Juan Diego, NEMP, ATH Pearland, Soccer Central) printing high-margin revenue. <strong>Dallas, Atlanta, and OKC are currently underwater</strong> — small member bases can't yet cover overhead. <strong>ATH Katy trending up meaningfully</strong> — 4 consecutive weeks of growth (Mar 30 – Apr 5: $235 → Apr 13 – 19: $497), current week pacing strongest yet at just 4 days in. Cumulative April still red but momentum is clear. <em>Watch items for end of month:</em> whether ATH Katy's trend holds through May, whether PRUMC needs renegotiation, and where to focus May's membership push outside Austin.
+    </div>
+  </div>
+
+  <div class="insights-grid" id="insights-grid"></div>
 
   <div class="hero" id="hero">
     <div class="hero-cell primary">
@@ -1496,6 +1615,291 @@ function renderHero(dash) {
   document.getElementById('q2-exp').textContent = fmtMoney(expenses);
   const burnRate = expenses / 3;
   document.getElementById('q2-exp-sub').textContent = `≈ ${fmtMoney(burnRate)}/mo avg`;
+}
+
+// ============== INSIGHTS & ALERTS (auto-computed from data) ==============
+function renderInsights() {
+  const container = document.getElementById('insights-grid');
+  if (!container) return;
+  
+  // Use April as analysis month for now
+  const month = 'Apr 2026';
+  const monthsToSum = [month];
+  
+  const venuesByCity = getVenuesPerCity(loadedData.venues);
+  const revenue = aggregateRevenue(loadedData.revenue);
+  const scheduleCosts = aggregateScheduleCosts(loadedData.schedule);
+  const monthlyFlatCosts = aggregateMonthlyFlatVenueCosts(loadedData.expenses);
+  const mgrPay = aggregateManagerPay(loadedData.managerPay);
+  const cityOverhead = aggregateMonthlyCityOverhead(loadedData.monthlyExpenses);
+  const memberSpots = aggregateMemberSpots(loadedData.memberSpots);
+  
+  // Build per-venue stats
+  const venues = [];
+  for (const city of CITIES) {
+    for (const v of (venuesByCity[city] || [])) {
+      const dppRev = revenue.byVenueMonth[v.name]?.[month] || 0;
+      const memRev = allocatedMembershipForVenue(v.name, city, month, memberSpots, revenue);
+      const rev = dppRev + memRev;
+      
+      let cost = 0;
+      if (v.billing === 'monthly_flat') {
+        cost = monthlyFlatCosts[v.name]?.[month] || 0;
+      } else {
+        cost = scheduleCosts.byVenueMonth[v.name]?.[month] || 0;
+      }
+      
+      const mSpots = memberSpots.member.byVenueMonth[v.name]?.[month] || 0;
+      const dSpots = memberSpots.dpp.byVenueMonth[v.name]?.[month] || 0;
+      const oSpots = memberSpots.other.byVenueMonth[v.name]?.[month] || 0;
+      const totalSpots = mSpots + dSpots + oSpots;
+      
+      if (rev === 0 && cost === 0 && totalSpots === 0) continue;
+      
+      // Launch date → days since launch
+      let daysSinceLaunch = null;
+      if (v.launchDate) {
+        const parts = String(v.launchDate).trim().split('/');
+        if (parts.length === 3) {
+          let y = parseInt(parts[2], 10); if (y < 100) y += 2000;
+          const d = new Date(y, parseInt(parts[0],10)-1, parseInt(parts[1],10));
+          if (!isNaN(d.getTime())) {
+            daysSinceLaunch = Math.floor((new Date() - d) / (1000*60*60*24));
+          }
+        }
+      }
+      
+      venues.push({
+        name: v.name, city, billing: v.billing,
+        dppRev, memRev, rev, cost, net: rev - cost,
+        margin: rev > 0 ? ((rev - cost) / rev) * 100 : 0,
+        mSpots, dSpots, oSpots, totalSpots,
+        memberMix: totalSpots > 0 ? (mSpots / totalSpots) * 100 : 0,
+        promoMix: totalSpots > 0 ? (oSpots / totalSpots) * 100 : 0,
+        daysSinceLaunch,
+      });
+    }
+  }
+  
+  // Build per-city stats (revenue + cost + overhead)
+  const cityStats = [];
+  for (const city of CITIES) {
+    const cityVenues = venues.filter(v => v.city === city);
+    const fieldRev = cityVenues.reduce((s,v) => s + v.dppRev, 0);
+    const memberRev = revenue.byCityMembershipMonth[city]?.[month] || 0;
+    const fieldCost = cityVenues.reduce((s,v) => s + v.cost, 0);
+    const mm = mgrPay[city]?.[month] || 0;
+    const cm = cityOverhead[city]?.cityMgr?.[month] || 0;
+    const mktg = cityOverhead[city]?.marketing?.[month] || 0;
+    const equip = cityOverhead[city]?.equipment?.[month] || 0;
+    const overhead = mm + cm + mktg + equip;
+    const rev = fieldRev + memberRev;
+    const net = rev - fieldCost - overhead;
+    if (rev === 0 && overhead === 0) continue;
+    cityStats.push({ city, rev, net, overhead, memberRev, fieldRev });
+  }
+  
+  // ========== POSITIVE ALERTS ==========
+  const positives = [];
+  
+  // Top margin venue
+  const profitableVenues = venues.filter(v => v.rev >= 1000 && v.net > 0).sort((a,b) => b.margin - a.margin);
+  if (profitableVenues.length > 0) {
+    const top = profitableVenues[0];
+    positives.push({
+      label: 'Top Margin Field',
+      value: `${top.name} · ${fmtPct(top.margin)}`,
+      numInline: fmtMoney(top.net) + ' net',
+      type: 'pos',
+    });
+  }
+  
+  // Best city
+  const profitableCities = cityStats.filter(c => c.net > 0).sort((a,b) => b.net - a.net);
+  if (profitableCities.length > 0) {
+    const top = profitableCities[0];
+    positives.push({
+      label: 'Best City',
+      value: top.city,
+      numInline: fmtMoney(top.net) + ' net',
+      type: 'pos',
+    });
+  } else {
+    // Least-bad city
+    const leastBad = cityStats.sort((a,b) => b.net - a.net)[0];
+    if (leastBad) {
+      positives.push({
+        label: 'Strongest City',
+        value: leastBad.city,
+        numInline: fmtMoney(leastBad.net) + ' net',
+        type: leastBad.net > 0 ? 'pos' : 'neg',
+      });
+    }
+  }
+  
+  // Zero-cost wins ($1K+ rev, $0 cost)
+  const freeWinners = venues.filter(v => v.rev >= 1000 && v.cost === 0).sort((a,b) => b.rev - a.rev);
+  if (freeWinners.length > 0) {
+    positives.push({
+      label: `Zero-Cost Winners (${freeWinners.length})`,
+      value: freeWinners.slice(0, 3).map(v => v.name).join(', '),
+      numInline: fmtMoney(freeWinners.reduce((s,v) => s + v.rev, 0)) + ' total rev',
+      type: 'pos',
+    });
+  }
+  
+  // Strong member mix (50%+)
+  const stickyVenues = venues.filter(v => v.totalSpots >= 30 && v.memberMix >= 50);
+  if (stickyVenues.length > 0) {
+    positives.push({
+      label: `Member-Heavy Fields (${stickyVenues.length})`,
+      value: stickyVenues.map(v => `${v.name} (${v.memberMix.toFixed(0)}%)`).join(', '),
+      type: 'pos',
+    });
+  }
+  
+  // New venues growing (launched < 90d, net positive)
+  const growingNew = venues.filter(v => v.daysSinceLaunch !== null && v.daysSinceLaunch < 90 && v.daysSinceLaunch >= 0 && v.net > 0);
+  if (growingNew.length > 0) {
+    positives.push({
+      label: 'New Venues Profitable',
+      value: growingNew.map(v => v.name).join(', '),
+      type: 'pos',
+    });
+  }
+  
+  // ========== NEGATIVE ALERTS ==========
+  const negatives = [];
+  
+  // Venues losing money
+  const losers = venues.filter(v => v.net < 0).sort((a,b) => a.net - b.net);
+  if (losers.length > 0) {
+    const top5 = losers.slice(0, 5);
+    negatives.push({
+      label: `Unprofitable Fields (${losers.length})`,
+      value: top5.map(v => `${v.name} ${fmtMoney(v.net)}`).join(' · '),
+      numInline: 'Total loss: ' + fmtMoney(losers.reduce((s,v) => s + v.net, 0)),
+      type: 'neg',
+    });
+  }
+  
+  // Cities losing money
+  const redCities = cityStats.filter(c => c.net < 0).sort((a,b) => a.net - b.net);
+  if (redCities.length > 0) {
+    negatives.push({
+      label: `Unprofitable Cities (${redCities.length})`,
+      value: redCities.map(c => `${c.city} ${fmtMoney(c.net)}`).join(' · '),
+      type: 'neg',
+    });
+  }
+  
+  // High promo mix
+  const promoHeavy = venues.filter(v => v.totalSpots >= 30 && v.promoMix > 20).sort((a,b) => b.promoMix - a.promoMix);
+  if (promoHeavy.length > 0) {
+    negatives.push({
+      label: 'High Promo Usage',
+      value: promoHeavy.map(v => `${v.name} (${v.promoMix.toFixed(0)}%)`).join(', '),
+      type: 'neg',
+    });
+  }
+  
+  // Low member mix (heavy DPP dependency, no sticky revenue)
+  const dppHeavy = venues.filter(v => v.totalSpots >= 50 && v.memberMix < 10).sort((a,b) => a.memberMix - b.memberMix);
+  if (dppHeavy.length > 0) {
+    negatives.push({
+      label: 'Low Member Stickiness',
+      value: dppHeavy.slice(0, 3).map(v => `${v.name} (${v.memberMix.toFixed(0)}%)`).join(', '),
+      type: 'neg',
+    });
+  }
+  
+  // New venues underperforming
+  const strugglingNew = venues.filter(v => v.daysSinceLaunch !== null && v.daysSinceLaunch < 90 && v.daysSinceLaunch >= 0 && v.net < 0);
+  if (strugglingNew.length > 0) {
+    negatives.push({
+      label: 'New Venues Struggling',
+      value: strugglingNew.map(v => `${v.name} ${fmtMoney(v.net)}`).join(' · '),
+      type: 'neg',
+    });
+  }
+  
+  // ========== NEUTRAL INSIGHTS ==========
+  const neutral = [];
+  
+  // City membership concentration — what % of city's memberships come from top venue
+  for (const c of cityStats) {
+    const cityMemberSpotsTotal = memberSpots.member.byCityMonth[c.city]?.[month] || 0;
+    if (cityMemberSpotsTotal < 30) continue;
+    // find top venue in this city
+    const cityVs = venues.filter(v => v.city === c.city && v.mSpots > 0).sort((a,b) => b.mSpots - a.mSpots);
+    if (cityVs.length === 0) continue;
+    const top = cityVs[0];
+    const concentration = (top.mSpots / cityMemberSpotsTotal) * 100;
+    if (concentration >= 80) {
+      neutral.push({
+        label: `${c.city} — Member Concentration Risk`,
+        value: `${concentration.toFixed(0)}% of members play at ${top.name}`,
+        type: 'neu',
+      });
+    }
+  }
+  
+  // Cash burn pace (simple: current burn / starting cash = months of runway)
+  const totalExpApr = cityStats.reduce((s,c) => s + c.overhead, 0) + venues.reduce((s,v) => s + v.cost, 0);
+  const totalRevApr = cityStats.reduce((s,c) => s + c.rev, 0);
+  const monthlyBurn = totalExpApr - totalRevApr;
+  // Get starting cash from dashboard
+  const startingCash = parseCurrency(findRow(loadedData.dashboard, 'Starting Cash')?.[1]);
+  if (monthlyBurn > 0 && startingCash > 0) {
+    const runwayMonths = startingCash / monthlyBurn;
+    neutral.push({
+      label: 'Cash Runway',
+      value: `${runwayMonths.toFixed(1)} months at current burn`,
+      numInline: fmtMoney(monthlyBurn) + '/mo net burn',
+      type: runwayMonths < 3 ? 'neg' : 'neu',
+    });
+  } else if (totalRevApr > totalExpApr) {
+    neutral.push({
+      label: 'Cash Runway',
+      value: `Profitable — extending runway`,
+      numInline: '+' + fmtMoney(totalRevApr - totalExpApr) + '/mo',
+      type: 'pos',
+    });
+  }
+  
+  // Total company DPP:Member ratio
+  const totalM = venues.reduce((s,v) => s + v.mSpots, 0);
+  const totalD = venues.reduce((s,v) => s + v.dSpots, 0);
+  const totalO = venues.reduce((s,v) => s + v.oSpots, 0);
+  const totalSpots = totalM + totalD + totalO;
+  if (totalSpots > 100) {
+    neutral.push({
+      label: 'Company-wide Spot Mix',
+      value: `Members ${(totalM/totalSpots*100).toFixed(0)}% · DPP ${(totalD/totalSpots*100).toFixed(0)}% · Promo ${(totalO/totalSpots*100).toFixed(0)}%`,
+      numInline: `${totalSpots} total spots`,
+      type: 'neu',
+    });
+  }
+  
+  // ========== RENDER ==========
+  function renderColumn(title, items, type) {
+    const emptyMsg = items.length === 0 ? '<div class="insight-empty">Nothing to flag</div>' : '';
+    const itemsHtml = items.map(it => `
+      <div class="insight-item ${it.type || ''}">
+        <div class="label">${it.label}</div>
+        <div class="value">${it.value || ''}${it.numInline ? ` <span class="num-inline">${it.numInline}</span>` : ''}</div>
+      </div>
+    `).join('');
+    return `<div class="insight-column ${type}">
+      <div class="header">${title}</div>
+      ${itemsHtml || emptyMsg}
+    </div>`;
+  }
+  
+  container.innerHTML = 
+    renderColumn('⬆ What\'s Working', positives, 'positive') +
+    renderColumn('⬇ Needs Attention', negatives, 'negative') +
+    renderColumn('◆ Watch', neutral, 'neutral');
 }
 
 function renderMonthlyPL(dash) {
@@ -2437,6 +2841,7 @@ function initMonthTabs() {
       renderMonthlyPL(loadedData.dashboard);
       renderCityCards();
       renderFieldRanking();
+      renderInsights();
     });
   });
 }
@@ -2469,6 +2874,7 @@ async function loadAll() {
     renderTrendChart(dashboard);
     renderCityCards();
     renderFieldRanking();
+    renderInsights();
 
     const now = new Date();
     document.getElementById('refresh-time').textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
