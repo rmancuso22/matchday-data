@@ -1036,11 +1036,12 @@ function parseCurrency(str) {
 
 function formatRelativeTime(dateStr) {
   if (!dateStr) return '—';
-  // Parse date (supports MM/DD/YYYY, YYYY-MM-DD, ISO)
-  let d = null;
   const trimmed = String(dateStr).trim();
-  if (!trimmed || trimmed === '-') return '—';
+  if (!trimmed || trimmed === '-' || trimmed === '—') return '—';
   
+  let d = null;
+  
+  // Try MM/DD/YYYY or M/D/YYYY
   if (trimmed.includes('/')) {
     const parts = trimmed.split('/');
     if (parts.length === 3) {
@@ -1050,9 +1051,21 @@ function formatRelativeTime(dateStr) {
       if (y < 100) y += 2000;
       d = new Date(y, m - 1, day);
     }
-  } else if (trimmed.includes('-')) {
+  }
+  // Try YYYY-MM-DD or ISO
+  else if (trimmed.includes('-') && /^\d{4}-\d{2}-\d{2}/.test(trimmed)) {
     d = new Date(trimmed);
-  } else {
+  }
+  // Try Excel/Sheets serial number (days since 1899-12-30)
+  else if (/^\d+(\.\d+)?$/.test(trimmed)) {
+    const serial = parseFloat(trimmed);
+    if (serial > 0 && serial < 100000) {
+      const utc_days = serial - 25569;
+      d = new Date(utc_days * 86400 * 1000);
+    }
+  }
+  // Fallback: try generic Date constructor (handles "Wed Aug 26 2026", "Aug 26, 2026", etc.)
+  if (!d || isNaN(d.getTime())) {
     d = new Date(trimmed);
   }
   if (!d || isNaN(d.getTime())) return '—';
@@ -1312,7 +1325,7 @@ function getVenuesPerCity(venuesTab) {
     const name = canonicalVenue(rawName);
     const city = row[1] ? String(row[1]).trim() : null;
     const billing = row[2] ? String(row[2]).trim() : null;
-    const launchDate = row[3] ? String(row[3]).trim() : null;  // column D
+    const launchDate = row[8] ? String(row[8]).trim() : null;  // column I
     if (!city || !CITIES.includes(city)) continue;
     
     const key = `${city}::${name}`;
@@ -2194,13 +2207,15 @@ function renderFieldRanking() {
   
   rows.forEach((r, idx) => {
     const projCls = r.projected ? ' projection' : '';
+    const costCls = r.cost > 0 ? 'num neg' : 'num';
+    const revCls = r.revenue > 0 ? 'num pos' : 'num';
     html += `<tr>
       <td class="rank">${idx + 1}</td>
       <td>${r.venue}</td>
       <td class="city-cell">${r.city}</td>
       <td class="launched-cell">${r.launchedRelative}</td>
-      <td class="num pos${projCls}">${fmtMoney(r.revenue)}</td>
-      <td class="num neg${projCls}">${fmtMoney(r.cost)} ${r.costDetailHtml}</td>
+      <td class="${revCls}${projCls}">${fmtMoney(r.revenue)}</td>
+      <td class="${costCls}${projCls}">${fmtMoney(r.cost)} ${r.costDetailHtml}</td>
       <td class="num ${numClass(r.net)}${projCls}">${fmtMoney(r.net)}</td>
       <td>${marginBadgeHtml(r.margin, r.revenue !== 0 || r.cost !== 0)}</td>
     </tr>`;
