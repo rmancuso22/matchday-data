@@ -1258,13 +1258,22 @@ function getVenuesPerCity(venuesTab) {
   }
   if (startRow === -1) startRow = 4;
 
+  // Track which (city, canonicalName) pairs we've already added so we skip aliases
+  const seen = new Set();
+  
   for (let i = startRow; i < venuesTab.length; i++) {
     const row = venuesTab[i];
     if (!row || !row[0]) continue;
-    const name = String(row[0]).trim();
+    const rawName = String(row[0]).trim();
+    const name = canonicalVenue(rawName);
     const city = row[1] ? String(row[1]).trim() : null;
     const billing = row[2] ? String(row[2]).trim() : null;
     if (!city || !CITIES.includes(city)) continue;
+    
+    const key = `${city}::${name}`;
+    if (seen.has(key)) continue;  // skip aliased duplicates (e.g. "ATH Katy Sunday" → "ATH Katy")
+    seen.add(key);
+    
     if (!result[city]) result[city] = [];
     result[city].push({ name, billing });
   }
