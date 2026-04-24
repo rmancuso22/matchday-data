@@ -1332,6 +1332,7 @@ function aggregateRevenue(revenueTab) {
 
 function aggregateScheduleCosts(scheduleTab) {
   const byVenueMonth = {};
+  const matchCountByVenueMonth = {};
   
   let startRow = -1;
   for (let i = 0; i < scheduleTab.length; i++) {
@@ -1349,11 +1350,14 @@ function aggregateScheduleCosts(scheduleTab) {
     const month = (row[1] ? String(row[1]).trim() : null) || monthFromDate(dateStr);
     const venue = canonicalVenue(row[3] ? String(row[3]).trim() : null);
     const cost = parseCurrency(row[6]);
+    const matchCount = parseCurrency(row[4]) || 1; // Column E = match count, default 1
     if (!month || !venue) continue;
     if (!byVenueMonth[venue]) byVenueMonth[venue] = {};
     byVenueMonth[venue][month] = (byVenueMonth[venue][month] || 0) + cost;
+    if (!matchCountByVenueMonth[venue]) matchCountByVenueMonth[venue] = {};
+    matchCountByVenueMonth[venue][month] = (matchCountByVenueMonth[venue][month] || 0) + matchCount;
   }
-  return { byVenueMonth };
+  return { byVenueMonth, matchCountByVenueMonth };
 }
 
 function aggregateMonthlyFlatVenueCosts(expensesTab) {
@@ -1454,6 +1458,10 @@ function getVenuesPerCity(venuesTab) {
     const name = canonicalVenue(rawName);
     const city = row[1] ? String(row[1]).trim() : null;
     const billing = row[2] ? String(row[2]).trim() : null;
+    const hourlyRate = parseCurrency(row[3]);      // column D
+    const monthlyFlat = parseCurrency(row[4]);     // column E
+    const perMatchRate = parseCurrency(row[5]);    // column F
+    const maxSpots = parseCurrency(row[6]);        // column G
     const launchDate = row[8] ? String(row[8]).trim() : null;  // column I
     if (!city || !CITIES.includes(city)) continue;
     
@@ -1462,7 +1470,7 @@ function getVenuesPerCity(venuesTab) {
     seen.add(key);
     
     if (!result[city]) result[city] = [];
-    result[city].push({ name, billing, launchDate });
+    result[city].push({ name, billing, launchDate, hourlyRate, monthlyFlat, perMatchRate, maxSpots });
   }
   return result;
 }
@@ -1653,8 +1661,28 @@ function renderInsights() {
       const dSpots = memberSpots.dpp.byVenueMonth[v.name]?.[month] || 0;
       const oSpots = memberSpots.other.byVenueMonth[v.name]?.[month] || 0;
       const totalSpots = mSpots + dSpots + oSpots;
+      const paidSpots = mSpots + dSpots; // for break-even math
       
       if (rev === 0 && cost === 0 && totalSpots === 0) continue;
+      
+      // Match count from Schedule tab
+      const matchCount = scheduleCosts.matchCountByVenueMonth?.[v.name]?.[month] || 0;
+      const maxSpots = v.maxSpots || 0;
+      const totalCapacity = matchCount * maxSpots;
+      
+      // Fill rate = all spots booked / total capacity
+      const fillRate = totalCapacity > 0 ? (totalSpots / totalCapacity) * 100 : null;
+      
+      // Revenue per paid spot (used for break-even)
+      const revPerPaidSpot = paidSpots > 0 ? rev / paidSpots : 0;
+      
+      // Break-even spots needed per match (for per-match/per-hour venues; monthly handled per month)
+      // For any billing type: breakeven_spots = cost / revPerPaidSpot (total for the month)
+      // Then compare to actual paid spots
+      const breakevenSpotsMonth = revPerPaidSpot > 0 ? cost / revPerPaidSpot : null;
+      const breakevenSpotsPerMatch = (breakevenSpotsMonth && matchCount > 0) 
+        ? breakevenSpotsMonth / matchCount : null;
+      const actualPaidPerMatch = matchCount > 0 ? paidSpots / matchCount : null;
       
       // Launch date → days since launch
       let daysSinceLaunch = null;
@@ -1673,7 +1701,9 @@ function renderInsights() {
         name: v.name, city, billing: v.billing,
         dppRev, memRev, rev, cost, net: rev - cost,
         margin: rev > 0 ? ((rev - cost) / rev) * 100 : 0,
-        mSpots, dSpots, oSpots, totalSpots,
+        mSpots, dSpots, oSpots, totalSpots, paidSpots,
+        matchCount, maxSpots, totalCapacity, fillRate,
+        revPerPaidSpot, breakevenSpotsMonth, breakevenSpotsPerMatch, actualPaidPerMatch,
         memberMix: totalSpots > 0 ? (mSpots / totalSpots) * 100 : 0,
         promoMix: totalSpots > 0 ? (oSpots / totalSpots) * 100 : 0,
         daysSinceLaunch,
@@ -1803,18 +1833,34 @@ function renderInsights() {
     });
   }
   
-  // Low member mix (heavy DPP dependency, no sticky revenue)
-  const dppHeavy = venues.filter(v => v.totalSpots >= 50 && v.memberMix < 10).sort((a,b) => a.memberMix - b.memberMix);
-  if (dppHeavy.length > 0) {
+  // Below Break-even Utilization — per-match / per-hour venues losing money on volume
+  // Only flag if: has cost, has paid spots, actual paid/match is below breakeven/match, and matches >= 3 (enough data)
+  const belowBreakeven = venues.filter(v => 
+    v.billing !== 'monthly_flat' &&
+    v.cost > 0 &&
+    v.matchCount >= 3 &&
+    v.breakevenSpotsPerMatch !== null &&
+    v.actualPaidPerMatch !== null &&
+    v.actualPaidPerMatch < v.breakevenSpotsPerMatch * 0.9 // at least 10% below breakeven to flag
+  ).sort((a,b) => (a.actualPaidPerMatch / a.breakevenSpotsPerMatch) - (b.actualPaidPerMatch / b.breakevenSpotsPerMatch));
+  
+  if (belowBreakeven.length > 0) {
     negatives.push({
-      label: 'Low Member Stickiness',
-      value: dppHeavy.slice(0, 3).map(v => `${v.name} (${v.memberMix.toFixed(0)}%)`).join(', '),
+      label: `Below Break-even (${belowBreakeven.length})`,
+      value: belowBreakeven.slice(0, 4).map(v => 
+        `${v.name}: ${v.actualPaidPerMatch.toFixed(1)}/match (needs ${v.breakevenSpotsPerMatch.toFixed(1)})`
+      ).join(' · '),
       type: 'neg',
     });
   }
   
-  // New venues underperforming
-  const strugglingNew = venues.filter(v => v.daysSinceLaunch !== null && v.daysSinceLaunch < 90 && v.daysSinceLaunch >= 0 && v.net < 0);
+  // New venues underperforming — exclude very fresh launches (<30 days, still education mode)
+  const strugglingNew = venues.filter(v => 
+    v.daysSinceLaunch !== null && 
+    v.daysSinceLaunch >= 30 &&    // past education mode
+    v.daysSinceLaunch < 90 && 
+    v.net < 0
+  );
   if (strugglingNew.length > 0) {
     negatives.push({
       label: 'New Venues Struggling',
@@ -1826,22 +1872,59 @@ function renderInsights() {
   // ========== NEUTRAL INSIGHTS ==========
   const neutral = [];
   
-  // City membership concentration — what % of city's memberships come from top venue
-  for (const c of cityStats) {
-    const cityMemberSpotsTotal = memberSpots.member.byCityMonth[c.city]?.[month] || 0;
-    if (cityMemberSpotsTotal < 30) continue;
-    // find top venue in this city
-    const cityVs = venues.filter(v => v.city === c.city && v.mSpots > 0).sort((a,b) => b.mSpots - a.mSpots);
-    if (cityVs.length === 0) continue;
-    const top = cityVs[0];
-    const concentration = (top.mSpots / cityMemberSpotsTotal) * 100;
-    if (concentration >= 80) {
-      neutral.push({
-        label: `${c.city} — Member Concentration Risk`,
-        value: `${concentration.toFixed(0)}% of members play at ${top.name}`,
-        type: 'neu',
-      });
+  // Overhead Burden by City — flag cities where overhead > 50% of revenue (heavy burden)
+  const burdened = cityStats.filter(c => c.rev > 0 && c.overhead > 0)
+    .map(c => ({...c, burdenPct: (c.overhead / c.rev) * 100}))
+    .filter(c => c.burdenPct > 50)
+    .sort((a,b) => b.burdenPct - a.burdenPct);
+  if (burdened.length > 0) {
+    neutral.push({
+      label: 'Overhead Burden (overhead/rev)',
+      value: burdened.slice(0, 5).map(c => 
+        `${c.city}: ${c.burdenPct >= 1000 ? Math.round(c.burdenPct) : c.burdenPct.toFixed(0)}%`
+      ).join(' · '),
+      type: 'neu',
+    });
+  }
+  
+  // Fill Rate — top 3 and bottom 3 (only venues with match count ≥ 5 for meaningful data)
+  const withFill = venues.filter(v => v.fillRate !== null && v.matchCount >= 5);
+  if (withFill.length >= 3) {
+    const topFill = [...withFill].sort((a,b) => b.fillRate - a.fillRate).slice(0, 3);
+    const bottomFill = [...withFill].sort((a,b) => a.fillRate - b.fillRate).slice(0, 3);
+    neutral.push({
+      label: 'Highest Fill Rate',
+      value: topFill.map(v => `${v.name} (${v.fillRate.toFixed(0)}%)`).join(', '),
+      numInline: 'Capacity well utilized',
+      type: 'neu',
+    });
+    neutral.push({
+      label: 'Lowest Fill Rate',
+      value: bottomFill.map(v => `${v.name} (${v.fillRate.toFixed(0)}%)`).join(', '),
+      numInline: 'Room to grow attendance',
+      type: 'neu',
+    });
+  }
+  
+  // Cities Ready for 2nd Field — city has venue(s) with fill rate ≥ 80%
+  const readyForExpansion = {};
+  for (const v of withFill) {
+    if (v.fillRate >= 80) {
+      if (!readyForExpansion[v.city]) readyForExpansion[v.city] = [];
+      readyForExpansion[v.city].push(v);
     }
+  }
+  const readyCities = Object.keys(readyForExpansion);
+  if (readyCities.length > 0) {
+    neutral.push({
+      label: `Cities Ready for Expansion (${readyCities.length})`,
+      value: readyCities.map(c => {
+        const vs = readyForExpansion[c];
+        return `${c} — ${vs.map(v => `${v.name} at ${v.fillRate.toFixed(0)}%`).join(', ')}`;
+      }).join(' · '),
+      numInline: 'Fields near capacity — consider adding venue',
+      type: 'pos',
+    });
   }
   
   // Cash burn pace (simple: current burn / starting cash = months of runway)
