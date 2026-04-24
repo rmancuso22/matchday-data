@@ -1732,39 +1732,26 @@ function renderInsights() {
   // ========== POSITIVE ALERTS ==========
   const positives = [];
   
-  // Top margin venue
-  const profitableVenues = venues.filter(v => v.rev >= 1000 && v.net > 0).sort((a,b) => b.margin - a.margin);
-  if (profitableVenues.length > 0) {
-    const top = profitableVenues[0];
+  // All Profitable Fields (mirror of Unprofitable Fields)
+  const winners = venues.filter(v => v.net > 0).sort((a,b) => b.net - a.net);
+  if (winners.length > 0) {
+    const top5 = winners.slice(0, 5);
     positives.push({
-      label: 'Top Margin Field',
-      value: `${top.name} · ${fmtPct(top.margin)}`,
-      numInline: fmtMoney(top.net) + ' net',
+      label: `Profitable Fields (${winners.length})`,
+      value: top5.map(v => `${v.name} ${fmtMoney(v.net)}`).join(' · '),
+      numInline: 'Total gain: ' + fmtMoney(winners.reduce((s,v) => s + v.net, 0)),
       type: 'pos',
     });
   }
   
-  // Best city
-  const profitableCities = cityStats.filter(c => c.net > 0).sort((a,b) => b.net - a.net);
-  if (profitableCities.length > 0) {
-    const top = profitableCities[0];
+  // All Profitable Cities (mirror of Unprofitable Cities)
+  const greenCities = cityStats.filter(c => c.net > 0).sort((a,b) => b.net - a.net);
+  if (greenCities.length > 0) {
     positives.push({
-      label: 'Best City',
-      value: top.city,
-      numInline: fmtMoney(top.net) + ' net',
+      label: `Profitable Cities (${greenCities.length})`,
+      value: greenCities.map(c => `${c.city} ${fmtMoney(c.net)}`).join(' · '),
       type: 'pos',
     });
-  } else {
-    // Least-bad city
-    const leastBad = cityStats.sort((a,b) => b.net - a.net)[0];
-    if (leastBad) {
-      positives.push({
-        label: 'Strongest City',
-        value: leastBad.city,
-        numInline: fmtMoney(leastBad.net) + ' net',
-        type: leastBad.net > 0 ? 'pos' : 'neg',
-      });
-    }
   }
   
   // Zero-cost wins ($1K+ rev, $0 cost)
@@ -1833,27 +1820,6 @@ function renderInsights() {
     });
   }
   
-  // Below Break-even Utilization — per-match / per-hour venues losing money on volume
-  // Only flag if: has cost, has paid spots, actual paid/match is below breakeven/match, and matches >= 3 (enough data)
-  const belowBreakeven = venues.filter(v => 
-    v.billing !== 'monthly_flat' &&
-    v.cost > 0 &&
-    v.matchCount >= 3 &&
-    v.breakevenSpotsPerMatch !== null &&
-    v.actualPaidPerMatch !== null &&
-    v.actualPaidPerMatch < v.breakevenSpotsPerMatch * 0.9 // at least 10% below breakeven to flag
-  ).sort((a,b) => (a.actualPaidPerMatch / a.breakevenSpotsPerMatch) - (b.actualPaidPerMatch / b.breakevenSpotsPerMatch));
-  
-  if (belowBreakeven.length > 0) {
-    negatives.push({
-      label: `Below Break-even (${belowBreakeven.length})`,
-      value: belowBreakeven.slice(0, 4).map(v => 
-        `${v.name}: ${v.actualPaidPerMatch.toFixed(1)}/match (needs ${v.breakevenSpotsPerMatch.toFixed(1)})`
-      ).join(' · '),
-      type: 'neg',
-    });
-  }
-  
   // New venues underperforming — exclude very fresh launches (<30 days, still education mode)
   const strugglingNew = venues.filter(v => 
     v.daysSinceLaunch !== null && 
@@ -1884,46 +1850,6 @@ function renderInsights() {
         `${c.city}: ${c.burdenPct >= 1000 ? Math.round(c.burdenPct) : c.burdenPct.toFixed(0)}%`
       ).join(' · '),
       type: 'neu',
-    });
-  }
-  
-  // Fill Rate — top 3 and bottom 3 (only venues with match count ≥ 5 for meaningful data)
-  const withFill = venues.filter(v => v.fillRate !== null && v.matchCount >= 5);
-  if (withFill.length >= 3) {
-    const topFill = [...withFill].sort((a,b) => b.fillRate - a.fillRate).slice(0, 3);
-    const bottomFill = [...withFill].sort((a,b) => a.fillRate - b.fillRate).slice(0, 3);
-    neutral.push({
-      label: 'Highest Fill Rate',
-      value: topFill.map(v => `${v.name} (${v.fillRate.toFixed(0)}%)`).join(', '),
-      numInline: 'Capacity well utilized',
-      type: 'neu',
-    });
-    neutral.push({
-      label: 'Lowest Fill Rate',
-      value: bottomFill.map(v => `${v.name} (${v.fillRate.toFixed(0)}%)`).join(', '),
-      numInline: 'Room to grow attendance',
-      type: 'neu',
-    });
-  }
-  
-  // Cities Ready for 2nd Field — city has venue(s) with fill rate ≥ 80%
-  const readyForExpansion = {};
-  for (const v of withFill) {
-    if (v.fillRate >= 80) {
-      if (!readyForExpansion[v.city]) readyForExpansion[v.city] = [];
-      readyForExpansion[v.city].push(v);
-    }
-  }
-  const readyCities = Object.keys(readyForExpansion);
-  if (readyCities.length > 0) {
-    neutral.push({
-      label: `Cities Ready for Expansion (${readyCities.length})`,
-      value: readyCities.map(c => {
-        const vs = readyForExpansion[c];
-        return `${c} — ${vs.map(v => `${v.name} at ${v.fillRate.toFixed(0)}%`).join(', ')}`;
-      }).join(' · '),
-      numInline: 'Fields near capacity — consider adding venue',
-      type: 'pos',
     });
   }
   
