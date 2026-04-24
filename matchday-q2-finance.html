@@ -1031,6 +1031,7 @@ const TABS = {
   revenue: 178156285,
   expenses: 228997040,
   memberSpots: 873151853,
+  commentary: 1555494649,
 };
 
 const csvUrl = (gid) => `${BASE_URL}?gid=${gid}&single=true&output=csv`;
@@ -1623,6 +1624,40 @@ function renderHero(dash) {
   document.getElementById('q2-exp').textContent = fmtMoney(expenses);
   const burnRate = expenses / 3;
   document.getElementById('q2-exp-sub').textContent = `≈ ${fmtMoney(burnRate)}/mo avg`;
+}
+
+// ============== COMMENTARY (editable from Sheets) ==============
+function renderCommentary() {
+  const tab = loadedData.commentary;
+  if (!tab || !tab.length) return;
+  
+  // Simple markdown: **bold**, _italic_, &amp; → &
+  function mdToHtml(text) {
+    if (!text) return '';
+    // escape first
+    let s = String(text)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    // then replace markdown
+    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/(^|\s)_([^_]+)_/g, '$1<em>$2</em>');
+    return s;
+  }
+  
+  let eyebrow = '', body = '';
+  for (const row of tab) {
+    if (!row || !row[0]) continue;
+    const label = String(row[0]).trim().toLowerCase();
+    const val = row[1] ? String(row[1]) : '';
+    if (label === 'eyebrow') eyebrow = val;
+    if (label === 'body') body = val;
+  }
+  
+  const eyebrowEl = document.querySelector('.summary-block .eyebrow');
+  const bodyEl = document.getElementById('summary-body');
+  if (eyebrow && eyebrowEl) eyebrowEl.textContent = eyebrow;
+  if (body && bodyEl) bodyEl.innerHTML = mdToHtml(body);
 }
 
 // ============== INSIGHTS & ALERTS (auto-computed from data) ==============
@@ -2906,7 +2941,7 @@ async function loadAll() {
   status.classList.remove('hidden');
 
   try {
-    const [dashboard, revenue, expenses, schedule, managerPay, monthlyExpenses, venues, memberSpots] = await Promise.all([
+    const [dashboard, revenue, expenses, schedule, managerPay, monthlyExpenses, venues, memberSpots, commentary] = await Promise.all([
       fetchCSV(TABS.dashboard),
       fetchCSV(TABS.revenue),
       fetchCSV(TABS.expenses),
@@ -2915,13 +2950,15 @@ async function loadAll() {
       fetchCSV(TABS.monthlyExpenses),
       fetchCSV(TABS.venues),
       fetchCSV(TABS.memberSpots),
+      fetchCSV(TABS.commentary),
     ]);
     
-    loadedData = { dashboard, revenue, expenses, schedule, managerPay, monthlyExpenses, venues, memberSpots };
+    loadedData = { dashboard, revenue, expenses, schedule, managerPay, monthlyExpenses, venues, memberSpots, commentary };
     
     // Compute month progress from Revenue tab (how far into each month are the actuals?)
     computeMonthProgress(revenue);
     
+    renderCommentary();
     renderHero(dashboard);
     renderMonthlyPL(dashboard);
     renderTrendChart(dashboard);
