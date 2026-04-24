@@ -1033,6 +1033,7 @@ const TABS = {
   memberSpots: 873151853,
   commentary: 1555494649,
   pricing: 48936709,
+  members: 8738611,
 };
 
 const csvUrl = (gid) => `${BASE_URL}?gid=${gid}&single=true&output=csv`;
@@ -1661,6 +1662,39 @@ function renderHero(dash) {
   document.getElementById('q2-exp-sub').textContent = `≈ ${fmtMoney(burnRate)}/mo avg`;
 }
 
+// Helper: count paying ACTIVE members by city (Status=ACTIVE, Price>0, city from Member ID prefix)
+function aggregateMembers(membersTab) {
+  const CITY_CODE = {
+    ATX: 'Austin', DFW: 'Dallas', HOU: 'Houston', SATX: 'San Antonio',
+    ATL: 'Atlanta', STL: 'St. Louis', OKC: 'OKC', ELP: 'El Paso',
+  };
+  const byCity = {};
+  if (!membersTab || !membersTab.length) return byCity;
+  
+  // Find header row
+  let startRow = 0;
+  if (membersTab[0] && membersTab[0][0] && 
+      String(membersTab[0][0]).toLowerCase().includes('member')) {
+    startRow = 1;
+  }
+  
+  for (let i = startRow; i < membersTab.length; i++) {
+    const row = membersTab[i];
+    if (!row || !row[0]) continue;
+    const mid = String(row[0]).trim();
+    const status = row[1] ? String(row[1]).trim() : '';
+    const price = parseCurrency(row[2]);
+    if (status !== 'ACTIVE') continue;
+    if (price <= 0) continue;
+    const match = mid.match(/^([A-Z]+)/);
+    if (!match) continue;
+    const city = CITY_CODE[match[1]];
+    if (!city) continue;
+    byCity[city] = (byCity[city] || 0) + 1;
+  }
+  return byCity;
+}
+
 // Helper: aggregate Pricing tab → { byVenue: { venueName: {dppPrice, memberPrice, city, notes}}, memberPriceByCity: {} }
 function aggregatePricing(pricingTab) {
   const byVenue = {};
@@ -1966,38 +2000,35 @@ function renderInsights() {
   // ========== NEUTRAL INSIGHTS ==========
   const neutral = [];
   
-  // Membership Health by City — requires Pricing tab
+  // Membership Health by City — uses real member counts from Members tab + Pricing tab
   const pricing = aggregatePricing(loadedData.pricing);
-  if (pricing && Object.keys(pricing.memberPriceByCity).length > 0) {
+  const membersByCity = aggregateMembers(loadedData.members);
+  
+  if (pricing && Object.keys(pricing.memberPriceByCity).length > 0 && Object.keys(membersByCity).length > 0) {
     const healthByCity = [];
     for (const city of CITIES) {
       const memberPrice = pricing.memberPriceByCity[city];
-      if (!memberPrice) continue;
-      const cityMembers = venues.filter(v => v.city === city);
-      const totalMSpots = cityMembers.reduce((s,v) => s + v.mSpots, 0);
+      const memberCount = membersByCity[city] || 0;
+      if (!memberPrice || memberCount < 5) continue;  // skip cities with too few members
+      
+      const cityVenues = venues.filter(v => v.city === city);
+      const totalMSpots = cityVenues.reduce((s,v) => s + v.mSpots, 0);
       if (totalMSpots === 0) continue;
-      // Unique member count approximation: use txn count from revenue.byCityMembershipMonth
-      // But we don't have a clean "member count" — use spots/member from avg match activity
-      // Better: use member spots total / assumed 1-4 matches per member per week
-      // For break-even: need venue-weighted DPP price
+      
+      // Weighted DPP price across venues where members play
       let weightedDppRev = 0, weightedDppSpots = 0;
-      for (const v of cityMembers) {
+      for (const v of cityVenues) {
         const vp = pricing.byVenue[v.name];
-        if (vp && vp.dppPrice > 0) {
+        if (vp && vp.dppPrice > 0 && v.mSpots > 0) {
           weightedDppRev += vp.dppPrice * v.mSpots;
           weightedDppSpots += v.mSpots;
         }
       }
       const weightedDppPrice = weightedDppSpots > 0 ? weightedDppRev / weightedDppSpots : 0;
       if (weightedDppPrice === 0) continue;
-      const beMatches = memberPrice / weightedDppPrice;
       
-      // Actual matches per member: need to estimate member count from membership revenue
-      // revenue.byCityMembershipMonth gives total $, divided by price = approx members
-      const cityMemberRev = revenue.byCityMembershipMonth[city]?.[month] || 0;
-      const approxMembers = cityMemberRev > 0 ? cityMemberRev / memberPrice : 0;
-      if (approxMembers < 3) continue; // skip cities with too few members
-      const actualMatchesPerMbr = totalMSpots / approxMembers;
+      const beMatches = memberPrice / weightedDppPrice;
+      const actualMatchesPerMbr = totalMSpots / memberCount;
       
       let verdict, icon;
       if (actualMatchesPerMbr >= beMatches * 1.5) { verdict = 'Strong value'; icon = '✓'; }
@@ -2005,14 +2036,14 @@ function renderInsights() {
       else if (actualMatchesPerMbr >= beMatches * 0.7) { verdict = 'Marginal'; icon = '⚠'; }
       else { verdict = 'Overpaying'; icon = '✗'; }
       
-      healthByCity.push({ city, actualMatchesPerMbr, beMatches, verdict, icon, approxMembers });
+      healthByCity.push({ city, actualMatchesPerMbr, beMatches, verdict, icon, memberCount });
     }
     if (healthByCity.length > 0) {
       healthByCity.sort((a,b) => (b.actualMatchesPerMbr / b.beMatches) - (a.actualMatchesPerMbr / a.beMatches));
       neutral.push({
         label: 'Membership Health by City',
         value: healthByCity.map(h => 
-          `${h.icon} ${h.city} (${h.actualMatchesPerMbr.toFixed(1)}/${h.beMatches.toFixed(1)} matches — ${h.verdict})`
+          `${h.icon} ${h.city} (${h.actualMatchesPerMbr.toFixed(1)}/${h.beMatches.toFixed(1)} matches · ${h.memberCount} mbrs · ${h.verdict})`
         ).join(' · '),
         numInline: 'Actual matches/member vs break-even',
         type: 'neu',
@@ -3096,7 +3127,7 @@ async function loadAll() {
   status.classList.remove('hidden');
 
   try {
-    const [dashboard, revenue, expenses, schedule, managerPay, monthlyExpenses, venues, memberSpots, commentary, pricing] = await Promise.all([
+    const [dashboard, revenue, expenses, schedule, managerPay, monthlyExpenses, venues, memberSpots, commentary, pricing, members] = await Promise.all([
       fetchCSV(TABS.dashboard),
       fetchCSV(TABS.revenue),
       fetchCSV(TABS.expenses),
@@ -3107,9 +3138,10 @@ async function loadAll() {
       fetchCSV(TABS.memberSpots),
       fetchCSV(TABS.commentary),
       fetchCSV(TABS.pricing),
+      fetchCSV(TABS.members),
     ]);
     
-    loadedData = { dashboard, revenue, expenses, schedule, managerPay, monthlyExpenses, venues, memberSpots, commentary, pricing };
+    loadedData = { dashboard, revenue, expenses, schedule, managerPay, monthlyExpenses, venues, memberSpots, commentary, pricing, members };
     
     // Compute month progress from Revenue tab (how far into each month are the actuals?)
     computeMonthProgress(revenue);
