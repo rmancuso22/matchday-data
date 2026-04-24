@@ -1585,44 +1585,78 @@ function dppMixShare(venue, city, months, memberSpots) {
 }
 
 function renderHero(dash) {
+  // Starting cash is still from Dashboard tab (user-set)
   const startRow = findRow(dash, 'Starting Cash');
-  const grossRow = findRowContains(dash, 'Gross Revenue');
-  const feesRow = findRowContains(dash, 'Stripe Fees');
-  const netRow = findRow(dash, '+ Net Revenue') || findRowContains(dash, 'Net Revenue');
-  let expRowActual = null;
-  for (const row of dash) {
-    if (row[0] && String(row[0]).trim() === '- Expenses') { expRowActual = row; break; }
-  }
-  const pnlRow = findRowContains(dash, 'Net P&L');
-  const endRow = findRow(dash, 'Ending Cash');
-
   const start = parseCurrency(startRow?.[1]);
-  const gross = parseCurrency(grossRow?.[4]);
-  const fees = parseCurrency(feesRow?.[4]);
-  const netRev = parseCurrency(netRow?.[4]);
-  const expenses = parseCurrency(expRowActual?.[4]);
-  const netPnl = parseCurrency(pnlRow?.[4]);
-  const endingCash = parseCurrency(endRow?.[4]);
 
-  document.getElementById('ending-cash').textContent = fmtMoney(endingCash);
-  const delta = endingCash - start;
+  const months = ['Apr 2026', 'May 2026', 'Jun 2026'];
+
+  // === LIVE REVENUE from Revenue tab ===
+  const revenue = aggregateRevenue(loadedData.revenue);
+  const revTab = loadedData.revenue;
+  let revStartRow = -1;
+  for (let i = 0; i < revTab.length; i++) {
+    if (revTab[i][0] && String(revTab[i][0]).trim() === 'Date') { revStartRow = i + 1; break; }
+  }
+  if (revStartRow === -1) revStartRow = 4;
+  let liveGross = 0, liveFees = 0;
+  for (let i = revStartRow; i < revTab.length; i++) {
+    const row = revTab[i];
+    if (!row || !row[0]) continue;
+    const month = (row[1] ? String(row[1]).trim() : null) || monthFromDate(row[0]);
+    if (!months.includes(month)) continue;
+    liveGross += parseCurrency(row[5]);
+    liveFees += parseCurrency(row[6]);
+  }
+  const liveNetRev = liveGross - liveFees;
+
+  // === LIVE EXPENSES ===
+  const mgrPayAgg = aggregateManagerPay(loadedData.managerPay);
+  const cityOverheadAgg = aggregateMonthlyCityOverhead(loadedData.monthlyExpenses);
+  const scheduleCostsAgg = aggregateScheduleCosts(loadedData.schedule);
+  const expensesByCatAgg = aggregateExpensesByCategory(loadedData.expenses);
+
+  let liveQ2Exp = 0;
+  for (const m of months) {
+    for (const city of CITIES) liveQ2Exp += mgrPayAgg[city]?.[m] || 0;
+    for (const city of CITIES) {
+      liveQ2Exp += cityOverheadAgg[city]?.cityMgr?.[m] || 0;
+      liveQ2Exp += cityOverheadAgg[city]?.marketing?.[m] || 0;
+      liveQ2Exp += cityOverheadAgg[city]?.equipment?.[m] || 0;
+    }
+    liveQ2Exp += cityOverheadAgg['Corporate']?.cityMgr?.[m] || 0;
+    liveQ2Exp += cityOverheadAgg['Corporate']?.marketing?.[m] || 0;
+    liveQ2Exp += cityOverheadAgg['Corporate']?.equipment?.[m] || 0;
+    for (const venueName in scheduleCostsAgg.byVenueMonth) {
+      liveQ2Exp += scheduleCostsAgg.byVenueMonth[venueName]?.[m] || 0;
+    }
+    const cats = ['Venue Rental','VEO Camera','Corporate Salaries','Contractors','Subscriptions','Scaling','MISC'];
+    for (const cat of cats) liveQ2Exp += expensesByCatAgg[cat]?.[m] || 0;
+  }
+
+  const liveNetPnl = liveNetRev - liveQ2Exp;
+  const liveEndingCash = start + liveNetPnl;
+
+  // === RENDER ===
+  document.getElementById('ending-cash').textContent = fmtMoney(liveEndingCash);
+  const delta = liveEndingCash - start;
   const deltaEl = document.getElementById('ending-delta');
   deltaEl.textContent = fmtMoney(delta, { signed: true });
   deltaEl.className = 'delta ' + numClass(delta);
   document.getElementById('ending-delta-label').textContent = ` vs. ${fmtMoney(start)} starting`;
 
   const q2pnl = document.getElementById('q2-pnl');
-  q2pnl.textContent = fmtMoney(netPnl);
-  q2pnl.className = 'hero-value ' + numClass(netPnl);
-  document.getElementById('q2-pnl-sub').innerHTML = netPnl >= 0
+  q2pnl.textContent = fmtMoney(liveNetPnl);
+  q2pnl.className = 'hero-value ' + numClass(liveNetPnl);
+  document.getElementById('q2-pnl-sub').innerHTML = liveNetPnl >= 0
     ? `<span class="delta pos">Profitable quarter</span>`
     : `<span class="delta neg">Burn quarter</span>`;
 
-  document.getElementById('q2-rev').textContent = fmtMoney(netRev);
-  document.getElementById('q2-rev-sub').innerHTML = `Gross ${fmtMoney(gross)} · Fees ${fmtMoney(fees)}`;
+  document.getElementById('q2-rev').textContent = fmtMoney(liveNetRev);
+  document.getElementById('q2-rev-sub').innerHTML = `Gross ${fmtMoney(liveGross)} · Fees ${fmtMoney(liveFees)}`;
 
-  document.getElementById('q2-exp').textContent = fmtMoney(expenses);
-  const burnRate = expenses / 3;
+  document.getElementById('q2-exp').textContent = fmtMoney(liveQ2Exp);
+  const burnRate = liveQ2Exp / 3;
   document.getElementById('q2-exp-sub').textContent = `≈ ${fmtMoney(burnRate)}/mo avg`;
 }
 
