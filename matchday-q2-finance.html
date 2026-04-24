@@ -2417,17 +2417,50 @@ function renderMonthlyPL(dash) {
 
 let trendChartInstance = null;
 function renderTrendChart(dash) {
-  const netRevRow = findRow(dash, '+ Net Revenue') || findRowContains(dash, 'Net Revenue');
-  let expRow = null;
-  for (const row of dash) {
-    if (row[0] && String(row[0]).trim() === '- Expenses') { expRow = row; break; }
-  }
-  const pnlRow = findRowContains(dash, 'Net P&L');
-
   const months = ['Apr 2026', 'May 2026', 'Jun 2026'];
-  const revData = [1,2,3].map(i => parseCurrency(netRevRow?.[i]));
-  const expData = [1,2,3].map(i => parseCurrency(expRow?.[i]));
-  const pnlData = [1,2,3].map(i => parseCurrency(pnlRow?.[i]));
+
+  // === LIVE per-month Revenue, Expenses, P&L from source tabs ===
+  const revTab = loadedData.revenue;
+  let revStartRow = -1;
+  for (let i = 0; i < revTab.length; i++) {
+    if (revTab[i][0] && String(revTab[i][0]).trim() === 'Date') { revStartRow = i + 1; break; }
+  }
+  if (revStartRow === -1) revStartRow = 4;
+  const monthlyRev = { 'Apr 2026': 0, 'May 2026': 0, 'Jun 2026': 0 };
+  for (let i = revStartRow; i < revTab.length; i++) {
+    const row = revTab[i];
+    if (!row || !row[0]) continue;
+    const month = (row[1] ? String(row[1]).trim() : null) || monthFromDate(row[0]);
+    if (!months.includes(month)) continue;
+    const net = parseCurrency(row[7]);
+    monthlyRev[month] += net;
+  }
+
+  const mgrPayAgg = aggregateManagerPay(loadedData.managerPay);
+  const cityOverheadAgg = aggregateMonthlyCityOverhead(loadedData.monthlyExpenses);
+  const scheduleCostsAgg = aggregateScheduleCosts(loadedData.schedule);
+  const expensesByCatAgg = aggregateExpensesByCategory(loadedData.expenses);
+  const monthlyExp = { 'Apr 2026': 0, 'May 2026': 0, 'Jun 2026': 0 };
+  for (const m of months) {
+    for (const city of CITIES) monthlyExp[m] += mgrPayAgg[city]?.[m] || 0;
+    for (const city of CITIES) {
+      monthlyExp[m] += cityOverheadAgg[city]?.cityMgr?.[m] || 0;
+      monthlyExp[m] += cityOverheadAgg[city]?.marketing?.[m] || 0;
+      monthlyExp[m] += cityOverheadAgg[city]?.equipment?.[m] || 0;
+    }
+    monthlyExp[m] += cityOverheadAgg['Corporate']?.cityMgr?.[m] || 0;
+    monthlyExp[m] += cityOverheadAgg['Corporate']?.marketing?.[m] || 0;
+    monthlyExp[m] += cityOverheadAgg['Corporate']?.equipment?.[m] || 0;
+    for (const venueName in scheduleCostsAgg.byVenueMonth) {
+      monthlyExp[m] += scheduleCostsAgg.byVenueMonth[venueName]?.[m] || 0;
+    }
+    const cats = ['Venue Rental','VEO Camera','Corporate Salaries','Contractors','Subscriptions','Scaling','MISC'];
+    for (const cat of cats) monthlyExp[m] += expensesByCatAgg[cat]?.[m] || 0;
+  }
+
+  const revData = months.map(m => monthlyRev[m]);
+  const expData = months.map(m => monthlyExp[m]);
+  const pnlData = months.map(m => monthlyRev[m] - monthlyExp[m]);
 
   const ctx = document.getElementById('trend-chart').getContext('2d');
   if (trendChartInstance) trendChartInstance.destroy();
