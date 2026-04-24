@@ -1626,6 +1626,31 @@ function renderHero(dash) {
 }
 
 // ============== INSIGHTS & ALERTS (auto-computed from data) ==============
+
+// Helper: aggregate Expenses tab by category → month → total
+function aggregateExpensesByCategory(expensesTab) {
+  const byCat = {};
+  let startRow = -1;
+  for (let i = 0; i < expensesTab.length; i++) {
+    if (expensesTab[i][0] && String(expensesTab[i][0]).trim() === 'Date') {
+      startRow = i + 1;
+      break;
+    }
+  }
+  if (startRow === -1) startRow = 4;
+  for (let i = startRow; i < expensesTab.length; i++) {
+    const row = expensesTab[i];
+    if (!row || !row[0]) continue;
+    const m = (row[1] ? String(row[1]).trim() : null) || monthFromDate(row[0]);
+    const cat = row[3] ? String(row[3]).trim() : null;
+    const amount = parseCurrency(row[5]);
+    if (!m || !cat) continue;
+    if (!byCat[cat]) byCat[cat] = {};
+    byCat[cat][m] = (byCat[cat][m] || 0) + amount;
+  }
+  return byCat;
+}
+
 function renderInsights() {
   const container = document.getElementById('insights-grid');
   if (!container) return;
@@ -1853,25 +1878,44 @@ function renderInsights() {
     });
   }
   
-  // Cash burn pace (simple: current burn / starting cash = months of runway)
-  const totalExpApr = cityStats.reduce((s,c) => s + c.overhead, 0) + venues.reduce((s,v) => s + v.cost, 0);
+  // Cash burn pace — use same expense categories as Monthly Cash Flow
+  // Pull ALL expenses tab one-offs too: VEO, Corporate Salaries, Contractors, Subscriptions, Scaling, MISC
+  const expensesByCat = aggregateExpensesByCategory(loadedData.expenses);
+  const oneOffCats = ['VEO Camera', 'Corporate Salaries', 'Contractors', 'Subscriptions', 'Scaling', 'MISC'];
+  let oneOffTotal = 0;
+  for (const cat of oneOffCats) {
+    oneOffTotal += (expensesByCat[cat]?.[month] || 0);
+  }
+  
+  const totalExpApr = cityStats.reduce((s,c) => s + c.overhead, 0) 
+    + venues.reduce((s,v) => s + v.cost, 0)
+    + oneOffTotal;
   const totalRevApr = cityStats.reduce((s,c) => s + c.rev, 0);
   const monthlyBurn = totalExpApr - totalRevApr;
   // Get starting cash from dashboard
   const startingCash = parseCurrency(findRow(loadedData.dashboard, 'Starting Cash')?.[1]);
-  if (monthlyBurn > 0 && startingCash > 0) {
+  
+  if (Math.abs(monthlyBurn) < 500) {
+    // Near breakeven
+    neutral.push({
+      label: 'Cash Runway',
+      value: `Near breakeven — ${monthlyBurn >= 0 ? 'minor burn' : 'minor surplus'}`,
+      numInline: (monthlyBurn >= 0 ? '' : '+') + fmtMoney(-monthlyBurn) + '/mo',
+      type: 'neu',
+    });
+  } else if (monthlyBurn > 0 && startingCash > 0) {
     const runwayMonths = startingCash / monthlyBurn;
     neutral.push({
       label: 'Cash Runway',
       value: `${runwayMonths.toFixed(1)} months at current burn`,
       numInline: fmtMoney(monthlyBurn) + '/mo net burn',
-      type: runwayMonths < 3 ? 'neg' : 'neu',
+      type: runwayMonths < 6 ? 'neg' : 'neu',
     });
-  } else if (totalRevApr > totalExpApr) {
+  } else if (monthlyBurn < 0) {
     neutral.push({
       label: 'Cash Runway',
       value: `Profitable — extending runway`,
-      numInline: '+' + fmtMoney(totalRevApr - totalExpApr) + '/mo',
+      numInline: '+' + fmtMoney(-monthlyBurn) + '/mo',
       type: 'pos',
     });
   }
@@ -1885,7 +1929,7 @@ function renderInsights() {
     neutral.push({
       label: 'Company-wide Spot Mix',
       value: `Members ${(totalM/totalSpots*100).toFixed(0)}% · DPP ${(totalD/totalSpots*100).toFixed(0)}% · Promo ${(totalO/totalSpots*100).toFixed(0)}%`,
-      numInline: `${totalSpots} total spots`,
+      numInline: `Across ${totalSpots.toLocaleString()} total spots`,
       type: 'neu',
     });
   }
